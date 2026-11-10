@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Computer Evolution Lab — 17 Operational Computers in Live 3D</title>
+    <link rel="icon" href="data:," />
+    <style>
+      /* Critical pre-JS boot screen so the page never flashes white */
+      html,
+      body {
+        background: #090d14;
+        color: #eaf1f8;
+        margin: 0;
+        font:
+          15px/1.45 system-ui,
+          -apple-system,
+          "Segoe UI",
+          Roboto,
+          sans-serif;
+      }
+      #boot {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #090d14;
+        z-index: 99;
+        padding: 24px;
+      }
+      #boot .bx {
+        max-width: 620px;
+        text-align: center;
+      }
+      #boot h1 {
+        font-size: 22px;
+        margin: 0 0 8px;
+        color: #ffb347;
+      }
+      #boot p {
+        color: #9fb3c8;
+        margin: 6px 0;
+      }
+      #boot .bar {
+        height: 4px;
+        background: #1c2633;
+        border-radius: 2px;
+        overflow: hidden;
+        margin: 16px auto;
+        width: 260px;
+      }
+      #boot .bar i {
+        display: block;
+        height: 100%;
+        width: 40%;
+        background: #58c4ff;
+        animation: bt 1.2s infinite ease-in-out;
+      }
+      @keyframes bt {
+        0% {
+          transform: translateX(-100%);
+        }
+        100% {
+          transform: translateX(250%);
+        }
+      }
+      #boot.err .bar {
+        display: none;
+      }
+      #boot pre {
+        text-align: left;
+        white-space: pre-wrap;
+        background: #141c26;
+        padding: 10px;
+        border-radius: 6px;
+        color: #ff9a8a;
+        font-size: 12px;
+        max-height: 40vh;
+        overflow: auto;
+      }
+    </style>
+    <script>
+      // Works both via file:// double-click and via local HTTP server
+      (function () {
+        function show(title, msg) {
+          var b = document.getElementById("boot");
+          if (!b) {
+            b = document.createElement("div");
+            b.id = "boot";
+            (document.body || document.documentElement).appendChild(b);
+          }
+          b.className = "err";
+          b.style.display = "flex";
+          b.innerHTML =
+            '<div class="bx"><h1></h1><p></p><pre></pre><p>Open in a current Chrome, Edge, Firefox, or Safari browser with WebGL2 enabled.</p></div>';
+          b.querySelector("h1").textContent = title;
+          b.querySelector("p").textContent =
+            "The Computer Evolution Lab could not start.";
+          b.querySelector("pre").textContent = msg;
+        }
+        window.__labFail = show;
+        window.__labStarted = false;
+        window.addEventListener("error", function (e) {
+          if (!window.__labStarted && !document.querySelector("#boot.err")) {
+            show(
+              "Startup error",
+              (e.message || "error") +
+                (e.filename ? "\n" + e.filename + ":" + e.lineno : ""),
+            );
+          }
+        });
+        window.addEventListener("unhandledrejection", function (e) {
+          if (!window.__labStarted && !document.querySelector("#boot.err")) {
+            show("Startup error", String((e.reason && e.reason.message) || e.reason));
+          }
+        });
+        setTimeout(function () {
+          if (!window.__labStarted && !document.querySelector("#boot.err")) {
+            show(
+              "Still loading after 25 s",
+              "Ensure all modular files in styles/, vendor/, assets/, and src/ are next to this HTML file.",
+            );
+          }
+        }, 25000);
+      })();
+    </script>
+    <link rel="stylesheet" href="styles/lab.css" />
+  </head>
+  <body>
+    <div id="boot">
+      <div class="bx">
+        <h1>◈ Computer Evolution Lab</h1>
+        <p>Booting 18 interactive 4K HDR 3D scenes &amp; live simulators…</p>
+        <div class="bar"><i></i></div>
+        <p class="small">
+          Requires JavaScript &amp; WebGL2 (Chrome, Edge, Firefox, or Safari).
+        </p>
+      </div>
+    </div>
+    <noscript>
+      <div
+        style="
+          position: fixed;
+          inset: 0;
+          background: #090d14;
+          color: #eaf1f8;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 100;
+          padding: 24px;
+          text-align: center;
+        "
+      >
+        <div>
+          <h1 style="color: #ffb347">JavaScript is turned off</h1>
+          <p>
+            The Computer Evolution Lab requires JavaScript and WebGL2 to run its 17 live
+            3D computer simulations.
+          </p>
+        </div>
+      </div>
+    </noscript>
+
+    <header id="top">
+      <div class="brand"><span class="logo">◈</span> Computer Evolution Lab</div>
+      <nav id="timeline" aria-label="Era timeline"></nav>
+    </header>
+
+    <main id="app">
+      <section id="view">
+        <canvas id="gl"></canvas>
+        <div id="labels"></div>
+
+        <div id="toolbar">
+          <button id="tb-cut" class="tog" title="Make outer shells transparent (C)">
+            Cutaway
+          </button>
+          <button
+            id="tb-slice"
+            class="tog"
+            title="Real-time 3D Cross-Section Slicer plane (X)"
+          >
+            ✂ Slice
+          </button>
+          <label class="exp"
+            >Explode
+            <input id="tb-exp" type="range" min="0" max="1" step="0.01" value="0"
+          /></label>
+          <span class="tb-div"></span>
+          <button class="cam-btn" data-cam="iso" title="Isometric view (1)">Iso</button>
+          <button class="cam-btn" data-cam="front" title="Front elevation (2)">
+            Front
+          </button>
+          <button class="cam-btn" data-cam="top" title="Top floorplan (3)">Top</button>
+          <button class="cam-btn" data-cam="macro" title="Macro close-up (4)">
+            Macro
+          </button>
+          <span class="tb-div"></span>
+          <button id="tb-lab" class="tog" title="Show all 3D part labels (L)">
+            Labels
+          </button>
+          <button id="tb-spin" class="tog" title="Auto-rotate turntable (S)">Spin</button>
+          <button id="tb-reset" title="Reset camera (R)">Reset</button>
+          <button id="tb-tour" class="tog" title="Guided tour through every layer (T)">
+            ▶ Tour
+          </button>
+          <button id="tb-cmp" title="Compare the eras (G)">📊 Compare</button>
+          <select
+            id="tb-q"
+            title="Render quality (Q)"
+            aria-label="render quality"
+          ></select>
+          <button id="tb-4k" title="Render current view as a 3840×2160 4K HDR PNG">
+            📷 4K
+          </button>
+          <button
+            id="tb-audio"
+            class="tog"
+            title="Orchestral score, composer theme & hardware SFX (M)"
+          >
+            🔊
+          </button>
+          <button id="tb-help" title="Help & keyboard shortcuts (?)">?</button>
+        </div>
+
+        <div id="slice-ctl" hidden>
+          <span>Axis</span>
+          <select id="tb-slice-axis" aria-label="Slice axis">
+            <option value="x">X Plane</option>
+            <option value="y">Y Plane</option>
+            <option value="z">Z Plane</option>
+          </select>
+          <input
+            id="tb-slice-off"
+            type="range"
+            min="-1"
+            max="1"
+            step="0.01"
+            value="0.15"
+            aria-label="Slice plane offset"
+          />
+          <button id="tb-slice-flip" class="btn" title="Flip clipped side">⇄ Flip</button>
+        </div>
+
+        <div id="card" hidden>
+          <button id="card-x" aria-label="close">×</button>
+          <h3></h3>
+          <div class="body"></div>
+        </div>
+        <div id="tip" hidden></div>
+        <div id="tourbox" hidden>
+          <div class="tt"></div>
+          <div class="tx"></div>
+          <div class="row">
+            <button id="tour-prev" class="btn">◀</button>
+            <button id="tour-pause" class="btn">❚❚</button>
+            <button id="tour-next" class="btn">▶</button>
+            <button id="tour-stop" class="btn">End tour</button>
+          </div>
+        </div>
+        <div id="toast" hidden></div>
+        <div id="audiopop" hidden></div>
+        <div id="hint">
+          Drag to orbit · scroll to zoom 10× · click any part · <b>X</b> slice ·
+          <b>1–4</b> camera · <b>[ ]</b> layers · <b>?</b> help
+        </div>
+      </section>
+
+      <aside id="panel">
+        <div id="ph">
+          <div id="p-era"></div>
+          <h2 id="p-title"></h2>
+          <p id="p-blurb"></p>
+        </div>
+        <div id="layers"></div>
+        <div class="diag-wrap">
+          <div class="sec-t">Architecture · live bus &amp; signal flow</div>
+          <canvas id="diag"></canvas>
+        </div>
+        <div id="mui"></div>
+      </aside>
+    </main>
+
+    <!-- Classic ordered deferred scripts: zero ES-module CORS issues on file:// double-click! -->
+    <script defer src="vendor/three-bundle.js"></script>
+    <script defer src="src/core/three-aliases.js"></script>
+    <script defer src="assets/audio/sfx-clips.js"></script>
+    <script defer src="src/core/dom-ui.js"></script>
+    <script defer src="src/graphics/pbr-materials.js"></script>
+    <script defer src="src/graphics/kit-3d.js"></script>
+    <script defer src="src/graphics/studio-stage.js"></script>
+    <script defer src="src/sim/core-simulators.js"></script>
+    <script defer src="src/sim/riscv-modern-pc.js"></script>
+    <script defer src="src/layers/layer-stack.js"></script>
+    <script defer src="src/app/compare-modal.js"></script>
+    <script defer src="src/audio/cinematic-score.js"></script>
+    <script defer src="src/machines/machines-early.js"></script>
+    <script defer src="src/machines/machines-pc.js"></script>
+    <script defer src="src/machines/machine-pc20.js"></script>
+    <script defer src="src/machines/machines-frontier.js"></script>
+    <script defer src="src/app/lab-main.js"></script>
+  </body>
+</html>

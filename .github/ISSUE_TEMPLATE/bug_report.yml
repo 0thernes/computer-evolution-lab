@@ -1,0 +1,27 @@
+name: Bug Report
+description: Report a simulator, WebGL2 rendering, audio, or UI defect
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: input
+    id: machine
+    attributes:
+      label: Machine ID or Scene
+      description: Which machine or scene exhibited the problem?
+      placeholder: "pc20 / m6502 / alife / hub"
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to Reproduce
+      description: Exact actions, assembly/GLSL input, and whether opened via file:// or http://
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: Browser, OS & GPU
+      placeholder: "Chrome 134, Windows 11, RTX 5070 Ti"
+    validations:
+      required: true

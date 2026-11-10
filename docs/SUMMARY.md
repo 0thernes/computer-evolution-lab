@@ -1,0 +1,11 @@
+# Executive Summary — Computer Evolution Lab (v2.0.0)
+
+**Computer Evolution Lab** is an interactive 4K HDR 3D engineering museum and live multi-era computer architecture laboratory spanning **1936 to frontier unconventional computing**, authored for **0thernes LLC**.
+
+## What It Delivers
+
+1. **Lean Modular Zero-Build Architecture**: Cleanly decomposed from a legacy 1.44 MB nested monolithic HTML file into 17 ordered classic JS scripts, 1 studio stylesheet (`styles/lab.css`), and identical 10.2 KB `index.html` / `computer-evolution-lab.html` entrypoints that boot directly over both `file://` double-click and local HTTP without CORS errors.
+2. **17 Genuinely Computing 3D Machines + 18-Scene Hub Gallery**: Every exhibit executes real state transitions, binary floating-point arithmetic, RK4 differential equations, delay-line circulation, PDP-8 / 8080 / 6502 / RISC-V machine code, superscalar pipeline stalls, Linux CFS red-black tree scheduling, multi-GPU backpropagation, spiking Izhikevich STDP neurons, density-matrix NMR quantum spin evolution, Clements Mach–Zehnder optical interference, or Gray–Scott / DNA strand-displacement kinetics.
+3. **Dual-Engine 2020s Modern Mini-ITX Workstation (`pc20`)**: Combines a cycle-stepped 32-bit **RISC-V `RV32IM` 5-stage pipelined CPU** (two-pass assembler, EX/MEM forwarding, load-use hazard stalls, 64-entry 2-bit branch predictor, 4/8-way set-associative `L1I`/`L1D`/`L2` LRU caches, NVMe SSD + Mini-OS shell, and 58-key clickable 3D RGB mechanical keyboard) with a **WebGL2 GLSL ES 3.0 GPU** (`512×512` = 262,144 parallel pixels/frame + 48 live SM readback tiles) linked via memory-mapped PCIe registers (`0x20000000`).
+4. **Calibrated 4K HDR PBR Studio Graphics & Slicer**: 16-bit `HalfFloatType` + `4×` WebGL2 MSAA composer, calibrated `ACESFilmicToneMapping` (`exposure: 0.96`), procedural `2048×2048` FR-4 PCBs, thin-film iridescent silicon dies, purple-brown alumina ceramic MOS 6502, real-time `X/Y/Z` Cross-Section Slicer with clipping-aware raycasting, and `3840×2160` PNG export.
+5. **Symphonic WebAudio Score & Hardware Acoustics**: Concert-hall convolution reverb, stereo divisi strings, felt grand piano, cathedral pipe organ, French horns, formant choir, CS-80 synth, timpani, composer palette switcher, and 24 physical hardware SFX.

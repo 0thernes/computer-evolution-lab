@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+
+# OS & editor files
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# Logs & temporary renders
+*.log
+npm-debug.log*
+renders/
+audit-out/
+coverage/
+
+# Environment / local secrets
+.env
+.env.*

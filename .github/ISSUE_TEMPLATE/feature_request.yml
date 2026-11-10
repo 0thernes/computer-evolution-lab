@@ -1,0 +1,12 @@
+name: Architectural Exhibit or Feature Proposal
+description: Propose a new historical/frontier computer exhibit or hardware layer enhancement
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Computational Engine & Hardware Design
+      description: Describe the real instruction set, physical ODE/PDE, or circuit simulator and its 3D components.
+    validations:
+      required: true

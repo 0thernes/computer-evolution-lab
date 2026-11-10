@@ -1,0 +1,20 @@
+{
+  "name": "computer-evolution-lab",
+  "version": "2.0.0",
+  "private": true,
+  "description": "17 operational historical, modern, and frontier computers + 18-scene 4K HDR 3D interactive museum with live RV32IM + WebGL2 Modern Mini PC and orchestral WebAudio score.",
+  "scripts": {
+    "start": "node tools/serve.mjs",
+    "dev": "node tools/serve.mjs",
+    "test": "node tools/run-tests.mjs",
+    "test:ci": "node tools/run-tests.mjs --ci-headless-optional",
+    "audit:4k": "node tools/render-4k-audit.mjs",
+    "format": "prettier --write \"**/*.{html,css,js,mjs,json,md,yml}\"",
+    "format:check": "prettier --check \"**/*.{html,css,js,mjs,json,md,yml}\""
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "author": "0thernes LLC <0_0@0thernes.art> (https://0thernes.art)",
+  "license": "SEE LICENSE IN LICENSE"
+}

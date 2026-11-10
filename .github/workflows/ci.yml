@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Static Audit, RV32IM Unit Tests & Structure Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Run exhaustive static & symbol audit
+        run: node tools/audit-exhaustive.mjs
+
+      - name: Run deterministic simulator unit tests
+        run: node --test tests/simulators.test.mjs
+
+      - name: Run modular HTML/JS & RV32IM suite
+        run: node tools/run-tests.mjs --ci-headless-optional
