@@ -1,62 +1,118 @@
 // Modern-Day Mini PC (2020s): Dual-Engine Live Simulation
-// 1) Real WebGL2 GLSL ES 3.0 Fragment & Ping-Pong Compute GPU (262,144 parallel threads/frame + 48 SM readback)
+// 1) Real WebGL2 GLSL ES 3.0 Fragment & Ping-Pong Compute GPU (1,048,576 parallel threads/frame + 48 SM readback)
 // 2) Real 32-bit RISC-V (RV32IM) 5-Stage Pipelined CPU + L1I/L1D/L2 Cache + NVMe SSD + Mini-OS + PCIe MMIO Bridge
 
 var C0 = {
     "CPU + GPU Hybrid Synth (RV32IM MMIO)": {
       compute: !1,
       src: `// Driven LIVE by the RV32IM CPU over PCIe MMIO (0x20000000 -> uniform vec4 uCPU)!
-// Edit the RISC-V assembly or run 'gpu 0 380' in Mini-OS to steer the 3D geometry.
+// Edit the RISC-V assembly or run 'gpu 0 380' in Mini-OS to steer the 3D PBR Cyber-Crystal.
 float sdOcta(vec3 p, float s) {
   p = abs(p);
   return (p.x + p.y + p.z - s) * 0.57735027;
 }
-float map(vec3 p) {
+float sdBoxFrame(vec3 p, vec3 b, float e) {
+  p = abs(p) - b;
+  vec3 q = abs(p + e) - e;
+  return min(min(
+    length(max(vec3(p.x, q.y, q.z), 0.0)) + min(max(p.x, max(q.y, q.z)), 0.0),
+    length(max(vec3(q.x, p.y, q.z), 0.0)) + min(max(q.x, max(p.y, q.z)), 0.0)),
+    length(max(vec3(q.x, q.y, p.z), 0.0)) + min(max(q.x, max(q.y, p.z)), 0.0));
+}
+vec2 mapMat(vec3 p) {
+  float floorD = p.y + 1.05;
   float morph = clamp(uCPU.x * 0.5, 0.15, 1.35);
-  float twist = (uCPU.y - 1.0) * 0.85 + sin(iTime * 0.7) * 0.35;
+  float twist = (uCPU.y - 1.0) * 0.9 + sin(iTime * 0.65) * 0.35;
   float c = cos(twist * p.y), s = sin(twist * p.y);
   vec3 q = vec3(c * p.x - s * p.z, p.y, s * p.x + c * p.z);
-  float core = mix(length(q) - 0.72, sdOcta(q, 0.95), 0.45 * morph);
-  vec3 rep = mod(q + 1.1, 2.2) - 1.1;
-  float cage = length(max(abs(rep) - vec3(0.16), 0.0)) - 0.03;
-  return min(core, max(cage, length(p) - 1.45));
+  float ca = cos(iTime * 0.45), sa = sin(iTime * 0.45);
+  vec3 qr = vec3(ca * q.x + sa * q.y, -sa * q.x + ca * q.y, q.z);
+  float core = mix(length(qr) - 0.62, sdOcta(qr, 0.88), 0.52 * morph);
+  core -= 0.025 * sin(12.0 * qr.x) * sin(12.0 * qr.y) * sin(12.0 * qr.z);
+  float frame = sdBoxFrame(q, vec3(0.84), 0.042) - 0.008;
+  float ringR = length(vec2(length(p.xz) - 1.18, p.y - 0.12 * sin(iTime * 1.2 + atan(p.z, p.x) * 3.0))) - 0.045;
+  float obj = min(min(core, frame), ringR);
+  float id = (core < frame && core < ringR) ? 1.0 : (frame < ringR ? 2.0 : 3.0);
+  return (floorD < obj) ? vec2(floorD, 0.0) : vec2(obj, id);
 }
+float map(vec3 p) { return mapMat(p).x; }
 vec3 calcNormal(vec3 p) {
-  vec2 e = vec2(0.0015, 0.0);
+  vec2 e = vec2(0.0012, 0.0);
   return normalize(vec3(
     map(p + e.xyy) - map(p - e.xyy),
     map(p + e.yxy) - map(p - e.yxy),
     map(p + e.yyx) - map(p - e.yyx)
   ));
 }
+float calcSoftShadow(vec3 ro, vec3 rd) {
+  float res = 1.0, t = 0.03;
+  for (int i = 0; i < 24; i++) {
+    float h = map(ro + rd * t);
+    res = min(res, 10.0 * h / t);
+    t += clamp(h, 0.02, 0.22);
+    if (res < 0.002 || t > 5.0) break;
+  }
+  return clamp(res, 0.0, 1.0);
+}
+float calcAO(vec3 p, vec3 n) {
+  float occ = 0.0, sca = 1.0;
+  for (int i = 0; i < 5; i++) {
+    float h = 0.02 + 0.09 * float(i);
+    occ += (h - map(p + h * n)) * sca;
+    sca *= 0.72;
+  }
+  return clamp(1.0 - 2.4 * occ, 0.0, 1.0);
+}
 void mainImage(out vec4 fragColor, in vec2 fragCoord) {
   vec2 uv = (fragCoord - 0.5 * iResolution.xy) / iResolution.y;
-  float camA = iTime * 0.45 + (iMouse.x / iResolution.x - 0.5) * 3.14;
-  vec3 ro = vec3(sin(camA) * 2.65, 0.55 + sin(iTime * 0.3) * 0.25, cos(camA) * 2.65);
-  vec3 ta = vec3(0.0);
+  float camA = iTime * 0.42 + (iMouse.x / iResolution.x - 0.5) * 3.14;
+  vec3 ro = vec3(sin(camA) * 2.85, 0.62 + sin(iTime * 0.3) * 0.22, cos(camA) * 2.85);
+  vec3 ta = vec3(0.0, -0.08, 0.0);
   vec3 ww = normalize(ta - ro);
   vec3 uu = normalize(cross(ww, vec3(0.0, 1.0, 0.0)));
   vec3 vv = cross(uu, ww);
-  vec3 rd = normalize(uv.x * uu + uv.y * vv + 1.45 * ww);
+  vec3 rd = normalize(uv.x * uu + uv.y * vv + 1.55 * ww);
 
-  vec3 col = vec3(0.03, 0.05, 0.09) + 0.12 * max(rd.y, 0.0);
+  vec3 sky = vec3(0.02, 0.035, 0.065) + 0.16 * pow(max(rd.y, 0.0), 1.4);
+  vec3 col = sky;
   float t = 0.0;
-  for (int i = 0; i < 84; i++) {
+  vec2 hit = vec2(-1.0);
+  for (int i = 0; i < 92; i++) {
     vec3 p = ro + rd * t;
-    float d = map(p);
-    if (d < 0.0015) {
-      vec3 n = calcNormal(p);
-      vec3 l1 = normalize(vec3(0.7, 0.85, 0.5));
-      vec3 l2 = normalize(vec3(-0.6, 0.3, -0.7));
-      float dif1 = max(dot(n, l1), 0.0);
-      float dif2 = max(dot(n, l2), 0.0);
-      float fre = pow(1.0 - max(dot(n, -rd), 0.0), 3.0);
-      vec3 pal = 0.5 + 0.5 * cos(vec3(0.1, 1.9, 3.7) + uCPU.x * 1.7 + uCPU.z * 1.4 + length(p) * 2.2);
-      col = pal * (0.14 + 0.82 * dif1) + vec3(0.25, 0.65, 1.0) * (0.25 * dif2 + 0.55 * fre);
-      break;
+    vec2 h = mapMat(p);
+    if (h.x < 0.0012) { hit = vec2(t, h.y); break; }
+    t += h.x;
+    if (t > 12.0) break;
+  }
+  if (hit.x > 0.0) {
+    vec3 p = ro + rd * hit.x;
+    vec3 n = calcNormal(p);
+    float ao = calcAO(p, n);
+    vec3 l1 = normalize(vec3(0.68, 0.86, 0.48));
+    vec3 l2 = normalize(vec3(-0.65, 0.35, -0.62));
+    float sh = calcSoftShadow(p + n * 0.003, l1);
+    float dif1 = max(dot(n, l1), 0.0) * sh;
+    float dif2 = max(dot(n, l2), 0.0);
+    vec3 hal = normalize(l1 - rd);
+    float fre = pow(1.0 - max(dot(n, -rd), 0.0), 4.0);
+    float spe = pow(max(dot(n, hal), 0.0), 48.0) * sh;
+    vec3 base;
+    if (hit.y < 0.5) {
+      float rad = length(p.xz);
+      float grid = max(smoothstep(0.96, 1.0, cos(p.x * 6.2831)), smoothstep(0.96, 1.0, cos(p.z * 6.2831)));
+      float rings = smoothstep(0.97, 1.0, cos(rad * 12.566 - iTime * 2.0));
+      base = vec3(0.04, 0.055, 0.08) + grid * vec3(0.05, 0.11, 0.18) + rings * vec3(0.18, 0.45, 0.75) * exp(-rad * 0.45);
+    } else if (hit.y < 1.5) {
+      base = 0.52 + 0.48 * cos(vec3(0.1, 1.8, 3.6) + uCPU.x * 1.9 + uCPU.z * 1.5 + dot(n, rd) * 3.2);
+    } else if (hit.y < 2.5) {
+      base = vec3(0.76, 0.56, 0.28);
+    } else {
+      base = vec3(0.22, 0.78, 1.0);
     }
-    t += d;
-    if (t > 8.0) break;
+    col = base * (0.12 * ao + 0.88 * dif1 + 0.22 * dif2 * ao)
+        + vec3(0.95, 0.92, 0.88) * spe * 0.85
+        + vec3(0.28, 0.72, 1.0) * fre * 0.55 * ao;
+    col = mix(col, sky, 1.0 - exp(-0.018 * hit.x * hit.x));
   }
   fragColor = vec4(pow(max(col, 0.0), vec3(0.4545)), 1.0);
 }`,
@@ -154,8 +210,8 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
 void main(){ vec4 c = texture(tex, vUv); if (mode == 1) { float v = c.g; outColor = vec4(0.5 + 0.5 * cos(6.0 * v + vec3(0.0, 1.0, 2.5) + 2.0) * step(0.05, v) + vec3(0.02, 0.02, 0.06), 1.0); } else outColor = vec4(c.rgb, 1.0); }`;
 
 var Qs = (i, e, t, n) => (i.position.set(e, t, n), i),
-  xi = 512,
-  Mi = 256,
+  xi = 1024,
+  Mi = 512,
   h1 =
     "in vec3 position; in vec2 uv; out vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }",
   Hc = `precision highp float; precision highp sampler2D;
@@ -222,7 +278,7 @@ function d1() {
     sim: { uniforms },
     name: "Modern-Day Mini PC (2020s): RV32IM 5-stage CPU + L1/L2 cache + NVMe OS + WebGL2 GPU",
     blurb:
-      "A fully operational dual-engine modern workstation in a 12-litre Mini-ITX chassis. On the motherboard, a 32-bit RISC-V (RV32IM) 5-stage pipelined CPU (IF/ID/EX/MEM/WB) with data forwarding, 2-bit branch prediction, set-associative L1I/L1D/L2 caches, and a virtual NVMe Gen4 SSD executes real assembled machine code and runs an interactive Mini-OS shell — streaming live orbital uniforms over PCIe MMIO (0x20000000) into a real WebGL2 GLSL ES 3.0 GPU shader executing across 262,144 pixels in parallel every frame. Click the 3D RGB mechanical keyboard, edit the RISC-V assembly or GLSL shader, or run commands in the Mini-OS terminal.",
+      "A fully operational dual-engine modern workstation in a 12-litre Mini-ITX chassis. On the motherboard, a 32-bit RISC-V (RV32IM) 5-stage pipelined CPU (IF/ID/EX/MEM/WB) with data forwarding, 2-bit branch prediction, set-associative L1I/L1D/L2 caches, and a virtual NVMe Gen4 SSD executes real assembled machine code and runs an interactive Mini-OS shell — streaming live orbital uniforms over PCIe MMIO (0x20000000) into a real WebGL2 GLSL ES 3.0 GPU shader executing across 1,048,576 pixels in parallel every frame. Click the 3D RGB mechanical keyboard, edit the RISC-V assembly or GLSL shader, or run commands in the Mini-OS terminal.",
     diagram: {
       nodes: [
         {
@@ -259,7 +315,7 @@ function d1() {
         },
         {
           id: "gpu",
-          label: `GPU: 48 SMs × GLSL\n(262K threads)`,
+          label: `GPU: 48 SMs × GLSL\n(1.05M threads)`,
           x: 0.7,
           y: 0.2,
           w: 0.31,
@@ -422,7 +478,7 @@ function d1() {
       });
       mobo.add(Qs(new B(chamferBox(0.54, 0.014, 0.54, 0.003), U.pcb(0x101822)), 0, 0, 0));
 
-      // 12-phase VRM ferrite chokes + DrMOS stages + finned VRM heatsink
+      // 12+2 phase VRM ferrite chokes + DrMOS stages + dual heatpipe-linked VRM heatsinks
       for (let i = 0; i < 9; i++) {
         const choke = new B(
           chamferBox(0.024, 0.018, 0.024, 0.003),
@@ -432,17 +488,79 @@ function d1() {
         mobo.add(choke);
       }
       const vrmSink = new B(
-        chamferBox(0.065, 0.048, 0.34, 0.004),
-        U.metal(0x1f2630, 0.32),
+        chamferBox(0.068, 0.052, 0.34, 0.004),
+        U.darkAnodized(0x1f2630),
       );
-      vrmSink.position.set(-0.225, 0.03, -0.04);
+      vrmSink.position.set(-0.225, 0.031, -0.04);
       mobo.add(vrmSink);
+      // Secondary top SoC VRM heatsink + sintered copper heatpipe bridge
+      const topVrmSink = new B(
+        chamferBox(0.22, 0.044, 0.054, 0.004),
+        U.darkAnodized(0x1f2630),
+      );
+      topVrmSink.position.set(-0.08, 0.028, -0.225);
+      mobo.add(topVrmSink);
+      Dt(
+        k,
+        [
+          [-0.225, 0.046, 0.08],
+          [-0.225, 0.048, -0.225],
+          [-0.02, 0.044, -0.225],
+        ],
+        0.0042,
+        0xc97448,
+        { mat: U.copper() },
+        mobo,
+      );
+      // B650E/X670I PCH chipset heatsink + CR2032 CMOS lithium battery + solid polymer caps
+      mobo.add(
+        Qs(
+          new B(chamferBox(0.095, 0.02, 0.085, 0.003), U.darkAnodized(0x262e3a)),
+          0.145,
+          0.016,
+          0.135,
+        ),
+      );
+      mobo.add(
+        Qs(
+          new B(new ke(0.021, 0.021, 0.006, 20), U.plastic(0x151920, 0.5)),
+          -0.21,
+          0.01,
+          0.19,
+        ),
+      );
+      mobo.add(Qs(new B(new ke(0.017, 0.017, 0.005, 20), U.steel()), -0.21, 0.014, 0.19));
+      for (let c = 0; c < 5; c++) {
+        mobo.add(
+          Qs(
+            new B(new ke(0.0065, 0.0065, 0.014, 14), U.alu()),
+            -0.145,
+            0.014,
+            -0.15 + c * 0.055,
+          ),
+        );
+      }
+      // Rear I/O EMI shield tower + dual gold Wi-Fi 7 SMA antenna jacks
+      mobo.add(
+        Qs(
+          new B(chamferBox(0.052, 0.068, 0.16, 0.003), U.metal(0x2b3340, 0.34)),
+          -0.238,
+          0.04,
+          0.16,
+        ),
+      );
+      for (const wz of [0.12, 0.16]) {
+        const sma = new B(new ke(0.005, 0.005, 0.018, 12), U.gold());
+        sma.rotation.z = Math.PI / 2;
+        sma.position.set(-0.272, 0.036, wz);
+        mobo.add(sma);
+      }
 
       // Steel-reinforced PCIe 5.0 x16 slot along bottom edge of ITX board
       mobo.add(
         Qs(new B(chamferBox(0.36, 0.022, 0.026, 0.002), U.steel()), 0.02, 0.016, 0.22),
       );
-      // 24-pin ATX header
+      // 24-pin ATX header + USB-C front header
       mobo.add(
         Qs(
           new B(new te(0.026, 0.026, 0.13), U.plastic(0x14181f, 0.5)),
@@ -451,6 +569,7 @@ function d1() {
           -0.06,
         ),
       );
+      mobo.add(Qs(new B(new te(0.018, 0.02, 0.036), U.steel()), 0.235, 0.016, 0.06));
 
       // ---- 3. Delidded Chiplet CPU (2× CCD + I/O Die on Silicon + SMD Substrate) ----
       const cpuGroup = k.group(
@@ -606,11 +725,35 @@ function d1() {
           `${xi}×${xi} = ${(xi * xi).toLocaleString()} shader threads/frame · frame ${frameIdx}\n~${fpsSmooth.toFixed(0)} fps · uCPU = [${uniforms.uCPU.value.x.toFixed(2)}, ${uniforms.uCPU.value.y.toFixed(2)}, ${uniforms.uCPU.value.z.toFixed(2)}]`,
         explode: [0.14, 0, 0.46],
       });
-      // Finned shroud + anodized flow-through backplate
-      gpuCard.add(new B(chamferBox(0.062, 0.142, 0.74, 0.006), U.metal(0x252c37, 0.32)));
+      // Finned shroud + anodized flow-through backplate + PCIe gold edge + rear DP/HDMI bracket
+      gpuCard.add(new B(chamferBox(0.062, 0.142, 0.74, 0.006), U.darkAnodized(0x252c37)));
       const gpuPcb = new B(chamferBox(0.012, 0.128, 0.64, 0.002), U.pcb(0x0d1520));
       gpuPcb.position.x = -0.04;
       gpuCard.add(gpuPcb);
+      // Gold PCIe 5.0 x16 edge connector + recessed 16-pin 12VHPWR header + stainless rear I/O bracket
+      gpuCard.add(Qs(new B(new te(0.008, 0.014, 0.28), U.gold()), -0.04, 0.068, -0.06));
+      gpuCard.add(
+        Qs(
+          new B(chamferBox(0.022, 0.016, 0.038, 0.002), U.plastic(0x141820, 0.45)),
+          -0.028,
+          0.072,
+          0.02,
+        ),
+      );
+      gpuCard.add(
+        Qs(
+          new B(chamferBox(0.082, 0.158, 0.008, 0.002), U.steel()),
+          -0.005,
+          0.004,
+          -0.372,
+        ),
+      );
+      // Exposed aluminium fin stack along top & rear flow-through window
+      for (let fn = 0; fn < 18; fn++) {
+        gpuCard.add(
+          Qs(new B(new te(0.048, 0.128, 0.003), U.alu()), 0, 0, 0.22 + fn * 0.008),
+        );
+      }
       // Copper heatpipes along top edge of GPU
       for (let hp = 0; hp < 3; hp++) {
         const pipe = new B(new ke(0.0045, 0.0045, 0.66, 12), U.copper());
@@ -673,8 +816,48 @@ function d1() {
         info: "80 PLUS Platinum SFX-L modular power supply with native 16-pin 12VHPWR (600 W) + braided ATX 24-pin cables and zero-RPM fluid-dynamic fan.",
         explode: [0.34, -0.08, -0.32],
       });
-      psu.add(new B(chamferBox(0.31, 0.21, 0.26, 0.006), U.metal(0x1b2028, 0.38)));
-      // Braided 12VHPWR & 24-pin ATX cables
+      psu.add(new B(chamferBox(0.31, 0.21, 0.26, 0.006), U.darkAnodized(0x1b2028)));
+      // 92mm zero-RPM fluid-dynamic PSU intake fan + chrome wire grille + modular headers + AC C14 inlet
+      ni(
+        k,
+        0.084,
+        [0, 0.106, 0],
+        { rot: [-Math.PI / 2, 0, 0], speed: 10, blade: 0x161b22 },
+        psu,
+      );
+      for (const r of [0.036, 0.06, 0.082]) {
+        const gRing = new B(new Pi(r, 0.0022, 8, 28), U.steel());
+        gRing.rotation.x = Math.PI / 2;
+        gRing.position.set(0, 0.109, 0);
+        psu.add(gRing);
+      }
+      for (let mh = 0; mh < 4; mh++) {
+        psu.add(
+          Qs(
+            new B(chamferBox(0.052, 0.032, 0.014, 0.002), U.plastic(0x10141b, 0.5)),
+            -0.095 + mh * 0.064,
+            0.035,
+            0.132,
+          ),
+        );
+      }
+      psu.add(
+        Qs(
+          new B(chamferBox(0.068, 0.046, 0.012, 0.002), U.plastic(0x0e1218, 0.55)),
+          -0.06,
+          -0.02,
+          -0.132,
+        ),
+      );
+      psu.add(
+        Qs(
+          new B(new te(0.028, 0.038, 0.014), U.plastic(0xb52b2b, 0.42)),
+          0.04,
+          -0.02,
+          -0.132,
+        ),
+      );
+      // Braided 12VHPWR & 24-pin ATX cables + black cable combs
       Dt(
         k,
         [
@@ -705,42 +888,72 @@ function d1() {
       });
 
       // ---- 9. 27" 16:9 4K IPS Monitor on Articulated VESA Stand (Switchable GPU / Split / OS) ----
-      monSurface = Bt(1024, 576);
+      monSurface = Bt(2048, 1152);
       const monGroup = k.group([0, 0, -1.04], {
         name: '27" 4K 165 Hz IPS monitor (click bezel LED to switch view)',
-        info: "DisplayPort 2.1 widescreen monitor displaying BOTH your live WebGL2 GPU shader and the live RV32IM CPU pipeline + Mini-OS terminal! Click the bottom-right bezel button (or use the panel selector) to toggle Split / Full GPU / Full OS.",
-        live: () => `Display mode: ${monMode.toUpperCase()} · 1024×576 live composite`,
+        info: "DisplayPort 2.1 widescreen reference monitor displaying BOTH your live WebGL2 GPU shader (1,048,576 threads/frame) and the live RV32IM CPU pipeline + Mini-OS terminal at 2048×1152 retina clarity! Click the bottom-right bezel button (or use the panel selector) to toggle Split / Full GPU / Full OS.",
+        live: () => `Display mode: ${monMode.toUpperCase()} · 2048×1152 live composite`,
         explode: [0, 0, -0.42],
       });
-      // Brushed VESA base + angled column
+      // Sculpted V-wing cast aluminium VESA base + angled column with copper cable-routing ring
+      for (const sgn of [-1, 1]) {
+        const wing = new B(chamferBox(0.28, 0.016, 0.052, 0.005), U.alu());
+        wing.position.set(sgn * 0.12, 0.008, 0.02);
+        wing.rotation.y = sgn * -0.42;
+        monGroup.add(wing);
+      }
       monGroup.add(
-        Qs(new B(chamferBox(0.38, 0.018, 0.26, 0.005), U.alu()), 0, 0.009, -0.02),
+        Qs(new B(chamferBox(0.16, 0.02, 0.16, 0.005), U.alu()), 0, 0.01, -0.06),
       );
-      const standNeck = new B(chamferBox(0.055, 0.56, 0.045, 0.006), U.alu());
-      standNeck.position.set(0, 0.29, -0.07);
+      const standNeck = new B(chamferBox(0.062, 0.58, 0.038, 0.006), U.alu());
+      standNeck.position.set(0, 0.3, -0.075);
       standNeck.rotation.x = 0.06;
       monGroup.add(standNeck);
-      // Ultrathin bezel housing
+      const cableRing = new B(new Pi(0.022, 0.0045, 12, 28), U.copper());
+      cableRing.position.set(0, 0.18, -0.068);
+      monGroup.add(cableRing);
+      // Ultrathin CNC dark-anodized bezel housing + rear VESA spine + brushed chin bar
       const monBezel = new B(
-        chamferBox(1.52, 0.88, 0.032, 0.008),
-        U.plastic(0x12161e, 0.36),
+        chamferBox(1.52, 0.88, 0.028, 0.008),
+        U.darkAnodized(0x12161e),
       );
-      monBezel.position.set(0, 0.76, -0.018);
+      monBezel.position.set(0, 0.76, -0.016);
       monGroup.add(monBezel);
-      // Active IPS LCD panel
+      monGroup.add(
+        Qs(
+          new B(chamferBox(0.68, 0.42, 0.024, 0.008), U.darkAnodized(0x181e28)),
+          0,
+          0.76,
+          -0.036,
+        ),
+      );
+      monGroup.add(
+        Qs(
+          new B(chamferBox(1.52, 0.022, 0.03, 0.003), U.darkAnodized(0x262e3a)),
+          0,
+          0.33,
+          -0.014,
+        ),
+      );
+      // Active 2048×1152 IPS LCD panel + anti-reflective optical clearcoat glass
       monitorMesh = new B(
-        new mt(1.46, 0.82),
+        new mt(1.47, 0.826),
         new xt({ map: monSurface.tex, toneMapped: !1 }),
       );
-      monitorMesh.position.set(0, 0.76, 0.001);
+      monitorMesh.position.set(0, 0.768, 0.001);
       monGroup.add(monitorMesh);
-      // Monitor power/mode LED button
-      const monBtn = new B(new te(0.035, 0.01, 0.012), U.led(0x5fe08a, 1.1));
-      monBtn.position.set(0.66, 0.33, 0.004);
+      const monGlass = new B(new mt(1.48, 0.834), U.glass(0xd8ecff, 0.04));
+      monGlass.material.envMapIntensity = 0.45;
+      monGlass.position.set(0, 0.768, 0.003);
+      monGlass.raycast = () => {};
+      monGroup.add(monGlass);
+      // Monitor power/mode LED button (click to cycle Split / GPU / OS!)
+      const monBtn = new B(new te(0.042, 0.012, 0.014), U.led(0x5fe08a, 1.1));
+      monBtn.position.set(0.66, 0.33, 0.006);
       monBtn.userData.isMonSwitch = !0;
       monGroup.add(monBtn);
 
-      // DisplayPort cable from GPU rear I/O to monitor
+      // Braided DisplayPort 2.1 cable with anodized connector shells from GPU rear I/O to monitor
       Dt(
         k,
         [
@@ -748,30 +961,50 @@ function d1() {
           [0.02, 0.05, -0.76],
           [0, 0.38, -1.08],
         ],
-        0.009,
+        0.0085,
         0x141820,
       );
 
+      // Stitched charcoal microfiber desk mat beneath keyboard & wireless mouse
+      const deskMat = k.group([0.1, 0.004, 0.86], {
+        name: "Microfiber desk mat",
+        info: "4 mm stitched-edge low-friction Cordura desk mat supporting the 65% mechanical keyboard and 4000 Hz optical mouse.",
+        explode: [0, -0.04, 0.28],
+      });
+      deskMat.add(new B(chamferBox(1.48, 0.008, 0.42, 0.003), U.rubber()));
+      deskMat.add(
+        Qs(
+          new B(chamferBox(1.486, 0.005, 0.426, 0.003), U.plastic(0xc85a32, 0.65)),
+          0,
+          -0.001,
+          0,
+        ),
+      );
+
       // ---- 10. Interactive 65% CNC RGB Mechanical Keyboard + Wireless Mouse ----
-      const kbdGroup = k.group([-0.08, 0.018, 0.86], {
+      const kbdGroup = k.group([-0.08, 0.022, 0.86], {
         name: "Mechanical keyboard (click any keycap in 3D!)",
-        info: "CNC-milled 65% hot-swap mechanical keyboard with per-key RGB LEDs and 1000 Hz USB-C polling. Clicking any keycap in 3D depresses the switch, flashes its RGB LED, plays a real key switch transient, and sends that ASCII keycode straight into the RV32IM CPU's UART/Keyboard FIFO (0x10000008)!",
+        info: "CNC-milled 65% gasket-mount hot-swap mechanical keyboard with dye-sub PBT legends, knurled brass rotary encoder, custom GX16 aviator coiled cable, and per-key RGB LEDs. Clicking any keycap in 3D depresses the switch, flashes its RGB LED, plays a real key switch transient, and sends that ASCII keycode straight into the RV32IM CPU's UART/Keyboard FIFO (0x10000008)!",
         live: () =>
           `Last key: ${cpu.lastKeyCode ? `'${String.fromCharCode(cpu.lastKeyCode)}' (0x${bt(cpu.lastKeyCode, 2)})` : "none"} · RX FIFO ${cpu.keyFifo.length} B`,
         explode: [0, 0, 0.28],
       });
-      // Angled CNC aluminium keyboard case + brass front lip
+      // Angled CNC aluminium keyboard case + brass front weight + knurled brass volume knob
       const kbdBody = new B(
-        chamferBox(0.84, 0.028, 0.29, 0.006),
-        U.metal(0x202632, 0.34),
+        chamferBox(0.84, 0.03, 0.295, 0.006),
+        U.darkAnodized(0x202632),
       );
       kbdBody.rotation.x = 0.075;
       kbdGroup.add(kbdBody);
-      const brassStrip = new B(new te(0.8, 0.006, 0.012), U.brass());
-      brassStrip.position.set(0, 0.008, 0.144);
+      const brassStrip = new B(chamferBox(0.8, 0.008, 0.014, 0.002), U.brass());
+      brassStrip.position.set(0, 0.008, 0.146);
       kbdGroup.add(brassStrip);
+      const volKnob = new B(new ke(0.019, 0.019, 0.018, 24), U.knurl(0xc69c46, 0.28));
+      volKnob.position.set(0.382, 0.029, -0.104);
+      volKnob.rotation.x = 0.075;
+      kbdGroup.add(volKnob);
 
-      // Build 5 rows of individually pickable 3D keycaps + RGB switch LEDs
+      // Build 5 rows of individually pickable 3D keycaps + high-DPI dye-sub legends + RGB switch LEDs
       const rows = [
         ["`", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=", "\b"],
         ["\t", "q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "[", "]", "\\"],
@@ -779,11 +1012,77 @@ function d1() {
         ["z", "x", "c", "v", "b", "n", "m", ",", ".", "/"],
         [" "],
       ];
+      const keyLabels = {
+        "`": "ESC",
+        "-": "- _",
+        "=": "= +",
+        "\b": "BKSP",
+        "\t": "TAB",
+        "[": "[ {",
+        "]": "] }",
+        "\\": "\\ |",
+        ";": "; :",
+        "'": "' \"",
+        "\n": "ENTER ↵",
+        ",": ", <",
+        ".": ". >",
+        "/": "/ ?",
+        " ": "RV32IM // WORKSTATION",
+      };
+      const kbdAtlas = Bt(2048, 512);
+      const kCtx = kbdAtlas.ctx;
+      kCtx.clearRect(0, 0, 2048, 512);
+      kCtx.textAlign = "center";
+      kCtx.textBaseline = "middle";
+      const cellW = 2048 / 16;
+      const cellH = 512 / 5;
+      rows.forEach((row, rIdx) => {
+        row.forEach((ch, cIdx) => {
+          const span = ch === " " ? 6 : ch === "\n" || ch === "\b" || ch === "\t" ? 2 : 1;
+          const colSlot = ch === " " ? 5 : cIdx;
+          const cx = (colSlot + span * 0.5) * cellW;
+          const cy = (rIdx + 0.5) * cellH;
+          const lbl = keyLabels[ch] || ch.toUpperCase();
+          kCtx.fillStyle =
+            ch === "\n" || ch === "`" || ch === " " ? "#fff7ee" : "#dce7f5";
+          kCtx.font =
+            lbl.length > 3
+              ? "bold 24px ui-monospace, Menlo, Consolas, monospace"
+              : "bold 36px ui-monospace, Menlo, Consolas, monospace";
+          kCtx.fillText(lbl, cx, cy);
+        });
+      });
+      kbdAtlas.tex.needsUpdate = !0;
+      const legendMat = new xt({
+        map: kbdAtlas.tex,
+        transparent: !0,
+        depthWrite: !1,
+        toneMapped: !1,
+      });
+      const makeLegendTop = (wTop, rIdx, colSlot, span) => {
+        const g = new mt(wTop, 0.032);
+        const uv = g.attributes.uv;
+        const u0 = colSlot / 16;
+        const u1 = (colSlot + span) / 16;
+        const v1 = 1 - rIdx / 5;
+        const v0 = 1 - (rIdx + 1) / 5;
+        uv.setXY(0, u0, v1);
+        uv.setXY(1, u1, v1);
+        uv.setXY(2, u0, v0);
+        uv.setXY(3, u1, v0);
+        uv.needsUpdate = !0;
+        const m = new B(g, legendMat);
+        m.rotation.x = -Math.PI / 2;
+        m.position.y = 0.0074;
+        m.raycast = () => {};
+        return m;
+      };
+
       const capGeo = chamferBox(0.044, 0.014, 0.044, 0.003);
       const spaceGeo = chamferBox(0.32, 0.014, 0.044, 0.003);
       const wideGeo = chamferBox(0.082, 0.014, 0.044, 0.003);
-      const darkCapMat = U.plastic(0x252c38, 0.48);
-      const accentCapMat = U.plastic(0xc85a32, 0.44);
+      const darkCapMat = U.plastic(0x252c38, 0.44);
+      const accentCapMat = U.plastic(0xc85a32, 0.42);
 
       keyEntries = [];
       keyMeshMap.clear();
@@ -795,6 +1094,7 @@ function d1() {
           const cap = new B(spaceGeo, accentCapMat);
           cap.position.set(0, yBase, zOff);
           cap.rotation.x = 0.075;
+          cap.add(makeLegendTop(0.28, 4, 5, 6));
           const under = new B(new te(0.3, 0.004, 0.036), ledMat);
           under.position.set(0, yBase - 0.007, zOff);
           kbdGroup.add(under);
@@ -811,7 +1111,6 @@ function d1() {
           keyMeshMap.set(cap, entry);
           return;
         }
-        const totalCols = row.length;
         row.forEach((ch, cIdx) => {
           const isWide = ch === "\n" || ch === "\b" || ch === "\t";
           const xOff =
@@ -826,6 +1125,7 @@ function d1() {
           );
           cap.position.set(xOff, yBase, zOff);
           cap.rotation.x = 0.075;
+          cap.add(makeLegendTop(isWide ? 0.07 : 0.036, rIdx, cIdx, isWide ? 2 : 1));
           const under = new B(new te(isWide ? 0.072 : 0.036, 0.004, 0.036), ledMat);
           under.position.set(xOff, yBase - 0.007, zOff);
           kbdGroup.add(under);
@@ -836,32 +1136,74 @@ function d1() {
         });
       });
 
-      // Coiled USB-C cable from keyboard toward chassis
+      // Custom braided USB-C coiled cable + chrome GX16 5-pin aviator detachment barrel
+      buildCoiledCable(
+        k,
+        [
+          [-0.29, 0.022, 0.7],
+          [-0.21, 0.022, 0.65],
+          [-0.1, 0.022, 0.64],
+        ],
+        0.016,
+        0.0045,
+        20,
+        0xc85a32,
+      );
+      const gx16 = new B(new ke(0.009, 0.009, 0.044, 18), U.knurl(0xbac1c9, 0.25));
+      gx16.rotation.z = Math.PI / 2;
+      gx16.position.set(-0.072, 0.022, 0.64);
+      k.root.add(gx16);
       Dt(
         k,
         [
-          [-0.28, 0.02, 0.71],
-          [-0.28, 0.015, 0.58],
-          [-0.08, 0.02, 0.52],
+          [-0.05, 0.022, 0.64],
+          [-0.02, 0.018, 0.57],
+          [0.02, 0.024, 0.51],
         ],
-        0.007,
-        0xc85a32,
+        0.0045,
+        0x222832,
       );
 
-      // Sculpted ergonomic wireless mouse beside keyboard
-      const mouseGroup = k.group([0.48, 0.02, 0.86], {
+      // Sculpted ergonomic ultralight wireless mouse beside keyboard
+      const mouseGroup = k.group([0.48, 0.012, 0.86], {
         name: "Ultralight wireless mouse (4000 Hz)",
-        info: "54 g optical mouse with PixArt 26K CPI sensor and PTFE skates.",
+        info: "54 g magnesium-composite optical mouse with PixArt PAW3395 26K CPI sensor, optical microswitches, side thumb buttons, and virgin PTFE glide skates.",
         explode: [0.18, 0, 0.28],
       });
-      const mouseShell = new B(new Mt(0.068, 24, 16), U.plastic(0x222834, 0.42));
-      mouseShell.scale.set(0.78, 0.48, 1.35);
-      mouseShell.position.y = 0.016;
+      const mouseShell = new B(new Mt(0.068, 28, 20), U.plastic(0x222834, 0.38));
+      mouseShell.scale.set(0.78, 0.48, 1.38);
+      mouseShell.position.y = 0.018;
       mouseGroup.add(mouseShell);
-      const wheel = new B(new ke(0.012, 0.012, 0.008, 16), U.led(0x58c4ff, 0.9));
+      // Split M1/M2 trigger seam + DPI LED + side thumb buttons + PTFE skates
+      mouseGroup.add(
+        Qs(
+          new B(new te(0.0025, 0.012, 0.072), U.plastic(0x0d1016, 0.7)),
+          0,
+          0.044,
+          -0.042,
+        ),
+      );
+      for (const tz of [-0.01, 0.022]) {
+        mouseGroup.add(
+          Qs(
+            new B(chamferBox(0.006, 0.008, 0.024, 0.002), U.plastic(0xc85a32, 0.4)),
+            -0.051,
+            0.028,
+            tz,
+          ),
+        );
+      }
+      mouseGroup.add(
+        Qs(new B(new Mt(0.0035, 10, 8), U.led(0x5fe08a, 0.8)), 0, 0.048, -0.008),
+      );
+      const wheel = new B(new ke(0.012, 0.012, 0.009, 20), U.knurl(0x2c3442, 0.4));
       wheel.rotation.z = Math.PI / 2;
       wheel.position.set(0, 0.044, -0.036);
       mouseGroup.add(wheel);
+      const wheelRing = new B(new Pi(0.0122, 0.0018, 8, 24), U.led(0x58c4ff, 0.95));
+      wheelRing.rotation.y = Math.PI / 2;
+      wheelRing.position.set(0, 0.044, -0.036);
+      mouseGroup.add(wheelRing);
 
       drawMonitorComposite();
     },
@@ -1303,6 +1645,8 @@ function d1() {
     const ctx = monSurface.ctx;
     const W = 1024;
     const H = 576;
+    ctx.save();
+    ctx.scale(2, 2);
     ctx.fillStyle = "#060a10";
     ctx.fillRect(0, 0, W, H);
 
@@ -1322,6 +1666,7 @@ function d1() {
 
     if (monMode === "gpu") {
       ctx.drawImage(gpuPreviewCanvas, 0, 30, W, H - 30);
+      ctx.restore();
       monSurface.tex.needsUpdate = !0;
       return;
     }
@@ -1329,17 +1674,17 @@ function d1() {
     let termX = 16;
     let termW = W - 32;
     if (monMode === "split") {
-      // Left pane: crisp 546x546 GPU viewport
+      // Left pane: crisp 546x546 GPU viewport (1092x1092 physical pixels!)
       ctx.drawImage(gpuPreviewCanvas, 0, 30, 546, 546);
       ctx.strokeStyle = "#263548";
       ctx.lineWidth = 2;
       ctx.strokeRect(1, 31, 545, 544);
       ctx.fillStyle = "rgba(7, 11, 18, 0.78)";
-      ctx.fillRect(10, H - 34, 300, 24);
+      ctx.fillRect(10, H - 34, 332, 24);
       ctx.fillStyle = "#76e058";
       ctx.font = "12px ui-monospace, Menlo, Consolas, monospace";
       ctx.fillText(
-        `WebGL2 512×512 · frame ${frameIdx} · uCPU.x=${uniforms.uCPU.value.x.toFixed(2)}`,
+        `WebGL2 ${xi}×${xi} · frame ${frameIdx} · uCPU.x=${uniforms.uCPU.value.x.toFixed(2)}`,
         18,
         H - 18,
       );
@@ -1420,6 +1765,7 @@ function d1() {
       ctx.fillText(ln, termX + 10, 220 + idx * 17);
     });
 
+    ctx.restore();
     monSurface.tex.needsUpdate = !0;
   }
 

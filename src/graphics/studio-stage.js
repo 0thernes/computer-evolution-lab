@@ -20,10 +20,10 @@ var zs = {
   high: {
     pr: 2,
     shadows: true,
-    smap: 2048,
+    smap: 4096,
     bloom: true,
     samples: 4,
-    label: "High (HDR + 4× MSAA + 2K shadows)",
+    label: "High (HDR + 4× MSAA + 4K shadows)",
   },
   ultra: {
     pr: 4,
@@ -31,7 +31,7 @@ var zs = {
     smap: 4096,
     bloom: true,
     samples: 4,
-    label: "Ultra (4K HDR + 4× MSAA + 4K shadows)",
+    label: "Ultra (Native 4K Supersampled + 4× MSAA)",
   },
 };
 
@@ -62,11 +62,52 @@ var Qu = class StudioFX {
     this.renderPass = new Yu(scene, camera);
     this.comp.addPass(this.renderPass);
 
-    // Subtle optical halation only on genuine HDR emitters (> 1.18 linear radiance)
-    this.bloom = new _a(new ye(512, 512), 0.24, 0.42, 1.18);
+    // Subtle optical halation only on genuine HDR emitters (> 1.16 linear radiance)
+    this.bloom = new _a(new ye(512, 512), 0.22, 0.38, 1.16);
     this.comp.addPass(this.bloom);
     this.outputPass = new Ku();
     this.comp.addPass(this.outputPass);
+
+    // Contrast-Adaptive 4K Optical Acutance + Cinema Lens Vignette (zero haloing!)
+    this.lensPass = new Wu({
+      uniforms: {
+        tDiffuse: { value: null },
+        uTexel: { value: new ye(1 / 1920, 1 / 1080) },
+        uSharpness: { value: 0.34 },
+      },
+      vertexShader: `
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform sampler2D tDiffuse;
+        uniform vec2 uTexel;
+        uniform float uSharpness;
+        varying vec2 vUv;
+
+        void main() {
+          vec4 c = texture2D(tDiffuse, vUv);
+          vec3 n = texture2D(tDiffuse, vUv + vec2(0.0, uTexel.y)).rgb;
+          vec3 s = texture2D(tDiffuse, vUv - vec2(0.0, uTexel.y)).rgb;
+          vec3 e = texture2D(tDiffuse, vUv + vec2(uTexel.x, 0.0)).rgb;
+          vec3 w = texture2D(tDiffuse, vUv - vec2(uTexel.x, 0.0)).rgb;
+
+          vec3 mn = min(c.rgb, min(min(n, s), min(e, w)));
+          vec3 mx = max(c.rgb, max(max(n, s), max(e, w)));
+          vec3 blur = 0.25 * (n + s + e + w);
+          vec3 sharp = clamp(c.rgb + (c.rgb - blur) * uSharpness, mn - 0.015, mx + 0.015);
+
+          // Subtle studio lens corner falloff
+          vec2 d = vUv - 0.5;
+          float vig = 1.0 - dot(d, d) * 0.16;
+          gl_FragColor = vec4(sharp * vig, c.a);
+        }
+      `,
+    });
+    this.comp.addPass(this.lensPass);
   }
 
   _applySamples(samples) {
@@ -119,6 +160,13 @@ var Qu = class StudioFX {
     this.h = Math.max(1, h);
     this.r.setSize(this.w, this.h, false);
     this.comp.setSize(this.w, this.h);
+    if (this.lensPass) {
+      const pr = this.comp._pixelRatio || 1;
+      this.lensPass.uniforms.uTexel.value.set(
+        1 / Math.max(1, this.w * pr),
+        1 / Math.max(1, this.h * pr),
+      );
+    }
   }
 
   render() {

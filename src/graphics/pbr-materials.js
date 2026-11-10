@@ -35,10 +35,50 @@ function makeCanvasTex(canvas, isColor = true, repeat = 1) {
   return tex;
 }
 
-// 1. Brushed Anodized / Machined Metal Bump & Roughness Maps
+// Fast analytical 3x3 Sobel heightfield -> Tangent-Space RGB NormalMap converter
+function heightCanvasToNormalTex(hCanvas, strength = 2.2, repeat = 1) {
+  const w = hCanvas.width;
+  const h = hCanvas.height;
+  const src = hCanvas.getContext("2d").getImageData(0, 0, w, h).data;
+  const nCan = document.createElement("canvas");
+  nCan.width = w;
+  nCan.height = h;
+  const nCtx = nCan.getContext("2d");
+  const outImg = nCtx.createImageData(w, h);
+  const dst = outImg.data;
+  const wm = w - 1;
+  const hm = h - 1;
+  const H = (x, y) => src[((y & hm) * w + (x & wm)) << 2] / 255;
+
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const tl = H(x - 1, y - 1);
+      const t = H(x, y - 1);
+      const tr = H(x + 1, y - 1);
+      const l = H(x - 1, y);
+      const r = H(x + 1, y);
+      const bl = H(x - 1, y + 1);
+      const b = H(x, y + 1);
+      const br = H(x + 1, y + 1);
+
+      const dx = (tr + 2 * r + br - (tl + 2 * l + bl)) * strength;
+      const dy = (bl + 2 * b + br - (tl + 2 * t + tr)) * strength;
+      const inv = 1 / Math.hypot(dx, dy, 1);
+      const idx = (y * w + x) << 2;
+      dst[idx] = Math.round((-dx * inv * 0.5 + 0.5) * 255);
+      dst[idx + 1] = Math.round((-dy * inv * 0.5 + 0.5) * 255);
+      dst[idx + 2] = Math.round((inv * 0.5 + 0.5) * 255);
+      dst[idx + 3] = 255;
+    }
+  }
+  nCtx.putImageData(outImg, 0, 0);
+  return makeCanvasTex(nCan, false, repeat);
+}
+
+// 1. 1024x1024 Brushed Anodized / Machined Metal Normal & Roughness Maps
 function brushedMetalMaps() {
   return gn("__tex_brushed", () => {
-    const sz = 512;
+    const sz = 1024;
     const bCan = document.createElement("canvas");
     const rCan = document.createElement("canvas");
     bCan.width = bCan.height = rCan.width = rCan.height = sz;
@@ -48,29 +88,29 @@ function brushedMetalMaps() {
 
     bCtx.fillStyle = "#808080";
     bCtx.fillRect(0, 0, sz, sz);
-    rCtx.fillStyle = "#969696";
+    rCtx.fillStyle = "#a2a2a2";
     rCtx.fillRect(0, 0, sz, sz);
 
     for (let y = 0; y < sz; y++) {
-      const base = 116 + Math.floor((rng() - 0.5) * 26);
+      const base = 118 + Math.floor((rng() - 0.5) * 24);
       bCtx.fillStyle = `rgb(${base},${base},${base})`;
       bCtx.fillRect(0, y, sz, 1);
 
-      const rBase = 138 + Math.floor((rng() - 0.5) * 32);
+      const rBase = 148 + Math.floor((rng() - 0.5) * 30);
       rCtx.fillStyle = `rgb(${rBase},${rBase},${rBase})`;
       rCtx.fillRect(0, y, sz, 1);
     }
 
-    for (let i = 0; i < 1800; i++) {
+    for (let i = 0; i < 4200; i++) {
       const x = rng() * sz;
       const y = rng() * sz;
-      const len = 30 + rng() * 180;
-      const v = rng() < 0.5 ? 165 : 92;
-      bCtx.strokeStyle = `rgba(${v},${v},${v},0.26)`;
+      const len = 45 + rng() * 280;
+      const v = rng() < 0.5 ? 168 : 90;
+      bCtx.strokeStyle = `rgba(${v},${v},${v},0.28)`;
       bCtx.lineWidth = 0.7 + rng() * 0.9;
       bCtx.beginPath();
       bCtx.moveTo(x, y);
-      bCtx.lineTo(x + len, y + (rng() - 0.5) * 0.6);
+      bCtx.lineTo(x + len, y + (rng() - 0.5) * 0.5);
       bCtx.stroke();
       if (x + len > sz) {
         bCtx.beginPath();
@@ -82,15 +122,16 @@ function brushedMetalMaps() {
 
     return {
       bump: makeCanvasTex(bCan, false, 3),
+      normal: heightCanvasToNormalTex(bCan, 1.65, 3),
       rough: makeCanvasTex(rCan, false, 3),
     };
   });
 }
 
-// 2. Fine EDM Molded Polymer / Ceramic Micro-Grain Bump
+// 2. 512x512 Fine EDM Molded ABS Polymer / Powder-Coat Micro-Grain Normal & Bump
 function microGrainMap() {
   return gn("__tex_grain", () => {
-    const sz = 256;
+    const sz = 512;
     const can = document.createElement("canvas");
     can.width = can.height = sz;
     const ctx = can.getContext("2d");
@@ -98,27 +139,39 @@ function microGrainMap() {
     const d = img.data;
     const rng = seededRng(424242);
     for (let i = 0; i < d.length; i += 4) {
-      const v = 114 + Math.floor(rng() * 28);
+      const v = 110 + Math.floor(rng() * 36);
       d[i] = d[i + 1] = d[i + 2] = v;
       d[i + 3] = 255;
     }
     ctx.putImageData(img, 0, 0);
-    return makeCanvasTex(can, false, 6);
+    // Soften slightly for realistic molded ABS / wrinkle bead texture
+    ctx.globalAlpha = 0.35;
+    for (let k = 0; k < 1400; k++) {
+      const gv = rng() < 0.5 ? 165 : 88;
+      ctx.fillStyle = `rgb(${gv},${gv},${gv})`;
+      ctx.beginPath();
+      ctx.arc(rng() * sz, rng() * sz, 1.1 + rng() * 1.6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    const bump = makeCanvasTex(can, false, 6);
+    bump.userData.normal = heightCanvasToNormalTex(can, 1.35, 6);
+    return bump;
   });
 }
 
-// 3. Diamond-Knurled Machined Metal Bump Map
+// 3. Diamond-Knurled Machined Metal Normal + Bump Map
 function knurlBumpMap() {
   return gn("__tex_knurl", () => {
-    const sz = 256;
+    const sz = 512;
     const can = document.createElement("canvas");
     can.width = can.height = sz;
     const ctx = can.getContext("2d");
-    ctx.fillStyle = "#686868";
+    ctx.fillStyle = "#585858";
     ctx.fillRect(0, 0, sz, sz);
-    ctx.strokeStyle = "rgba(235,235,235,0.65)";
-    ctx.lineWidth = 2.2;
-    const step = 16;
+    ctx.strokeStyle = "rgba(242,242,242,0.75)";
+    ctx.lineWidth = 3.2;
+    const step = 24;
     for (let k = -sz; k < sz * 2; k += step) {
       ctx.beginPath();
       ctx.moveTo(k, 0);
@@ -129,7 +182,9 @@ function knurlBumpMap() {
       ctx.lineTo(k, sz);
       ctx.stroke();
     }
-    return makeCanvasTex(can, false, 4);
+    const bump = makeCanvasTex(can, false, 4);
+    bump.userData.normal = heightCanvasToNormalTex(can, 2.8, 4);
+    return bump;
   });
 }
 
@@ -194,11 +249,12 @@ function woodMaps() {
     return {
       map: makeCanvasTex(cCan, true, 2),
       bump: makeCanvasTex(bCan, false, 2),
+      normal: heightCanvasToNormalTex(bCan, 2.1, 2),
     };
   });
 }
 
-// 5. High-Resolution Multi-Layer FR-4 PCB (Traces, Buses, Serpentine Delay Lines, ENIG Pads, Vias, Silkscreen)
+// 5. High-Resolution Multi-Layer FR-4 PCB (Shared 2K Normal/Roughness/Metalness + Per-Mask True Gold/Silkscreen Albedo)
 var xm = null;
 function jT() {
   if (xm) return xm.map;
@@ -211,24 +267,40 @@ function buildPcbMaps() {
   const cCan = document.createElement("canvas");
   const bCan = document.createElement("canvas");
   const rCan = document.createElement("canvas");
-  cCan.width = cCan.height = bCan.width = bCan.height = rCan.width = rCan.height = sz;
+  const mCan = document.createElement("canvas");
+  const oCan = document.createElement("canvas"); // untinted gold pads + vias + white silkscreen overlay!
+  cCan.width =
+    cCan.height =
+    bCan.width =
+    bCan.height =
+    rCan.width =
+    rCan.height =
+    mCan.width =
+    mCan.height =
+    oCan.width =
+    oCan.height =
+      sz;
 
   const c = cCan.getContext("2d");
   const b = bCan.getContext("2d");
   const r = rCan.getContext("2d");
+  const m = mCan.getContext("2d");
+  const o = oCan.getContext("2d");
   const rng = seededRng(19756502);
 
-  // Base neutral greyscale (tinted by material.color!) with FR-4 woven fiberglass texture
+  // Base neutral greyscale (for jT() callers) + dielectric solder mask metalness (0.04)
   c.fillStyle = "#98a09c";
   c.fillRect(0, 0, sz, sz);
   b.fillStyle = "#767676";
   b.fillRect(0, 0, sz, sz);
-  r.fillStyle = "#949494"; // medium matte solder mask
+  r.fillStyle = "#969696"; // satin solder mask
   r.fillRect(0, 0, sz, sz);
+  m.fillStyle = "#0c0c0c"; // non-metallic solder mask
+  m.fillRect(0, 0, sz, sz);
 
   // Subtle FR-4 glass cloth cross-weave
-  c.strokeStyle = "rgba(255,255,255,0.035)";
-  b.strokeStyle = "rgba(145,145,145,0.18)";
+  c.strokeStyle = "rgba(255,255,255,0.04)";
+  b.strokeStyle = "rgba(150,150,150,0.20)";
   c.lineWidth = b.lineWidth = 2;
   for (let p = 0; p < sz; p += 16) {
     c.beginPath();
@@ -350,91 +422,140 @@ function buildPcbMaps() {
   }
 
   // QFP / SOIC SMD ENIG gold pad footprints + silkscreen outlines
-  for (let ic = 0; ic < 75; ic++) {
+  for (let ic = 0; ic < 82; ic++) {
     const ix = 40 + rng() * (sz - 140);
     const iy = 40 + rng() * (sz - 140);
     const iw = 26 + Math.floor(rng() * 48);
     const ih = 18 + Math.floor(rng() * 38);
 
-    // White silkscreen outline + pin-1 dot
-    c.strokeStyle = "rgba(236, 240, 242, 0.78)";
-    c.lineWidth = 1.8;
-    c.strokeRect(ix, iy, iw, ih);
-    c.fillStyle = "rgba(236, 240, 242, 0.8)";
-    c.beginPath();
-    c.arc(ix + 5, iy + 5, 2.2, 0, Math.PI * 2);
-    c.fill();
+    // Untinted bright white silkscreen outline + pin-1 dot
+    for (const ctx of [c, o]) {
+      ctx.strokeStyle = "rgba(240, 245, 248, 0.86)";
+      ctx.lineWidth = 1.9;
+      ctx.strokeRect(ix, iy, iw, ih);
+      ctx.fillStyle = "rgba(240, 245, 248, 0.88)";
+      ctx.beginPath();
+      ctx.arc(ix + 5, iy + 5, 2.3, 0, Math.PI * 2);
+      ctx.fill();
+    }
 
-    // Gold ENIG SMD pads along two sides
+    // Gold ENIG SMD pads along two sides (true metallic gold on mCan + oCan!)
     const pads = Math.max(4, Math.floor(iw / 6));
     for (let p = 0; p < pads; p++) {
       const px = ix + 3 + (p * (iw - 6)) / Math.max(1, pads - 1);
-      c.fillStyle = "#e5c878";
-      c.fillRect(px - 1.6, iy - 4.5, 3.2, 4);
-      c.fillRect(px - 1.6, iy + ih + 0.5, 3.2, 4);
+      for (const ctx of [c, o]) {
+        ctx.fillStyle = "#e8c468";
+        ctx.fillRect(px - 1.6, iy - 4.5, 3.2, 4);
+        ctx.fillRect(px - 1.6, iy + ih + 0.5, 3.2, 4);
+      }
 
-      r.fillStyle = "#343434"; // shiny gold pad!
+      r.fillStyle = "#2b2b2b"; // specular gold pad
       r.fillRect(px - 1.6, iy - 4.5, 3.2, 4);
       r.fillRect(px - 1.6, iy + ih + 0.5, 3.2, 4);
 
-      b.fillStyle = "#d0d0d0";
+      m.fillStyle = "#f4f4f4"; // 0.96 metalness on gold pads!
+      m.fillRect(px - 1.6, iy - 4.5, 3.2, 4);
+      m.fillRect(px - 1.6, iy + ih + 0.5, 3.2, 4);
+
+      b.fillStyle = "#d8d8d8";
       b.fillRect(px - 1.6, iy - 4.5, 3.2, 4);
       b.fillRect(px - 1.6, iy + ih + 0.5, 3.2, 4);
     }
   }
 
-  // Plated through-hole gold/copper vias with dark drill centers
-  for (let v = 0; v < 1600; v++) {
+  // Plated through-hole 24k ENIG gold vias with dark drill centers
+  for (let v = 0; v < 1750; v++) {
     const vx = rng() * sz;
     const vy = rng() * sz;
-    const rad = 2.4 + rng() * 1.8;
+    const rad = 2.4 + rng() * 1.9;
 
-    c.fillStyle = "#dfc373";
-    c.beginPath();
-    c.arc(vx, vy, rad, 0, Math.PI * 2);
-    c.fill();
+    for (const ctx of [c, o]) {
+      ctx.fillStyle = "#e6c164";
+      ctx.beginPath();
+      ctx.arc(vx, vy, rad, 0, Math.PI * 2);
+      ctx.fill();
 
-    c.fillStyle = "#1b2220";
-    c.beginPath();
-    c.arc(vx, vy, rad * 0.46, 0, Math.PI * 2);
-    c.fill();
+      ctx.fillStyle = "#121618";
+      ctx.beginPath();
+      ctx.arc(vx, vy, rad * 0.45, 0, Math.PI * 2);
+      ctx.fill();
+    }
 
-    r.fillStyle = "#383838";
+    r.fillStyle = "#303030";
     r.beginPath();
     r.arc(vx, vy, rad, 0, Math.PI * 2);
     r.fill();
 
-    b.fillStyle = "#d2d2d2";
+    m.fillStyle = "#f2f2f2";
+    m.beginPath();
+    m.arc(vx, vy, rad, 0, Math.PI * 2);
+    m.fill();
+    m.fillStyle = "#080808";
+    m.beginPath();
+    m.arc(vx, vy, rad * 0.45, 0, Math.PI * 2);
+    m.fill();
+
+    b.fillStyle = "#dadada";
     b.beginPath();
     b.arc(vx, vy, rad, 0, Math.PI * 2);
     b.fill();
-    b.fillStyle = "#303030";
+    b.fillStyle = "#262626";
     b.beginPath();
     b.arc(vx, vy, rad * 0.45, 0, Math.PI * 2);
     b.fill();
   }
 
   // Crisp silkscreen component designators
-  c.fillStyle = "rgba(235, 240, 242, 0.72)";
-  c.font = "bold 11px monospace";
-  const prefixes = ["U", "R", "C", "L", "Q", "J", "TP"];
-  for (let lbl = 0; lbl < 110; lbl++) {
+  c.fillStyle = o.fillStyle = "rgba(242, 246, 250, 0.82)";
+  c.font = o.font = "bold 11px monospace";
+  const prefixes = ["U", "R", "C", "L", "Q", "J", "TP", "FB", "Y"];
+  for (let lbl = 0; lbl < 140; lbl++) {
     const pr = prefixes[Math.floor(rng() * prefixes.length)];
     const num = 1 + Math.floor(rng() * 99);
-    c.fillText(pr + num, 20 + rng() * (sz - 60), 20 + rng() * (sz - 30));
+    const lx = 20 + rng() * (sz - 60);
+    const ly = 20 + rng() * (sz - 30);
+    c.fillText(pr + num, lx, ly);
+    o.fillText(pr + num, lx, ly);
   }
 
   return {
+    baseCan: cCan,
+    overlayCan: oCan,
     map: makeCanvasTex(cCan, true, 1),
     bump: makeCanvasTex(bCan, false, 1),
+    normal: heightCanvasToNormalTex(bCan, 2.35, 1),
     rough: makeCanvasTex(rCan, false, 1),
+    metal: makeCanvasTex(mCan, false, 1),
   };
 }
 
-// 6. Photolithographed Silicon Wafer / Die Map (SRAM arrays, logic blocks, interconnect lanes)
+function buildTintedPcbAlbedo(colInt) {
+  jT();
+  const sz = xm.baseCan.width;
+  const can = document.createElement("canvas");
+  can.width = can.height = sz;
+  const ctx = can.getContext("2d");
+  // Multiply grayscale copper/FR4 relief by the authentic solder-mask color
+  ctx.drawImage(xm.baseCan, 0, 0);
+  const maskCol = calibrateDielectricColor(colInt, 0.78);
+  ctx.globalCompositeOperation = "multiply";
+  ctx.fillStyle = "#" + maskCol.getHexString();
+  ctx.fillRect(0, 0, sz, sz);
+  // Subtle copper-under-mask highlight lift so traces remain readable even on black motherboards!
+  ctx.globalCompositeOperation = "screen";
+  ctx.globalAlpha = 0.08;
+  ctx.drawImage(xm.baseCan, 0, 0);
+  // Stamp untinted 24k ENIG gold pads, vias & crisp white silkscreen on top!
+  ctx.globalCompositeOperation = "source-over";
+  ctx.globalAlpha = 1.0;
+  ctx.drawImage(xm.overlayCan, 0, 0);
+  return makeCanvasTex(can, true, 1);
+}
+
+// 6. 2048x2048 Photolithographed Silicon Wafer / Die Map (SRAM arrays, ALU carry chains, clock H-tree, bond pads)
 function siliconDieMaps() {
   return gn("__tex_silicon_die", () => {
-    const sz = 512;
+    const sz = 2048;
     const can = document.createElement("canvas");
     const bCan = document.createElement("canvas");
     can.width = can.height = bCan.width = bCan.height = sz;
@@ -442,50 +563,82 @@ function siliconDieMaps() {
     const bCtx = bCan.getContext("2d");
     const rng = seededRng(202586);
 
-    ctx.fillStyle = "#263042";
+    ctx.fillStyle = "#1d2738";
     ctx.fillRect(0, 0, sz, sz);
-    bCtx.fillStyle = "#787878";
+    bCtx.fillStyle = "#727272";
     bCtx.fillRect(0, 0, sz, sz);
 
     // Dense SRAM & compute macrocell blocks
-    const hues = ["#3a5170", "#2f626e", "#4b3f6e", "#5d5238", "#2d4c63"];
-    for (let by = 16; by < sz - 16; by += 48) {
-      for (let bx = 16; bx < sz - 16; bx += 64) {
+    const hues = ["#355278", "#2b6875", "#513f78", "#6b5936", "#29546e", "#3d6b56"];
+    for (let by = 56; by < sz - 56; by += 152) {
+      for (let bx = 56; bx < sz - 56; bx += 196) {
+        const bw = 178;
+        const bh = 134;
         ctx.fillStyle = hues[Math.floor(rng() * hues.length)];
-        ctx.fillRect(bx + 2, by + 2, 58, 42);
-        bCtx.fillStyle = "#9c9c9c";
-        bCtx.fillRect(bx + 2, by + 2, 58, 42);
+        ctx.fillRect(bx + 4, by + 4, bw, bh);
+        bCtx.fillStyle = "#a4a4a4";
+        bCtx.fillRect(bx + 4, by + 4, bw, bh);
 
-        // Micro-array sub-banks
-        ctx.strokeStyle = "rgba(180, 225, 255, 0.25)";
-        ctx.lineWidth = 1;
-        for (let sx = bx + 6; sx < bx + 58; sx += 6) {
+        // Sub-bank bitlines & wordlines
+        ctx.strokeStyle = "rgba(185, 232, 255, 0.30)";
+        bCtx.strokeStyle = "rgba(205, 205, 205, 0.45)";
+        ctx.lineWidth = bCtx.lineWidth = 1.6;
+        for (let sx = bx + 12; sx < bx + bw; sx += 10) {
           ctx.beginPath();
-          ctx.moveTo(sx, by + 4);
-          ctx.lineTo(sx, by + 42);
+          ctx.moveTo(sx, by + 8);
+          ctx.lineTo(sx, by + bh);
           ctx.stroke();
+          bCtx.beginPath();
+          bCtx.moveTo(sx, by + 8);
+          bCtx.lineTo(sx, by + bh);
+          bCtx.stroke();
         }
-        for (let sy = by + 6; sy < by + 42; sy += 6) {
+        for (let sy = by + 12; sy < by + bh; sy += 12) {
           ctx.beginPath();
-          ctx.moveTo(bx + 4, sy);
-          ctx.lineTo(bx + 58, sy);
+          ctx.moveTo(bx + 8, sy);
+          ctx.lineTo(bx + bw, sy);
           ctx.stroke();
         }
       }
     }
 
-    // Gold perimeter bond-pad ring
-    ctx.fillStyle = "#d9b45b";
-    for (let i = 8; i < sz - 8; i += 10) {
-      ctx.fillRect(i, 3, 5, 6);
-      ctx.fillRect(i, sz - 9, 5, 6);
-      ctx.fillRect(3, i, 6, 5);
-      ctx.fillRect(sz - 9, i, 6, 5);
+    // Copper global interconnect bus highways & clock spine
+    ctx.strokeStyle = "rgba(232, 182, 104, 0.58)";
+    bCtx.strokeStyle = "#d4d4d4";
+    ctx.lineWidth = bCtx.lineWidth = 5;
+    for (const mid of [sz * 0.25, sz * 0.5, sz * 0.75]) {
+      ctx.beginPath();
+      ctx.moveTo(44, mid);
+      ctx.lineTo(sz - 44, mid);
+      ctx.moveTo(mid, 44);
+      ctx.lineTo(mid, sz - 44);
+      ctx.stroke();
+      bCtx.beginPath();
+      bCtx.moveTo(44, mid);
+      ctx.lineTo(sz - 44, mid);
+      bCtx.moveTo(mid, 44);
+      bCtx.lineTo(mid, sz - 44);
+      bCtx.stroke();
+    }
+
+    // Gold perimeter bond-pad ring + lithography alignment crosses
+    ctx.fillStyle = "#e8c266";
+    bCtx.fillStyle = "#ececec";
+    for (let i = 28; i < sz - 28; i += 32) {
+      ctx.fillRect(i, 10, 18, 22);
+      ctx.fillRect(i, sz - 32, 18, 22);
+      ctx.fillRect(10, i, 22, 18);
+      ctx.fillRect(sz - 32, i, 22, 18);
+      bCtx.fillRect(i, 10, 18, 22);
+      bCtx.fillRect(i, sz - 32, 18, 22);
+      bCtx.fillRect(10, i, 22, 18);
+      bCtx.fillRect(sz - 32, i, 22, 18);
     }
 
     return {
       map: makeCanvasTex(can, true, 1),
       bump: makeCanvasTex(bCan, false, 1),
+      normal: heightCanvasToNormalTex(bCan, 2.0, 1),
     };
   });
 }
@@ -502,47 +655,46 @@ var U = {
   _clipPlanes: null,
 
   plastic: (col, rough = 0.48) =>
-    gn(
-      "pl_" + col + "_" + rough,
-      () =>
-        new Cn({
-          color: calibrateDielectricColor(col, 0.79),
-          roughness: rough,
-          metalness: 0.0,
-          clearcoat: rough < 0.4 ? 0.28 : 0.1,
-          clearcoatRoughness: Math.min(0.65, rough * 0.9),
-          bumpMap: microGrainMap(),
-          bumpScale: 0.0014,
-        }),
-    ),
+    gn("pl_" + col + "_" + rough, () => {
+      const gmTex = microGrainMap();
+      return new Cn({
+        color: calibrateDielectricColor(col, 0.78),
+        roughness: rough,
+        metalness: 0.0,
+        clearcoat: rough < 0.4 ? 0.26 : 0.09,
+        clearcoatRoughness: Math.min(0.68, rough * 0.92),
+        normalMap: gmTex.userData.normal,
+        normalScale: new ye(0.18, 0.18),
+      });
+    }),
 
-  metal: (col = 0xb8bcc2, rough = 0.32) =>
+  metal: (col = 0xb8bcc2, rough = 0.35) =>
     gn("mt_" + col + "_" + rough, () => {
       const bm = brushedMetalMaps();
       return new Cn({
-        color: calibrateDielectricColor(col, 0.88),
-        roughness: rough,
-        metalness: 0.88,
-        bumpMap: bm.bump,
-        bumpScale: 0.0022,
+        color: calibrateDielectricColor(col, 0.84),
+        roughness: Math.max(0.24, rough),
+        metalness: 0.84,
+        envMapIntensity: 0.88,
+        normalMap: bm.normal,
+        normalScale: new ye(0.22, 0.22),
         roughnessMap: bm.rough,
-        clearcoat: 0.08,
-        clearcoatRoughness: 0.35,
+        anisotropy: 0.26,
       });
     }),
 
   knurl: (col = 0x383e47, rough = 0.36) =>
-    gn(
-      "knurl_" + col + "_" + rough,
-      () =>
-        new et({
-          color: col,
-          roughness: rough,
-          metalness: 0.86,
-          bumpMap: knurlBumpMap(),
-          bumpScale: 0.006,
-        }),
-    ),
+    gn("knurl_" + col + "_" + rough, () => {
+      const km = knurlBumpMap();
+      return new Cn({
+        color: col,
+        roughness: rough,
+        metalness: 0.86,
+        normalMap: km.userData.normal,
+        normalScale: new ye(0.55, 0.55),
+        anisotropy: 0.35,
+      });
+    }),
 
   knurled: (col = 0x383e47, rough = 0.36) => U.knurl(col, rough),
 
@@ -550,12 +702,13 @@ var U = {
     gn("gold", () => {
       const bm = brushedMetalMaps();
       return new Cn({
-        color: 0xd8ad48,
+        color: 0xdcad48,
         roughness: 0.22,
         metalness: 0.96,
-        bumpMap: bm.bump,
-        bumpScale: 0.001,
-        clearcoat: 0.15,
+        normalMap: bm.normal,
+        normalScale: new ye(0.14, 0.14),
+        anisotropy: 0.38,
+        clearcoat: 0.16,
         clearcoatRoughness: 0.18,
       });
     }),
@@ -564,11 +717,12 @@ var U = {
     gn("brass", () => {
       const bm = brushedMetalMaps();
       return new Cn({
-        color: 0xc59b45,
+        color: 0xc69c46,
         roughness: 0.28,
         metalness: 0.92,
-        bumpMap: bm.bump,
-        bumpScale: 0.0018,
+        normalMap: bm.normal,
+        normalScale: new ye(0.2, 0.2),
+        anisotropy: 0.45,
       });
     }),
 
@@ -576,11 +730,12 @@ var U = {
     gn("cu", () => {
       const bm = brushedMetalMaps();
       return new Cn({
-        color: 0xc87347,
-        roughness: 0.25,
+        color: 0xc97448,
+        roughness: 0.26,
         metalness: 0.95,
-        bumpMap: bm.bump,
-        bumpScale: 0.0016,
+        normalMap: bm.normal,
+        normalScale: new ye(0.2, 0.2),
+        anisotropy: 0.48,
       });
     }),
 
@@ -588,12 +743,13 @@ var U = {
     gn("steel", () => {
       const bm = brushedMetalMaps();
       return new Cn({
-        color: 0x8f969e,
-        roughness: 0.32,
+        color: 0x8f97a0,
+        roughness: 0.34,
         metalness: 0.88,
-        bumpMap: bm.bump,
-        bumpScale: 0.0024,
+        normalMap: bm.normal,
+        normalScale: new ye(0.26, 0.26),
         roughnessMap: bm.rough,
+        anisotropy: 0.52,
       });
     }),
 
@@ -601,12 +757,13 @@ var U = {
     gn("alu", () => {
       const bm = brushedMetalMaps();
       return new Cn({
-        color: 0xc2c8cf,
-        roughness: 0.28,
-        metalness: 0.88,
-        bumpMap: bm.bump,
-        bumpScale: 0.002,
+        color: 0xbac1c9,
+        roughness: 0.34,
+        metalness: 0.87,
+        normalMap: bm.normal,
+        normalScale: new ye(0.25, 0.25),
         roughnessMap: bm.rough,
+        anisotropy: 0.58,
       });
     }),
 
@@ -615,13 +772,13 @@ var U = {
       const bm = brushedMetalMaps();
       return new Cn({
         color: col,
-        roughness: 0.34,
-        metalness: 0.78,
-        bumpMap: bm.bump,
-        bumpScale: 0.0022,
+        roughness: 0.46,
+        metalness: 0.52,
+        envMapIntensity: 0.76,
+        normalMap: bm.normal,
+        normalScale: new ye(0.22, 0.22),
         roughnessMap: bm.rough,
-        clearcoat: 0.14,
-        clearcoatRoughness: 0.38,
+        anisotropy: 0.18,
       });
     }),
 
@@ -629,34 +786,34 @@ var U = {
     gn("pcb_" + col, () => {
       jT();
       const mat = new Cn({
-        color: col,
-        roughness: 0.46,
-        metalness: 0.14,
-        map: xm.map,
-        bumpMap: xm.bump,
-        bumpScale: 0.0032,
+        color: 0xffffff, // Solder-mask hue baked into albedo so 24k gold ENIG pads & white silkscreen stay untinted!
+        roughness: 0.52,
+        metalness: 1.0, // Driven per-pixel by xm.metal (0.04 on mask, 0.96 on gold pads & vias!)
+        map: buildTintedPcbAlbedo(col),
+        normalMap: xm.normal,
+        normalScale: new ye(0.38, 0.38),
         roughnessMap: xm.rough,
-        clearcoat: 0.24,
-        clearcoatRoughness: 0.36,
+        metalnessMap: xm.metal,
+        clearcoat: 0.28,
+        clearcoatRoughness: 0.32,
       });
       mat.userData.pcb = true;
       return mat;
     }),
 
   chip: () =>
-    gn(
-      "chip",
-      () =>
-        new Cn({
-          color: 0x1c1e22,
-          roughness: 0.42,
-          metalness: 0.08,
-          bumpMap: microGrainMap(),
-          bumpScale: 0.0022,
-          clearcoat: 0.12,
-          clearcoatRoughness: 0.45,
-        }),
-    ),
+    gn("chip", () => {
+      const gmTex = microGrainMap();
+      return new Cn({
+        color: 0x1b1d22,
+        roughness: 0.42,
+        metalness: 0.08,
+        normalMap: gmTex.userData.normal,
+        normalScale: new ye(0.24, 0.24),
+        clearcoat: 0.12,
+        clearcoatRoughness: 0.45,
+      });
+    }),
 
   siliconDie: (tint = 0xffffff) =>
     gn("sidie_" + tint, () => {
@@ -664,45 +821,43 @@ var U = {
       return new Cn({
         color: tint,
         map: sm.map,
-        bumpMap: sm.bump,
-        bumpScale: 0.0018,
+        normalMap: sm.normal,
+        normalScale: new ye(0.32, 0.32),
         roughness: 0.14,
-        metalness: 0.72,
-        iridescence: 0.92,
-        iridescenceIOR: 1.55,
-        iridescenceThicknessRange: [180, 540],
+        metalness: 0.76,
+        iridescence: 0.94,
+        iridescenceIOR: 1.72,
+        iridescenceThicknessRange: [150, 620],
         clearcoat: 1.0,
-        clearcoatRoughness: 0.06,
+        clearcoatRoughness: 0.05,
       });
     }),
 
   ceramic: () =>
-    gn(
-      "cer",
-      () =>
-        new Cn({
-          color: 0xcbc3b2,
-          roughness: 0.46,
-          metalness: 0.02,
-          bumpMap: microGrainMap(),
-          bumpScale: 0.0025,
-        }),
-    ),
+    gn("cer", () => {
+      const gmTex = microGrainMap();
+      return new Cn({
+        color: 0xcbc3b2,
+        roughness: 0.46,
+        metalness: 0.02,
+        normalMap: gmTex.userData.normal,
+        normalScale: new ye(0.22, 0.22),
+      });
+    }),
 
   mosCeramic: () =>
-    gn(
-      "mos_cer",
-      () =>
-        new Cn({
-          color: 0x4c2d3b, // Authentic MOS 6502 purple-brown sintered alumina ceramic
-          roughness: 0.4,
-          metalness: 0.06,
-          bumpMap: microGrainMap(),
-          bumpScale: 0.0026,
-          clearcoat: 0.14,
-          clearcoatRoughness: 0.42,
-        }),
-    ),
+    gn("mos_cer", () => {
+      const gmTex = microGrainMap();
+      return new Cn({
+        color: 0x4c2d3b, // Authentic MOS 6502 purple-brown sintered alumina ceramic
+        roughness: 0.4,
+        metalness: 0.06,
+        normalMap: gmTex.userData.normal,
+        normalScale: new ye(0.24, 0.24),
+        clearcoat: 0.16,
+        clearcoatRoughness: 0.4,
+      });
+    }),
 
   glass: (col = 0xcfe8ff, opacity = 0.22) =>
     gn(
@@ -710,12 +865,12 @@ var U = {
       () =>
         new Cn({
           color: calibrateDielectricColor(col, 0.9),
-          roughness: 0.05,
+          roughness: 0.04,
           metalness: 0.0,
-          ior: 1.5,
-          reflectivity: 0.9,
+          ior: 1.52,
+          reflectivity: 0.92,
           clearcoat: 1.0,
-          clearcoatRoughness: 0.04,
+          clearcoatRoughness: 0.03,
           transparent: true,
           opacity: Math.max(0.14, Math.min(0.88, opacity)),
           depthWrite: false,
@@ -729,42 +884,40 @@ var U = {
       return new Cn({
         color: 0xd8b490,
         map: wm.map,
-        bumpMap: wm.bump,
-        bumpScale: 0.0045,
-        roughness: 0.52,
+        normalMap: wm.normal,
+        normalScale: new ye(0.36, 0.36),
+        roughness: 0.5,
         metalness: 0.0,
-        clearcoat: 0.28,
-        clearcoatRoughness: 0.34,
+        clearcoat: 0.3,
+        clearcoatRoughness: 0.32,
       });
     }),
 
   bakelite: () =>
-    gn(
-      "bak",
-      () =>
-        new Cn({
-          color: 0x2d1812,
-          roughness: 0.34,
-          metalness: 0.02,
-          bumpMap: microGrainMap(),
-          bumpScale: 0.0015,
-          clearcoat: 0.68,
-          clearcoatRoughness: 0.18,
-        }),
-    ),
+    gn("bak", () => {
+      const gmTex = microGrainMap();
+      return new Cn({
+        color: 0x2d1812,
+        roughness: 0.32,
+        metalness: 0.02,
+        normalMap: gmTex.userData.normal,
+        normalScale: new ye(0.14, 0.14),
+        clearcoat: 0.72,
+        clearcoatRoughness: 0.16,
+      });
+    }),
 
   rubber: () =>
-    gn(
-      "rub",
-      () =>
-        new et({
-          color: 0x16181c,
-          roughness: 0.88,
-          metalness: 0.0,
-          bumpMap: microGrainMap(),
-          bumpScale: 0.003,
-        }),
-    ),
+    gn("rub", () => {
+      const gmTex = microGrainMap();
+      return new et({
+        color: 0x16181c,
+        roughness: 0.88,
+        metalness: 0.0,
+        normalMap: gmTex.userData.normal,
+        normalScale: new ye(0.32, 0.32),
+      });
+    }),
 
   glow: (col, intensity = 1) =>
     new et({

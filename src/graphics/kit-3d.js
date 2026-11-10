@@ -203,7 +203,7 @@ function Bt(w, h) {
   canvas.height = h;
   const tex = new Wn(canvas);
   tex.colorSpace = Ot;
-  tex.anisotropy = 8;
+  tex.anisotropy = 16;
   return { canvas, ctx: canvas.getContext("2d"), tex };
 }
 
@@ -401,7 +401,7 @@ function ym(
   });
   const tex = new Wn(canvas);
   tex.colorSpace = Ot;
-  tex.anisotropy = 8;
+  tex.anisotropy = 16;
   return new B(new mt(w, h), new xt({ map: tex, transparent: !bg, depthWrite: !!bg }));
 }
 
@@ -723,7 +723,7 @@ function vn(kit, w, d, finH, pos, opts = {}, parent) {
 
   const nFins = opts.fins || 16;
   const finGeo = chamferBox(Math.min(0.006, (w / nFins) * 0.42), finH, d, 0.001, 1);
-  const finMat = U.alu();
+  const finMat = opts.mat || U.alu();
   for (let i = 0; i < nFins; i++) {
     const fin = new B(finGeo, finMat);
     fin.position.set(-w * 0.5 + ((i + 0.5) * w) / nFins, 0.026 + finH * 0.5, 0);
@@ -843,4 +843,507 @@ function Nt(kit, text, w, h, pos, opts = {}, parent) {
   if (opts.rot) plane.rotation.set(...opts.rot);
   (parent || kit.root).add(plane);
   return plane;
+}
+
+// True 3D Helical Coiled Cable (telephone / PS2 / RS-232 / aviator keyboard coil)
+function buildCoiledCable(
+  kit,
+  points,
+  coilR = 0.018,
+  wireR = 0.0055,
+  turns = 18,
+  col = 0x26282e,
+  opts = {},
+  parent,
+) {
+  const spine = new _n(points.map((p) => new N(...p)));
+  const samples = Math.max(48, turns * 12);
+  const frames = spine.computeFrenetFrames(samples, false);
+  const helixPts = [];
+  for (let i = 0; i <= samples; i++) {
+    const t = i / samples;
+    const pt = spine.getPointAt(t);
+    // Smooth lead-in / lead-out straight ends with central helix coil
+    const env =
+      Math.sin(Math.min(1, t * 7) * Math.PI * 0.5) *
+      Math.sin(Math.min(1, (1 - t) * 7) * Math.PI * 0.5);
+    const ang = t * turns * Math.PI * 2;
+    const nrm = frames.normals[i];
+    const bin = frames.binormals[i];
+    helixPts.push(
+      new N(
+        pt.x + (nrm.x * Math.cos(ang) + bin.x * Math.sin(ang)) * coilR * env,
+        pt.y + (nrm.y * Math.cos(ang) + bin.y * Math.sin(ang)) * coilR * env,
+        pt.z + (nrm.z * Math.cos(ang) + bin.z * Math.sin(ang)) * coilR * env,
+      ),
+    );
+  }
+  const curve = new _n(helixPts);
+  const mat = opts.mat || U.plastic(col, 0.44);
+  return kit.mesh(
+    new Zn(curve, Math.min(260, samples * 2), wireR, 8, false),
+    mat,
+    [0, 0, 0],
+    opts,
+    parent,
+  );
+}
+
+// Instanced 3D Sculpted Mechanical / Vintage Keyboard with High-DPI Keycap Legends
+function buildSculptedKeyboard(kit, pos, opts = {}, parent) {
+  const w = opts.w || 1.18;
+  const d = opts.d || 0.42;
+  const h = opts.h || 0.055;
+  const grp = kit.group(
+    pos,
+    {
+      name: opts.name || "Mechanical Keyboard",
+      info:
+        opts.info ||
+        "Full-travel tactile switch matrix keyboard: row/column scan controller converts physical keystrokes into serial scan codes.",
+      rot: opts.rot,
+      explode: opts.explode,
+      live: opts.live,
+    },
+    parent,
+  );
+
+  const tilt = opts.tilt !== undefined ? opts.tilt : 0.085;
+  const deck = new ft();
+  deck.rotation.x = tilt;
+  grp.add(deck);
+
+  // Sculpted chamfered wedge chassis + recessed switch plate
+  const chassisMat = U.plastic(opts.bodyColor ?? 0xd2cbb8, 0.46);
+  const base = new B(chamferBox(w, h, d, 0.012, 2), chassisMat);
+  base.position.y = h * 0.5;
+  base.castShadow = true;
+  base.receiveShadow = true;
+  deck.add(base);
+
+  const wellW = w * 0.92;
+  const wellD = d * 0.78;
+  const plate = new B(
+    new te(wellW, 0.008, wellD),
+    U.darkAnodized(opts.plateColor ?? 0x1e2228),
+  );
+  plate.position.set(0, h + 0.001, d * 0.03);
+  deck.add(plate);
+
+  if (opts.rgb) {
+    const glow = new B(
+      new te(wellW * 0.98, 0.006, wellD * 0.95),
+      U.glow(opts.rgbColor ?? 0x38bdf8, 0.9),
+    );
+    glow.position.set(0, h + 0.004, d * 0.03);
+    deck.add(glow);
+    grp.userData.rgbMesh = glow;
+  }
+
+  // Build 5-row sculpted keycap layout (instanced for single-draw-call speed!)
+  const rows = opts.rows || [
+    ["ESC", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=", "BKSP"],
+    ["TAB", "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "[", "]", "\\"],
+    ["CAPS", "A", "S", "D", "F", "G", "H", "J", "K", "L", ";", "'", "ENTER"],
+    ["SHIFT", "Z", "X", "C", "V", "B", "N", "M", ",", ".", "/", "SHIFT"],
+    ["CTRL", "WIN", "ALT", "SPACE", "ALT", "FN", "CTRL"],
+  ];
+  const widths = {
+    BKSP: 1.8,
+    TAB: 1.4,
+    "\\": 1.4,
+    CAPS: 1.65,
+    ENTER: 2.05,
+    SHIFT: 2.35,
+    CTRL: 1.35,
+    WIN: 1.2,
+    ALT: 1.25,
+    FN: 1.2,
+    SPACE: 6.1,
+  };
+
+  const keySpecs = [];
+  const nRows = rows.length;
+  const rowStep = wellD / nRows;
+  for (let r = 0; r < nRows; r++) {
+    const row = rows[r];
+    const totalU = row.reduce((acc, k) => acc + (widths[k] || 1), 0);
+    let curU = 0;
+    for (let c = 0; c < row.length; c++) {
+      const lbl = row[c];
+      const u = widths[lbl] || 1;
+      const kw = (u / totalU) * wellW * 0.96;
+      const cx = -wellW * 0.5 + ((curU + u * 0.5) / totalU) * wellW;
+      const cz = d * 0.03 - wellD * 0.5 + (r + 0.5) * rowStep;
+      keySpecs.push({ lbl, cx, cz, kw, kd: rowStep * 0.84, r, u });
+      curU += u;
+    }
+  }
+
+  const capGeo = chamferBox(1, 1, 1, 0.16, 1);
+  const capMat = new Cn({
+    roughness: 0.42,
+    metalness: 0.02,
+    clearcoat: 0.14,
+  });
+  const inst = new ut(capGeo, capMat, keySpecs.length);
+  const dummy = new je();
+  const col = new Ae();
+  const alphaCol = opts.keyColor ?? 0xdcd6c6;
+  const modCol = opts.modColor ?? 0xb8b1a0;
+  const accentCol = opts.accentColor ?? modCol;
+
+  const legSurf = Bt(2048, 640);
+  const lctx = legSurf.ctx;
+  lctx.clearRect(0, 0, 2048, 640);
+  lctx.textAlign = "center";
+  lctx.textBaseline = "middle";
+  const fgCol = opts.legendColor || "#22262c";
+  const accentFg = opts.accentLegendColor || "#ffffff";
+
+  keySpecs.forEach((ks, i) => {
+    const kh = 0.021 + (nRows - 1 - ks.r) * 0.0014; // OEM sculpted row profile!
+    dummy.position.set(ks.cx, h + kh * 0.5 + 0.003, ks.cz);
+    dummy.scale.set(ks.kw, kh, ks.kd);
+    dummy.updateMatrix();
+    inst.setMatrixAt(i, dummy.matrix);
+
+    const isAccent = ks.lbl === "ESC" || ks.lbl === "ENTER";
+    const isMod = ks.u > 1.05 && ks.lbl !== "SPACE";
+    col.set(isAccent ? accentCol : isMod ? modCol : alphaCol);
+    inst.setColorAt(i, col);
+
+    // Stamp crisp high-DPI key legend onto top overlay plane
+    const ux = (ks.cx + wellW * 0.5) / wellW;
+    const uz = (ks.cz - (d * 0.03 - wellD * 0.5)) / wellD;
+    lctx.fillStyle = isAccent ? accentFg : fgCol;
+    lctx.font =
+      ks.lbl.length > 2
+        ? '700 22px "JetBrains Mono", monospace'
+        : '700 30px "JetBrains Mono", monospace';
+    if (ks.lbl !== "SPACE") {
+      lctx.fillText(ks.lbl, ux * 2048, uz * 640);
+    }
+  });
+  inst.castShadow = true;
+  inst.receiveShadow = true;
+  deck.add(inst);
+  legSurf.tex.needsUpdate = true;
+
+  const legPlane = new B(
+    new mt(wellW, wellD),
+    new xt({ map: legSurf.tex, transparent: true, depthWrite: false }),
+  );
+  legPlane.rotation.x = -Math.PI / 2;
+  legPlane.position.set(0, h + 0.0285, d * 0.03);
+  deck.add(legPlane);
+
+  // Lock status LEDs (CAPS / NUM / SCRL) in top-right bezel
+  if (opts.leds !== false) {
+    for (let li = 0; li < 3; li++) {
+      const led = new B(
+        new Mt(0.0055, 12, 8),
+        U.glow(opts.ledColor ?? 0x52ff7a, li === 0 ? 1.15 : 0.18),
+      );
+      led.position.set(w * 0.38 + li * 0.028, h + 0.004, -d * 0.41);
+      deck.add(led);
+    }
+  }
+
+  return grp;
+}
+
+// Sculpted 3D Mouse (Retro 2-Button Ball Mouse OR Ergonomic Optical/Gaming Mouse + Optional Pad)
+function buildMouse3D(kit, pos, opts = {}, parent) {
+  const grp = kit.group(
+    pos,
+    {
+      name: opts.name || "Pointing Mouse",
+      info:
+        opts.info ||
+        "Two-axis quadrature / optical displacement sensor with microswitch buttons.",
+      rot: opts.rot,
+      explode: opts.explode,
+    },
+    parent,
+  );
+
+  if (opts.pad !== false) {
+    const pad = new B(
+      chamferBox(0.28, 0.006, 0.24, 0.003, 1),
+      U.plastic(opts.padColor ?? 0x1c2838, 0.78),
+    );
+    pad.position.y = 0.003;
+    pad.receiveShadow = true;
+    grp.add(pad);
+  }
+
+  const mw = opts.w || 0.082;
+  const md = opts.d || 0.135;
+  const mh = opts.h || 0.042;
+  const y0 = opts.pad !== false ? 0.006 : 0;
+  const bodyMat = U.plastic(opts.color ?? 0xd2cbb8, opts.rough ?? 0.4);
+
+  if (opts.retro) {
+    // Classic 1980s/1990s wedged two-button serial mouse
+    const body = new B(chamferBox(mw, mh * 0.85, md, 0.012, 2), bodyMat);
+    body.position.set(0, y0 + mh * 0.42, 0);
+    body.castShadow = true;
+    grp.add(body);
+    for (const sx of [-1, 1]) {
+      const btn = new B(
+        chamferBox(mw * 0.43, 0.007, md * 0.36, 0.002, 1),
+        U.plastic(opts.btnColor ?? 0xbab29e, 0.45),
+      );
+      btn.position.set(sx * mw * 0.235, y0 + mh * 0.86, -md * 0.27);
+      grp.add(btn);
+    }
+  } else {
+    // Sculpted ergonomic modern dome shell + scroll wheel + RGB accent
+    const dome = new B(new Mt(0.5, 28, 18), bodyMat);
+    dome.scale.set(mw, mh * 1.45, md);
+    dome.position.set(0, y0 + mh * 0.25, 0);
+    dome.castShadow = true;
+    grp.add(dome);
+
+    const wheel = new B(new ke(0.011, 0.011, 0.009, 20), U.knurl(0x282e38, 0.35));
+    wheel.rotation.z = Math.PI / 2;
+    wheel.position.set(0, y0 + mh * 0.92, -md * 0.26);
+    grp.add(wheel);
+
+    if (opts.rgb) {
+      const strip = new B(new te(mw * 0.72, 0.005, md * 0.82), U.glow(opts.rgb, 0.95));
+      strip.position.set(0, y0 + 0.006, 0);
+      grp.add(strip);
+    }
+  }
+  return grp;
+}
+
+// Moving-Coil Analog Panel Meter (Bakelite/Chrome Bezel, Printed Scale Arc, Glass Lens & Live Needle)
+function buildAnalogMeter(kit, pos, opts = {}, parent) {
+  const r = opts.r || 0.075;
+  const grp = kit.group(
+    pos,
+    {
+      name: opts.name || "Analog Panel Meter",
+      info:
+        opts.info ||
+        "D'Arsonval moving-coil galvanometer: coil torque proportional to current deflects the pointer across a calibrated scale.",
+      rot: opts.rot,
+      live: opts.live,
+    },
+    parent,
+  );
+
+  // Bezel flange
+  const bezel = new B(
+    new ke(r * 1.08, r * 1.12, 0.022, 36),
+    opts.chrome ? U.metal(0xd0d6de, 0.22) : U.bakelite(),
+  );
+  bezel.rotation.x = Math.PI / 2;
+  bezel.position.z = 0.011;
+  grp.add(bezel);
+
+  // Printed calibrated dial face
+  const dial = Bt(512, 512);
+  const c = dial.ctx;
+  c.fillStyle = opts.dark ? "#151920" : "#f2ecdc";
+  c.beginPath();
+  c.arc(256, 256, 248, 0, Math.PI * 2);
+  c.fill();
+
+  const fg = opts.dark ? "#e5ecf5" : "#1c1f24";
+  c.strokeStyle = fg;
+  c.lineWidth = 4;
+  c.beginPath();
+  c.arc(256, 320, 195, Math.PI * 1.2, Math.PI * 1.8);
+  c.stroke();
+
+  // Red overload zone
+  c.strokeStyle = "#d93829";
+  c.lineWidth = 8;
+  c.beginPath();
+  c.arc(256, 320, 195, Math.PI * 1.68, Math.PI * 1.8);
+  c.stroke();
+
+  for (let i = 0; i <= 20; i++) {
+    const a = Math.PI * (1.2 + (i / 20) * 0.6);
+    const r0 = i % 5 === 0 ? 168 : 180;
+    c.strokeStyle = i >= 16 ? "#d93829" : fg;
+    c.lineWidth = i % 5 === 0 ? 4 : 2;
+    c.beginPath();
+    c.moveTo(256 + Math.cos(a) * r0, 320 + Math.sin(a) * r0);
+    c.lineTo(256 + Math.cos(a) * 195, 320 + Math.sin(a) * 195);
+    c.stroke();
+  }
+  c.fillStyle = fg;
+  c.font = '700 34px "JetBrains Mono", monospace';
+  c.textAlign = "center";
+  c.fillText(opts.unit || "VOLTS", 256, 232);
+  dial.tex.needsUpdate = true;
+
+  const face = new B(new Xn(r * 0.96, 36), new xt({ map: dial.tex }));
+  face.position.z = 0.023;
+  grp.add(face);
+
+  // Pivoting red/black pointer needle
+  const pivot = new ft();
+  pivot.position.set(0, -r * 0.25, 0.026);
+  const needle = new B(new te(r * 0.032, r * 0.78, 0.003), U.plastic(0xd62828, 0.35));
+  needle.position.y = r * 0.38;
+  pivot.add(needle);
+  const hub = new B(new ke(r * 0.09, r * 0.09, 0.008, 18), U.brass());
+  hub.rotation.x = Math.PI / 2;
+  pivot.add(hub);
+  grp.add(pivot);
+
+  // Protective clearcoat glass cover
+  const lens = new B(new Xn(r * 0.98, 36), U.glass(0xeaf6ff, 0.18));
+  lens.position.z = 0.029;
+  grp.add(lens);
+
+  grp.userData.setVal = (v01) => {
+    const clamped = Math.max(0, Math.min(1, v01));
+    pivot.rotation.z = (0.5 - clamped) * 1.05;
+  };
+  grp.userData.setVal(opts.initial ?? 0.35);
+  return grp;
+}
+
+// Authentic 3D CRT or Slim-Bezel Studio LCD/OLED Monitor with Live High-DPI Canvas
+function buildMonitor3D(kit, pos, opts = {}, parent) {
+  const sw = opts.w || 0.95;
+  const sh = opts.h || 0.72;
+  const res = opts.res || [1024, 768];
+  const grp = kit.group(
+    pos,
+    {
+      name: opts.name || (opts.crt ? "CRT Video Monitor" : "Flat-Panel Display"),
+      info:
+        opts.info ||
+        (opts.crt
+          ? "Raster-scan cathode-ray tube display: electron beam swept by horizontal/vertical deflection coils excites P4/P22 phosphor."
+          : "High-DPI active-matrix IPS/OLED display driven by digital frame-buffer scanout."),
+      rot: opts.rot,
+      explode: opts.explode,
+      live: opts.live,
+    },
+    parent,
+  );
+
+  const surf = Bt(res[0], res[1]);
+
+  if (opts.crt) {
+    const bodyCol = opts.color ?? 0xd4ccb8;
+    const caseMat = U.plastic(bodyCol, 0.46);
+    const bezelW = sw * 1.22;
+    const bezelH = sh * 1.24;
+    const frontD = opts.depth || sw * 0.56;
+
+    // Swivel pedestal base + neck
+    if (opts.stand !== false) {
+      const foot = new B(
+        chamferBox(bezelW * 0.62, 0.036, frontD * 0.68, 0.008, 2),
+        caseMat,
+      );
+      foot.position.y = 0.018;
+      const neck = new B(new ke(bezelW * 0.18, bezelW * 0.22, 0.085, 28), caseMat);
+      neck.position.y = 0.065;
+      grp.add(foot, neck);
+    }
+    const yBase = opts.stand !== false ? 0.1 : 0;
+
+    // Front CRT cabinet + tapered rear electron-gun yoke housing
+    const cab = new B(chamferBox(bezelW, bezelH, frontD * 0.58, 0.022, 2), caseMat);
+    cab.position.set(0, yBase + bezelH * 0.5, 0);
+    cab.castShadow = true;
+    grp.add(cab);
+
+    const rear = new B(
+      chamferBox(bezelW * 0.72, bezelH * 0.72, frontD * 0.52, 0.026, 2),
+      caseMat,
+    );
+    rear.position.set(0, yBase + bezelH * 0.48, -frontD * 0.46);
+    rear.castShadow = true;
+    grp.add(rear);
+
+    // Side ventilation louver slots
+    const slotMat = U.plastic(0x282623, 0.7);
+    for (let s = 0; s < 6; s++) {
+      const sl = new B(new te(bezelW * 0.5, 0.008, 0.016), slotMat);
+      sl.position.set(0, yBase + bezelH - 0.002, -0.04 - s * 0.036);
+      grp.add(sl);
+    }
+
+    // Recessed dark CRT inner mask + live phosphor canvas + subtle clearcoat glass sheen
+    const zFace = frontD * 0.29;
+    const mask = new B(
+      chamferBox(sw * 1.06, sh * 1.06, 0.012, 0.005, 2),
+      U.plastic(0x1d2026, 0.58),
+    );
+    mask.position.set(0, yBase + bezelH * 0.52, zFace + 0.002);
+    grp.add(mask);
+
+    const scrMesh = new B(new mt(sw, sh), U.screen(surf.tex));
+    scrMesh.position.set(0, yBase + bezelH * 0.52, zFace + 0.01);
+    grp.add(scrMesh);
+
+    const glass = new B(new mt(sw * 1.01, sh * 1.01), U.glass(0xdff2ff, 0.05));
+    glass.material.envMapIntensity = 0.5;
+    glass.position.set(0, yBase + bezelH * 0.52, zFace + 0.0125);
+    glass.raycast = () => {};
+    grp.add(glass);
+
+    // Power LED + rotary brightness/contrast dials along lower chin
+    const pwrLed = new B(new Mt(0.008, 14, 10), U.glow(0x4eff6b, 1.35));
+    pwrLed.position.set(sw * 0.42, yBase + bezelH * 0.075, zFace + 0.006);
+    grp.add(pwrLed);
+    for (let k = 0; k < 3; k++) {
+      const kn = new B(new ke(0.011, 0.011, 0.016, 16), U.plastic(0x3a3833, 0.45));
+      kn.rotation.x = Math.PI / 2;
+      kn.position.set(sw * 0.18 + k * 0.045, yBase + bezelH * 0.075, zFace + 0.006);
+      grp.add(kn);
+    }
+
+    return { group: grp, mesh: scrMesh, ...surf };
+  }
+
+  // Modern Slim-Bezel LCD / OLED Studio Monitor
+  const standMat = U.metal(0x8e96a2, 0.42);
+  const bezelMat = U.darkAnodized(opts.color ?? 0x171b22);
+  const standH = opts.standH ?? sh * 0.32;
+
+  if (opts.stand !== false) {
+    const base = new B(chamferBox(sw * 0.38, 0.016, 0.24, 0.004, 2), standMat);
+    base.position.y = 0.008;
+    base.castShadow = true;
+    const pillar = new B(
+      chamferBox(0.065, standH + sh * 0.45, 0.032, 0.005, 2),
+      standMat,
+    );
+    pillar.position.set(0, (standH + sh * 0.45) * 0.5, -0.055);
+    pillar.castShadow = true;
+    grp.add(base, pillar);
+  }
+
+  const panelY = (opts.stand !== false ? standH : 0) + sh * 0.52;
+  const frame = new B(chamferBox(sw + 0.036, sh + 0.046, 0.032, 0.006, 2), bezelMat);
+  frame.position.set(0, panelY, 0);
+  frame.castShadow = true;
+  grp.add(frame);
+
+  const chin = new B(new te(sw + 0.034, 0.022, 0.034), U.darkAnodized(0x252d38));
+  chin.position.set(0, panelY - sh * 0.5 - 0.011, 0.001);
+  grp.add(chin);
+
+  const scrMesh = new B(new mt(sw, sh), U.screen(surf.tex));
+  scrMesh.position.set(0, panelY + 0.004, 0.0175);
+  grp.add(scrMesh);
+
+  const pwrLed = new B(new Mt(0.0045, 12, 8), U.glow(0x38bdf8, 1.3));
+  pwrLed.position.set(sw * 0.46, panelY - sh * 0.5 - 0.011, 0.019);
+  grp.add(pwrLed);
+
+  return { group: grp, mesh: scrMesh, ...surf };
 }

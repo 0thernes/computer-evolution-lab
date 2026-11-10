@@ -418,6 +418,19 @@
 
     if (id === "hub") {
       activeMachine = null;
+      keyLight.position.set(8.5, 13.5, 9.5);
+      Object.assign(keyLight.shadow.camera, {
+        left: -12.5,
+        right: 12.5,
+        top: 12.5,
+        bottom: -12.5,
+        near: 1,
+        far: 48,
+      });
+      keyLight.shadow.radius = 3.0;
+      keyLight.shadow.bias = -0.00035;
+      keyLight.shadow.normalBias = 0.022;
+      keyLight.shadow.camera.updateProjectionMatrix();
       layoutHubGallery();
       cutawayOn = false;
       explodeTarget = 0;
@@ -443,6 +456,19 @@
     if (!m) return;
 
     activeMachine = m;
+    keyLight.position.set(4.2, 6.8, 4.8);
+    Object.assign(keyLight.shadow.camera, {
+      left: -2.9,
+      right: 2.9,
+      top: 2.9,
+      bottom: -2.9,
+      near: 0.5,
+      far: 24,
+    });
+    keyLight.shadow.radius = 2.2;
+    keyLight.shadow.bias = -0.00018;
+    keyLight.shadow.normalBias = 0.009;
+    keyLight.shadow.camera.updateProjectionMatrix();
     Ut.setMachine(id);
     syncAudioUi();
     for (const item of machines) item.holder.visible = item === m;

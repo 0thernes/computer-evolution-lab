@@ -346,25 +346,30 @@ write · move · next`,
         let v = U.wood(),
           R = U.metal(13214282, 0.3),
           _ = U.plastic(1909031, 0.5),
-          P = U.plastic(15655876, 0.6);
+          P = U.plastic(15655876, 0.6),
+          br = U.brass(0xd4a84f, 0.28);
         (w.box(3.2, 0.08, 1.3, v, [0, 0.04, 0], {
           name: "Base (conceptual model)",
           info: "A display base for an abstract machine. Turing's 1936 machine has no physical form: it is a mathematical definition. Everything here is a visual metaphor for its parts.",
         }),
+          w.box(3.23, 0.018, 1.33, br, [0, 0.082, 0], {}),
           Nt(
             w,
             "CONCEPTUAL MODEL · not a historical device · A. M. Turing, Proc. London Math. Soc. 1936",
             2.2,
             0.07,
-            [0, 0.081, 0.6],
+            [0, 0.092, 0.6],
             { bg: "#2a1a0e", color: "#f4d58a", rot: [-Math.PI / 2, 0, 0] },
           ),
           w.box(3, 0.03, 0.06, R, [0, 0.12, 0.2], {}),
-          w.box(3, 0.03, 0.06, R, [0, 0.12, -0.02], {}),
-          (a = Bt(2048, 128)));
+          w.box(3, 0.03, 0.06, R, [0, 0.12, -0.02], {}));
+        for (let rx of [-1.25, -0.6, 0.6, 1.25]) {
+          w.box(0.035, 0.04, 0.28, br, [rx, 0.1, 0.09], {});
+        }
+        a = Bt(2048, 128);
         let V = new B(
           new mt(2.7, (2.7 * 128) / 2048),
-          new et({ map: a.tex, roughness: 0.8 }),
+          new et({ map: a.tex, roughness: 0.72 }),
         );
         ((V.rotation.x = -Math.PI / 2),
           V.position.set(0, 0.14, 0.09),
@@ -382,17 +387,38 @@ write · move · next`,
               info: "Stands for the endless tape. A real TM never runs out of tape: whenever the head moves past the end, a fresh blank square is there. This is what makes it more powerful than any machine with a fixed memory.",
               explode: [X * 0.4, 0, 0],
             }),
-            G = new B(new ke(0.16, 0.16, 0.2, 32), P);
-          ((G.rotation.x = Math.PI / 2), W.add(G));
-          let le = new B(new ke(0.05, 0.05, 0.22, 16), R);
-          ((le.rotation.x = Math.PI / 2), W.add(le), (W.userData.spin = G));
-          let pe = Nt(
+            spinGrp = new ft(),
+            G = new B(new ke(0.155, 0.155, 0.18, 36), P);
+          G.rotation.x = Math.PI / 2;
+          spinGrp.add(G);
+          for (let fz of [-0.096, 0.096]) {
+            let rim = new B(new Pi(0.185, 0.01, 10, 40), br);
+            rim.position.z = fz;
+            spinGrp.add(rim);
+            for (let sp = 0; sp < 6; sp++) {
+              let spoke = new B(new te(0.35, 0.016, 0.006), br);
+              spoke.rotation.z = (sp * Math.PI) / 6;
+              spoke.position.z = fz;
+              spinGrp.add(spoke);
+            }
+          }
+          W.add(spinGrp);
+          let le = new B(new ke(0.046, 0.046, 0.23, 24), R);
+          ((le.rotation.x = Math.PI / 2), W.add(le), (W.userData.spin = spinGrp));
+          let capNut = new B(new ke(0.032, 0.032, 0.025, 20), U.knurl(0xd4a84f, 0.3));
+          capNut.rotation.x = Math.PI / 2;
+          capNut.position.z = 0.122;
+          W.add(capNut);
+          let stanchion = new B(new te(0.05, 0.16, 0.05), br);
+          stanchion.position.set(0, -0.07, -0.11);
+          W.add(stanchion);
+          Nt(
             w,
             "∞",
             0.12,
             0.12,
-            [0, 0, 0.111],
-            { bg: null, color: "#3a2a10", font: "bold 96px serif" },
+            [0, 0, 0.14],
+            { bg: null, color: "#f4d58a", font: "bold 96px serif" },
             W,
           );
         }
@@ -403,11 +429,28 @@ write · move · next`,
             `reads “${t.read()}”${t.last ? ` · last: wrote ${t.last.w}, moved ${t.last.mv}` : ""}`,
           explode: [0, 0.45, 0],
         });
-        let k = new B(new te(0.16, 0.26, 0.36), R);
-        (k.position.set(0, 0.18, -0.05), d.add(k));
-        let L = new B(new pn(0.035, 0.08, 20), _);
+        let k = new B(chamferBox(0.2, 0.22, 0.34, 0.012, 2), R);
+        (k.position.set(0, 0.19, -0.05), (k.castShadow = !0), d.add(k));
+        let topCap = new B(chamferBox(0.22, 0.022, 0.36, 0.005, 1), br);
+        (topCap.position.set(0, 0.31, -0.05), d.add(topCap));
+        for (let sx of [-0.055, 0.055]) {
+          let coil = new B(new ke(0.036, 0.036, 0.09, 24), U.copper());
+          coil.position.set(sx, 0.16, 0.04);
+          let flangeT = new B(new ke(0.044, 0.044, 0.008, 24), br);
+          flangeT.position.set(sx, 0.205, 0.04);
+          let flangeB = new B(new ke(0.044, 0.044, 0.008, 24), br);
+          flangeB.position.set(sx, 0.115, 0.04);
+          d.add(coil, flangeT, flangeB);
+        }
+        let lensRing = new B(new Pi(0.052, 0.007, 10, 28), br);
+        lensRing.rotation.x = Math.PI / 2;
+        lensRing.position.set(0, 0.072, 0);
+        let magLens = new B(new ke(0.048, 0.048, 0.01, 28), U.glass(0xe6f5ff, 0.22));
+        magLens.position.set(0, 0.072, 0);
+        d.add(lensRing, magLens);
+        let L = new B(new pn(0.032, 0.065, 24), _);
         ((L.rotation.x = Math.PI),
-          L.position.set(0, 0.045, 0),
+          L.position.set(0, 0.042, 0),
           d.add(L),
           (h = new B(new te(0.1, 0.012, 0.1), U.glow(16757575, 0.2))),
           h.position.set(0, 0.012, 0),
@@ -419,14 +462,26 @@ write · move · next`,
           info: "The “brain” of the machine has only finitely many states. Everything unbounded lives on the tape. Each step it combines (current state, scanned symbol), looks up the one matching rule, and performs it. This finiteness is the heart of Turing's analysis.",
           explode: [0, 0, -0.3],
         });
-        (w.box(1, 0.5, 0.42, U.glass(13625599, 0.22), [0, 0.33, -0.34], {
+        let vitrine = w.group([0, 0.33, -0.34], {
           name: "Control housing (glass)",
           info: "A transparent cover: use Cutaway or the layer stack to look inside the finite control.",
           shell: !0,
           explode: [0, 0.5, -0.2],
-        }),
-          (l = Bt(512, 192)));
-        let H = new B(new te(0.44, 0.17, 0.04), _);
+        });
+        vitrine.add(new B(new te(1, 0.5, 0.42), U.glass(13625599, 0.2)));
+        for (let vx of [-0.5, 0.5])
+          for (let vz of [-0.21, 0.21]) {
+            let post = new B(new te(0.018, 0.51, 0.018), br);
+            post.position.set(vx, 0, vz);
+            vitrine.add(post);
+          }
+        for (let vz of [-0.21, 0.21]) {
+          let bar = new B(new te(1.02, 0.018, 0.018), br);
+          bar.position.set(0, 0.25, vz);
+          vitrine.add(bar);
+        }
+        l = Bt(1024, 384);
+        let H = new B(chamferBox(0.45, 0.18, 0.04, 0.006, 1), _);
         (H.position.set(-0.24, 0.2, 0), F.add(H));
         let j = new B(new mt(0.42, 0.155), U.screen(l.tex));
         (j.position.set(-0.24, 0.2, 0.022),
@@ -437,6 +492,19 @@ write · move · next`,
             live: () =>
               `state ${t.state}${t.halted ? " (halted: " + t.reason + ")" : ""}`,
           }),
+          (g._meter = buildAnalogMeter(
+            w,
+            [-0.02, 0.37, 0.01],
+            {
+              r: 0.062,
+              chrome: true,
+              unit: "STEP",
+              name: "Step impulse galvanometer",
+              info: "Moving-coil indicator deflecting with live state-transition pulse rate.",
+              live: () => `${t.steps} steps executed`,
+            },
+            F,
+          )),
           (x = []));
         let K = new ft();
         (K.position.set(0.24, 0.2, 0), F.add(K));
@@ -471,7 +539,7 @@ write · move · next`,
             0.012,
             7031322,
           ),
-          (c = Bt(1024, 640)));
+          (c = Bt(2048, 1280)));
         let ue = w.group([0, 0.08, -0.6], {
             name: "Transition table (the program)",
             info: "The machine's entire program: a finite table of quintuples (state, read) → (write, move, next state). Turing wrote it as columns of m-configuration, symbol, operations, final m-configuration. Edit it in the panel: as text or in the grid.",
@@ -479,12 +547,14 @@ write · move · next`,
               `${t.p.rules.size} rules · ${t.p.states.length} states · ${t.p.symbols.length} symbols`,
             explode: [0, 0.2, -0.5],
           }),
-          Me = new B(new te(1.5, 0.95, 0.04), v);
-        (Me.position.set(0, 0.56, 0), ue.add(Me));
+          Me = new B(chamferBox(1.52, 0.97, 0.042, 0.008, 2), v);
+        (Me.position.set(0, 0.56, 0), (Me.castShadow = !0), ue.add(Me));
+        let trimFrame = new B(new te(1.46, 0.91, 0.044), br);
+        (trimFrame.position.set(0, 0.56, 0), ue.add(trimFrame));
         let ee = new B(new mt(1.42, 0.88), U.screen(c.tex));
-        (ee.position.set(0, 0.56, 0.022), ue.add(ee));
+        (ee.position.set(0, 0.56, 0.024), ue.add(ee));
         for (let X of [-1, 1]) {
-          let W = new B(new te(0.05, 0.1, 0.2), R);
+          let W = new B(chamferBox(0.055, 0.12, 0.22, 0.006, 1), br);
           (W.position.set(X * 0.65, 0.05, 0), ue.add(W));
         }
         ((g._reels = w.parts.filter((X) => X.userData.spin)), T(!0));
@@ -617,7 +687,11 @@ write · move · next`,
         let v = t.head,
           R = 1 - Math.exp(-w * (s > 30 ? 40 : 9));
         ((f += (v - f) * R), Math.abs(v - f) > 30 && (f = v));
-        for (let _ of g._reels || []) _.userData.spin.rotation.y = f * 0.35;
+        for (let _ of g._reels || []) _.userData.spin.rotation.z = -f * 0.35;
+        g._meter &&
+          g._meter.userData.setVal(
+            t.halted ? 0.05 : Math.min(1, 0.12 + p * 0.72 + (n ? 0.16 : 0)),
+          );
         T(!1);
       },
     };
@@ -738,7 +812,9 @@ write · move · next`,
       v.strokeRect(R / 2 - P / 2 - 2, 4, P + 4, _ - 8),
       (a.tex.needsUpdate = !0));
     let z = l.ctx;
-    ((z.fillStyle = "#081018"),
+    (z.save(),
+      z.scale(2, 2),
+      (z.fillStyle = "#081018"),
       z.fillRect(0, 0, 512, 192),
       (z.fillStyle = "#7fd1ff"),
       (z.font = "24px ui-monospace,monospace"),
@@ -750,6 +826,7 @@ write · move · next`,
       (z.font = "22px ui-monospace,monospace"),
       (z.fillStyle = "#9fb3c8"),
       z.fillText(`step ${t.steps}   reads “${t.read()}”`, 16, 176),
+      z.restore(),
       (l.tex.needsUpdate = !0),
       x.forEach((H) => (H.material.emissiveIntensity = 0.05)));
     let F = t.rule();
@@ -825,8 +902,13 @@ D.N. = ` +
       R = 1024,
       _ = 640,
       P = t.p;
-    ((v.fillStyle = "#f3ead2"),
+    (v.save(),
+      v.scale(2, 2),
+      (v.fillStyle = "#f3ead2"),
       v.fillRect(0, 0, R, _),
+      (v.strokeStyle = "#b59b6d"),
+      (v.lineWidth = 3),
+      v.strokeRect(10, 10, R - 20, _ - 20),
       (v.fillStyle = "#3a2a10"),
       (v.font = "bold 30px Georgia,serif"),
       (v.textAlign = "left"),
@@ -850,6 +932,7 @@ D.N. = ` +
       }),
       V.length > 16 &&
         ((v.fillStyle = "#6a5a3a"), v.fillText(`… ${V.length - 16} more`, 28, _ - 12)),
+      v.restore(),
       (c.tex.needsUpdate = !0));
   }
   return (
@@ -1035,17 +1118,35 @@ display`,
             S.rotation.set(0, 0, 0),
             S.updateMatrix(),
             d.setMatrixAt(he, S.matrix));
-        (L.add(d, {
+        L.add(d, {
           name: "Lever “underworld” (clock distribution)",
           info: "Below the computing layers, rows of levers carry the four movements of every cycle to all parts of the machine. Rojas calls this the Z1 “underworld”: only visible from below. Imperfect synchronisation here is a main reason the replica rarely ran reliably.",
           explode: [0, -0.25, 0],
-        }),
-          L.box(3, 0.9, 1.3, U.glass(14675967, 0.14), [0, 0.98, 0], {
-            name: "Display case (acrylic)",
-            info: "A museum-style cover. Use Cutaway or the layers to look at the plates.",
-            shell: !0,
-            explode: [0, 0.9, 0],
-          }));
+        });
+        let z1Case = L.group([0, 0.98, 0], {
+          name: "Display case (acrylic)",
+          info: "A museum-style cover. Use Cutaway or the layers to look at the plates.",
+          shell: !0,
+          explode: [0, 0.9, 0],
+        });
+        z1Case.add(new B(new te(3, 0.9, 1.3), U.glass(14675967, 0.14)));
+        let mullMat = U.darkAnodized(0x23272e);
+        for (let mx of [-1.5, 1.5])
+          for (let mz of [-0.65, 0.65]) {
+            let post = new B(new te(0.022, 0.91, 0.022), mullMat);
+            post.position.set(mx, 0, mz);
+            z1Case.add(post);
+          }
+        for (let mz of [-0.65, 0.65]) {
+          let topRail = new B(new te(3.02, 0.022, 0.022), mullMat);
+          topRail.position.set(0, 0.45, mz);
+          z1Case.add(topRail);
+        }
+        for (let mx of [-1.5, 1.5]) {
+          let sideRail = new B(new te(0.022, 0.022, 1.32), mullMat);
+          sideRail.position.set(mx, 0.45, 0);
+          z1Case.add(sideRail);
+        }
         let K = L.group([-0.75, 0.53, -0.05], {
           name: "Mechanical memory (3 banks × 8 layers = 64 words)",
           info: "Zuse's patented sliding-pin memory: each layer stores eight 8-bit words, each bank has 8 layers. Bank 1 holds the sign and 7-bit exponent, banks 2–3 the 16 stored mantissa bits: 24 bits per word on the reconstruction (the 1938 original had 16 words). A pin's position is the bit; the pins on the front show the live contents.",
@@ -1070,7 +1171,7 @@ display`,
           h.position.set(0, 0, 0.215),
           K.add(h),
           (y._memU = K),
-          (o = Bt(256, 1024)));
+          (o = Bt(512, 2048)));
         let ue = L.group([-1.3, 0.53, 0.38], {
             name: "Punched-film tape reader",
             info: "Programs were punched into discarded 35 mm cinema film, one 8-hole row per instruction (2-bit opcode + 6-bit address for loads and stores). The reader feeds one row per instruction. There are no jumps, so the program is one straight sequence (a loop needs the film glued into a ring).",
@@ -1078,16 +1179,31 @@ display`,
               `row ${e.pc} of ${e.prog.length}${e.cur ? " · " + e.cur.src : ""}`,
             explode: [-0.3, 0, 0.3],
           }),
-          Me = new B(new te(0.22, 0.18, 0.16), F);
-        ((Me.position.y = 0.09), ue.add(Me));
+          Me = new B(chamferBox(0.22, 0.18, 0.16, 0.008, 2), F);
+        ((Me.position.y = 0.09), (Me.castShadow = !0), ue.add(Me));
+        let gatePlate = new B(new te(0.11, 0.08, 0.018), U.brass());
+        gatePlate.position.set(0, 0.3, 0.072);
+        ue.add(gatePlate);
+        for (let pinI = 0; pinI < 8; pinI++) {
+          let feeler = new B(new ke(0.0022, 0.0022, 0.028, 8), j);
+          feeler.rotation.x = Math.PI / 2;
+          feeler.position.set(-0.0245 + pinI * 0.007, 0.3, 0.094);
+          ue.add(feeler);
+        }
         let ee = new B(
           new mt(0.07, 0.56),
           new et({ map: o.tex, transparent: !0, roughness: 0.4, side: fi }),
         );
         (ee.position.set(0, 0.3, 0.085), ue.add(ee));
         for (let he of [0.04, 0.58]) {
-          let _e = new B(new ke(0.06, 0.06, 0.03, 24), U.metal(7829367, 0.4));
+          let _e = new B(new ke(0.06, 0.06, 0.03, 28), U.metal(7829367, 0.35));
           ((_e.rotation.x = Math.PI / 2), _e.position.set(0, he, 0.085), ue.add(_e));
+          for (let rz of [-0.017, 0.017]) {
+            let sprRing = new B(new ke(0.066, 0.066, 0.004, 24), U.brass());
+            sprRing.rotation.x = Math.PI / 2;
+            sprRing.position.set(0, he, 0.085 + rz);
+            ue.add(sprRing);
+          }
         }
         L.part(ee, {
           name: "35 mm program film",
@@ -1148,21 +1264,39 @@ display`,
             info: "The only electrical part: a small motor (Wikipedia: from a vacuum cleaner) turns the cycling units; a hand crank allows single cycles for debugging.",
             explode: [0.35, 0, 0.2],
           }),
-          pe = new B(new ke(0.07, 0.07, 0.18, 24), U.plastic(2964266, 0.5));
+          motorMat = U.darkAnodized(0x282d35),
+          pe = new B(new ke(0.072, 0.072, 0.19, 28), motorMat);
         ((pe.rotation.z = Math.PI / 2),
-          (pe.position.y = 0.09),
-          le.add(pe),
-          (p = new ft()),
-          p.position.set(0.12, 0.09, 0),
-          le.add(p));
+          (pe.position.y = 0.095),
+          (pe.castShadow = !0),
+          le.add(pe));
+        for (let fin = 0; fin < 8; fin++) {
+          let rib = new B(new te(0.15, 0.156, 0.005), motorMat);
+          rib.rotation.x = (fin * Math.PI) / 8;
+          rib.position.y = 0.095;
+          le.add(rib);
+        }
+        let jBox = new B(chamferBox(0.06, 0.04, 0.05, 0.004, 1), F);
+        jBox.position.set(-0.02, 0.175, 0);
+        let cradle = new B(chamferBox(0.18, 0.024, 0.14, 0.004, 1), F);
+        cradle.position.set(0, 0.012, 0);
+        let beltCoupler = new B(new ke(0.028, 0.028, 0.09, 20), U.brass());
+        beltCoupler.rotation.z = Math.PI / 2;
+        beltCoupler.position.set(-0.12, 0.095, 0);
+        le.add(jBox, cradle, beltCoupler);
+        ((p = new ft()), p.position.set(0.12, 0.095, 0), le.add(p));
+        let flywheel = new B(new ke(0.095, 0.095, 0.018, 32), U.brass());
+        flywheel.rotation.z = Math.PI / 2;
+        flywheel.position.x = -0.012;
+        p.add(flywheel);
         let Ee = new B(new te(0.02, 0.14, 0.02), j);
         ((Ee.position.y = 0.07), p.add(Ee));
-        let be = new B(new ke(0.015, 0.015, 0.06, 10), H);
+        let be = new B(new ke(0.016, 0.016, 0.065, 14), H);
         ((be.rotation.x = Math.PI / 2),
-          be.position.set(0, 0.14, 0.03),
+          be.position.set(0, 0.14, 0.035),
           p.add(be),
-          (l = Bt(512, 256)),
-          (a = Bt(512, 200)));
+          (l = Bt(1024, 512)),
+          (a = Bt(1024, 400)));
         let re = L.group([0.8, 0.53, 0.5], {
             name: "Decimal input keyboard",
             info: "Lu stops the machine: the operator sets four decimal digits, the decimal exponent with a lever, and the sign, then restarts it. The Z1 converts by repeated ×10 in its own floating-point unit (Rojas, Fig. 18).",
@@ -1595,7 +1729,9 @@ R2 = ${E(e.R2).padEnd(12)} ${M(e.R2)}`;
       z = 256,
       F = 1024,
       H = 48;
-    (L.clearRect(0, 0, z, F),
+    (L.save(),
+      L.scale(2, 2),
+      L.clearRect(0, 0, z, F),
       (L.fillStyle = "rgba(120,96,60,.85)"),
       L.fillRect(0, 0, z, F));
     for (let K = 8; K < F; K += 32)
@@ -1616,11 +1752,13 @@ R2 = ${E(e.R2).padEnd(12)} ${M(e.R2)}`;
           L.fill());
       }
     }
-    o.tex.needsUpdate = !0;
+    (L.restore(), (o.tex.needsUpdate = !0));
   }
   function k(L) {
     let z = a.ctx;
-    ((z.fillStyle = "#14110c"),
+    (z.save(),
+      z.scale(2, 2),
+      (z.fillStyle = "#14110c"),
       z.fillRect(0, 0, 512, 200),
       (z.fillStyle = "#9a8a60"),
       (z.font = "22px ui-monospace,monospace"),
@@ -1641,8 +1779,11 @@ R2 = ${E(e.R2).padEnd(12)} ${M(e.R2)}`;
       (z.font = "20px ui-monospace,monospace"),
       (z.fillStyle = "#9a8a60"),
       z.fillText(F ? F.text : "waiting for Ld", 16, 176),
+      z.restore(),
       (a.tex.needsUpdate = !0),
       (z = l.ctx),
+      z.save(),
+      z.scale(2, 2),
       (z.fillStyle = "#1b1b1b"),
       z.fillRect(0, 0, 512, 256));
     let H = e.lastIn ? e.lastIn.digits : "0000";
@@ -1667,6 +1808,7 @@ R2 = ${E(e.R2).padEnd(12)} ${M(e.R2)}`;
       (z.font = "20px ui-monospace,monospace"),
       (z.fillStyle = "#9a8a60"),
       z.fillText("sign " + (e.lastIn && e.lastIn.sign ? "−" : "+"), 320, 170),
+      z.restore(),
       (l.tex.needsUpdate = !0));
   }
   return (
@@ -2222,17 +2364,72 @@ supply`,
             info: 'Displays amplifier outputs vs time in "repetitive operation": the machine solves the problem over and over so a stable picture appears. Green P1 phosphor. The trace here is drawn from the live solution.',
             explode: [0, 0.4, 0.2],
           }),
-          j = new B(new te(0.62, 0.48, 0.6), U.plastic(4016708, 0.6));
-        ((j.position.y = 0.24),
-          H.add(j),
-          (a = zi(M, 0.4, 0.34, [0, 0.27, 0.302], [400, 340], {}, H)));
-        for (let X = 0; X < 3; X++) Om(M, [0.25, 0.12 + X * 0.13, 0.3], { r: 0.022 }, H);
+          scopeBodyMat = U.metal(0x3f4c56, 0.42),
+          scopeFaceMat = U.plastic(0xc8c5ba, 0.45),
+          j = new B(chamferBox(0.64, 0.48, 0.6, 0.02, 2), scopeBodyMat);
+        ((j.position.y = 0.24), (j.castShadow = !0), H.add(j));
+        let facePlate = new B(chamferBox(0.6, 0.44, 0.016, 0.012, 1), scopeFaceMat);
+        facePlate.position.set(0, 0.24, 0.298);
+        let crtHood = new B(
+          chamferBox(0.41, 0.36, 0.042, 0.016, 2),
+          U.darkAnodized(0x1b2026),
+        );
+        crtHood.position.set(-0.07, 0.26, 0.312);
+        let handleBar = new B(new ke(0.01, 0.01, 0.36, 16), U.steel());
+        handleBar.rotation.z = Math.PI / 2;
+        handleBar.position.set(0, 0.515, 0.12);
+        H.add(facePlate, crtHood, handleBar);
+        for (let hx of [-0.18, 0.18]) {
+          let hPost = new B(new ke(0.009, 0.009, 0.04, 12), U.steel());
+          hPost.position.set(hx, 0.495, 0.12);
+          H.add(hPost);
+        }
+        a = zi(M, 0.37, 0.315, [-0.07, 0.26, 0.334], [800, 680], {}, H);
+        let scopeGlass = new B(new mt(0.375, 0.32), U.glass(0xd8f5e3, 0.16));
+        scopeGlass.position.set(-0.07, 0.26, 0.337);
+        H.add(scopeGlass);
+        for (let X = 0; X < 3; X++) {
+          Om(M, [0.21, 0.13 + X * 0.115, 0.31], { r: 0.024 }, H);
+          let bnc = new B(new ke(0.011, 0.011, 0.026, 16), U.steel());
+          bnc.rotation.x = Math.PI / 2;
+          bnc.position.set(0.145, 0.075, 0.312);
+          if (X < 2) {
+            bnc.position.x = 0.16 + X * 0.06;
+            H.add(bnc);
+          }
+        }
+        let meterPod = M.group([0.52, 1.62, 0.16], {
+          name: "Reference & channel voltmeters (±100 V)",
+          info: "Moving-coil center-zero galvanometers monitoring the first three patched operational amplifier channels in real time.",
+          explode: [0, 0.4, 0.2],
+        });
+        let podBox = new B(chamferBox(0.76, 0.28, 0.22, 0.014, 2), scopeBodyMat);
+        podBox.position.y = 0.14;
+        podBox.castShadow = !0;
+        meterPod.add(podBox);
+        f._meters = [];
+        for (let mi = 0; mi < 3; mi++) {
+          f._meters.push(
+            buildAnalogMeter(
+              M,
+              [-0.24 + mi * 0.24, 0.145, 0.092],
+              {
+                r: 0.082,
+                unit: "CH " + (mi + 1),
+                initial: 0.5,
+                name: "Channel " + (mi + 1) + " voltmeter",
+                info: "Moving-coil panel meter tracking live ±100 V amplifier output.",
+              },
+              meterPod,
+            ),
+          );
+        }
         let K = M.group([1.75, 0, 0.1], {
             name: "X-Y plotter (pen recorder)",
             info: "Servo-driven pen draws one amplifier output against another — e.g. displacement vs velocity (a phase portrait) or a shell's x vs y trajectory, the output that filled WWII firing tables. Paper is redrawn live.",
             explode: [0.5, 0, 0],
           }),
-          ue = new te(0.04, 0.8, 0.04);
+          ue = new te(0.045, 0.8, 0.045);
         for (let [X, W] of [
           [-0.35, -0.3],
           [0.35, -0.3],
@@ -2240,41 +2437,55 @@ supply`,
           [0.35, 0.3],
         ]) {
           let G = new B(ue, U.wood());
-          (G.position.set(X, 0.4, W), K.add(G));
+          (G.position.set(X, 0.4, W), (G.castShadow = !0), K.add(G));
         }
-        let Me = new B(new te(0.8, 0.04, 0.7), U.wood());
-        ((Me.position.y = 0.82), K.add(Me));
-        let ee = new B(new te(0.7, 0.06, 0.6), U.plastic(4871520));
-        ((ee.position.y = 0.87),
-          K.add(ee),
-          (l = zi(
-            M,
-            0.6,
-            0.5,
-            [0, 0.902, 0],
-            [480, 400],
-            { rot: [-Math.PI / 2, 0, 0] },
-            K,
-          )),
-          (h = new B(new te(0.66, 0.025, 0.03), U.alu())),
-          (h.position.y = 0.93),
+        let Me = new B(chamferBox(0.82, 0.042, 0.72, 0.008, 2), U.wood());
+        ((Me.position.y = 0.82), (Me.castShadow = !0), K.add(Me));
+        let ee = new B(chamferBox(0.72, 0.06, 0.62, 0.008, 2), U.metal(0x3a434a, 0.45));
+        ((ee.position.y = 0.87), (ee.castShadow = !0), K.add(ee));
+        for (let rx of [-0.335, 0.335]) {
+          let zRail = new B(new ke(0.008, 0.008, 0.58, 16), U.steel());
+          zRail.rotation.x = Math.PI / 2;
+          zRail.position.set(rx, 0.915, 0);
+          K.add(zRail);
+        }
+        let servoY = new B(new ke(0.032, 0.032, 0.09, 20), U.darkAnodized(0x22262c));
+        servoY.position.set(-0.335, 0.93, -0.28);
+        K.add(servoY);
+        ((l = zi(
+          M,
+          0.6,
+          0.5,
+          [0, 0.902, 0],
+          [960, 800],
+          { rot: [-Math.PI / 2, 0, 0] },
+          K,
+        )),
+          (h = new B(chamferBox(0.68, 0.024, 0.032, 0.004, 1), U.alu())),
+          (h.position.y = 0.932),
+          (h.castShadow = !0),
           K.add(h),
-          (c = new B(new pn(0.015, 0.05, 10), U.plastic(12597547))),
-          (c.rotation.x = Math.PI),
-          (c.position.y = 0.93),
-          K.add(c),
-          Dt(
-            M,
-            [
-              [1.2, 0.5, 0.2],
-              [1.4, 0.3, 0.3],
-              [1.65, 0.85, 0.2],
-            ],
-            0.012,
-            2236962,
-          ),
+          (c = new ft()),
+          (c.position.y = 0.932),
+          K.add(c));
+        let penCarr = new B(chamferBox(0.046, 0.038, 0.048, 0.005, 1), U.brass());
+        penCarr.position.y = 0.008;
+        let penNib = new B(new pn(0.012, 0.048, 16), U.plastic(12597547, 0.35));
+        penNib.rotation.x = Math.PI;
+        penNib.position.y = -0.012;
+        c.add(penCarr, penNib);
+        (Dt(
+          M,
+          [
+            [1.2, 0.5, 0.2],
+            [1.4, 0.3, 0.3],
+            [1.65, 0.85, 0.2],
+          ],
+          0.012,
+          2236962,
+        ),
           (l.ctx.fillStyle = "#f4efe0"),
-          l.ctx.fillRect(0, 0, 480, 400));
+          l.ctx.fillRect(0, 0, 960, 800));
       },
       ui(M) {
         ((d.err = q("div", { class: "err" })),
@@ -2368,6 +2579,21 @@ supply`,
           (w.neon.material.emissive.set(i.overload.has(v?.name) ? 16719904 : 16751152),
             (w.neon.material.emissiveIntensity = v ? 0.1 + 2.5 * P : 0.02));
         }),
+          f._meters &&
+            f._meters.forEach((mtr, mi) => {
+              let blk = r[mi]?.block;
+              if (!blk) {
+                mtr.userData.setVal(0.5);
+                return;
+              }
+              let val = i.value(blk.name) || 0,
+                rng = s[blk.name],
+                span = Math.max(
+                  1e-6,
+                  rng ? Math.max(Math.abs(rng.lo), Math.abs(rng.hi)) : 1,
+                );
+              mtr.userData.setVal(0.5 + 0.46 * Math.max(-1, Math.min(1, val / span)));
+            }),
           T.params.forEach((w, v) => {
             o[v] &&
               (o[v].userData.pivot.rotation.z =
@@ -2426,13 +2652,18 @@ supply`,
     if (!l) return;
     let M = l.ctx;
     ((M.fillStyle = "#f4efe0"),
-      M.fillRect(0, 0, 480, 400),
-      (M.strokeStyle = "#c9d8e8"),
+      M.fillRect(0, 0, 960, 800),
+      (M.strokeStyle = "#dce6f0"),
       (M.lineWidth = 1));
-    for (let T = 0; T <= 480; T += 24)
-      (M.beginPath(), M.moveTo(T, 0), M.lineTo(T, 400), M.stroke());
-    for (let T = 0; T <= 400; T += 24)
-      (M.beginPath(), M.moveTo(0, T), M.lineTo(480, T), M.stroke());
+    for (let T = 0; T <= 960; T += 16)
+      (M.beginPath(), M.moveTo(T, 0), M.lineTo(T, 800), M.stroke());
+    for (let T = 0; T <= 800; T += 16)
+      (M.beginPath(), M.moveTo(0, T), M.lineTo(960, T), M.stroke());
+    ((M.strokeStyle = "#b4c8de"), (M.lineWidth = 2));
+    for (let T = 0; T <= 960; T += 80)
+      (M.beginPath(), M.moveTo(T, 0), M.lineTo(T, 800), M.stroke());
+    for (let T = 0; T <= 800; T += 80)
+      (M.beginPath(), M.moveTo(0, T), M.lineTo(960, T), M.stroke());
     ((x = null), (l.tex.needsUpdate = !0));
   }
   let m = (M, T) => {
@@ -2445,27 +2676,30 @@ supply`,
     let M = i.patch;
     if (!M.phase) return;
     let [T, A] = M.phase,
-      w = 20 + m(T, i.value(T)) * 440,
-      v = 380 - m(A, i.value(A)) * 360,
+      w = 40 + m(T, i.value(T)) * 880,
+      v = 760 - m(A, i.value(A)) * 720,
       R = l.ctx;
     ((R.strokeStyle = "#1b3fa0"),
-      (R.lineWidth = 2),
+      (R.lineWidth = 3.2),
       x && (R.beginPath(), R.moveTo(...x), R.lineTo(w, v), R.stroke()),
       (x = [w, v]),
       (l.tex.needsUpdate = !0),
-      c.position.set(-0.3 + (w / 480) * 0.6, 0.93, -0.25 + (v / 400) * 0.5),
+      c.position.set(-0.3 + (w / 960) * 0.6, 0.932, -0.25 + (v / 800) * 0.5),
       (h.position.z = c.position.z));
   }
   function b() {
     let M = a.ctx,
-      T = 400,
-      A = 340;
+      T = 800,
+      A = 680;
     ((M.fillStyle = "rgba(4,14,8,0.35)"),
       M.fillRect(0, 0, T, A),
-      (M.strokeStyle = "rgba(90,255,140,0.12)"));
+      (M.strokeStyle = "rgba(90,255,140,0.16)"),
+      (M.lineWidth = 1.5));
     for (let w = 1; w < 10; w++)
-      (M.beginPath(), M.moveTo(w * 40, 0), M.lineTo(w * 40, A), M.stroke());
-    (y(M, T, A, ["#7dff9c", "#c8ffb0", "#5fe0d0"]), (a.tex.needsUpdate = !0));
+      (M.beginPath(), M.moveTo(w * 80, 0), M.lineTo(w * 80, A), M.stroke());
+    for (let w = 1; w < 8; w++)
+      (M.beginPath(), M.moveTo(0, w * 85), M.lineTo(T, w * 85), M.stroke());
+    (y(M, T, A, ["#7dff9c", "#c8ffb0", "#5fe0d0"], 3.5), (a.tex.needsUpdate = !0));
   }
   function y(M, T, A, w, v = 2) {
     let R = i.history,
@@ -2680,7 +2914,22 @@ printer`,
                   Ee.setMatrixAt(re++, be.matrix));
             }
             (ee.add(pe, Ee),
-              (r[H] = { fil: G, act: 0 }),
+              (r[H] = {
+                fil: G,
+                act: 0,
+                meter: buildAnalogMeter(
+                  b,
+                  [0, 1.97, 0.22],
+                  {
+                    r: 0.062,
+                    unit: H === "ctl" ? "CTL mA" : H === "acc" ? "ALU mA" : "REG mA",
+                    initial: 0.32,
+                    name: K.split(" (")[0] + " anode meter",
+                    info: "Moving-coil milliammeter monitoring +250 V HT valve anode draw on this rack.",
+                  },
+                  ee,
+                ),
+              }),
               Nt(b, K.split(" (")[0].toUpperCase(), 0.8, 0.07, [j, 2.15, -0.37], {
                 bg: "#222",
                 color: "#ffd9a0",
@@ -2741,38 +2990,75 @@ minor cycles waited: ${i.waited}`,
             info: 'Monitor tubes displayed the contents of a chosen tank as a 32-row dot pattern (wide dot = 1) plus the accumulator and multiplier registers — the "front panel" of the valve era. Engineers literally read binary off a CRT.',
             explode: [-0.5, 0, 0.3],
           }),
-          w = new B(new te(0.8, 0.8, 0.6), U.plastic(4871778));
-        ((w.position.y = 0.4), A.add(w));
-        let v = new B(new te(0.6, 0.55, 0.45), U.plastic(3819090));
-        (v.position.set(0, 1.08, -0.05),
-          A.add(v),
-          (a = zi(b, 0.46, 0.4, [0, 1.1, 0.18], [384, 336], {}, A)));
+          w = new B(chamferBox(0.82, 0.78, 0.62, 0.014, 2), U.metal(0x3a4046, 0.48));
+        ((w.position.y = 0.39), (w.castShadow = !0), A.add(w));
+        let deskTop = new B(chamferBox(0.86, 0.036, 0.68, 0.008, 2), U.wood());
+        deskTop.position.set(0, 0.795, 0.02);
+        deskTop.castShadow = !0;
+        A.add(deskTop);
+        let v = new B(chamferBox(0.62, 0.56, 0.46, 0.02, 2), U.metal(0x2f353b, 0.45));
+        (v.position.set(0, 1.09, -0.05), (v.castShadow = !0), A.add(v));
+        let crtBezel = new B(
+          chamferBox(0.51, 0.45, 0.036, 0.014, 2),
+          U.darkAnodized(0x181c20),
+        );
+        crtBezel.position.set(0, 1.1, 0.175);
+        A.add(crtBezel);
+        a = zi(b, 0.46, 0.4, [0, 1.1, 0.195], [768, 672], {}, A);
+        let crtLens = new B(new mt(0.465, 0.405), U.glass(0xd8f5e0, 0.16));
+        crtLens.position.set(0, 1.1, 0.199);
+        A.add(crtLens);
         for (let H = 0; H < 5; H++) {
           let j = new B(
-            new ke(0.025, 0.025, 0.03, 12),
-            U.plastic([12597547, 2600544, 15844367, 15658734, 3049182][H]),
+            new ke(0.022, 0.022, 0.03, 16),
+            U.knurl([0xb03028, 0x26292e, 0xd8a030, 0xd4d0c8, 0x2d6b8e][H], 0.38),
           );
-          (j.position.set(-0.24 + H * 0.12, 0.81, 0.15), A.add(j));
+          (j.position.set(-0.24 + H * 0.12, 0.825, 0.16), A.add(j));
+          let sw = Ba(b, [-0.24 + H * 0.12, 0.818, 0.27], { scale: 0.85 }, A);
+          sw.rotation.x = 0.2;
         }
         let R = b.group([1.75, 0, 0.6], {
             name: "Teleprinter (Creed 7B)",
             info: "5-hole tape teleprinter used for output at ~6 characters/s; an O order prints from the store. Paper here shows the real program output.",
             explode: [0.5, 0, 0.3],
           }),
-          _ = new B(new te(0.6, 0.75, 0.5), U.plastic(3095091));
-        ((_.position.y = 0.375), R.add(_));
-        let P = new B(new te(0.55, 0.22, 0.45), U.plastic(5991259));
-        ((P.position.y = 0.86),
-          R.add(P),
-          (l = zi(
-            b,
-            0.35,
-            0.32,
-            [0, 1.13, -0.1],
-            [256, 236],
-            { rot: [-0.25, 0, 0] },
-            R,
-          )));
+          _ = new B(chamferBox(0.6, 0.75, 0.5, 0.014, 2), U.metal(0x2f3638, 0.5));
+        ((_.position.y = 0.375), (_.castShadow = !0), R.add(_));
+        let P = new B(chamferBox(0.56, 0.2, 0.42, 0.018, 2), U.metal(0x4d5654, 0.45));
+        (P.position.set(0, 0.85, -0.04), (P.castShadow = !0), R.add(P));
+        let platen = new B(new ke(0.032, 0.032, 0.42, 24), U.rubber(0x1c1d20));
+        platen.rotation.z = Math.PI / 2;
+        platen.position.set(0, 0.965, -0.05);
+        let platenKnob = new B(new ke(0.042, 0.042, 0.025, 20), U.bakelite());
+        platenKnob.rotation.z = Math.PI / 2;
+        platenKnob.position.set(0.23, 0.965, -0.05);
+        R.add(platen, platenKnob);
+        buildSculptedKeyboard(
+          b,
+          [0, 0.76, 0.18],
+          {
+            w: 0.46,
+            d: 0.17,
+            h: 0.032,
+            tilt: 0.16,
+            leds: false,
+            bodyColor: 0x3b4240,
+            keyColor: 0x1e2124,
+            modColor: 0x2c3136,
+            legendColor: "#eae4d3",
+            rows: [
+              ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"],
+              ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
+              ["A", "S", "D", "F", "G", "H", "J", "K", "L", "CR"],
+              ["FIGS", "Z", "X", "C", "V", "B", "N", "M", "LTRS"],
+              ["SPACE"],
+            ],
+            name: "Creed 7B Baudot keyboard",
+            info: "5-unit ITA2 Baudot mechanical keybank with LETTERS / FIGURES shift.",
+          },
+          R,
+        );
+        l = zi(b, 0.35, 0.32, [0, 1.13, -0.09], [512, 472], { rot: [-0.25, 0, 0] }, R);
         let V = b.group([1.75, 1, -0.2], {
             name: "Paper-tape reader",
             info: `Photo-electric/mechanical 5-hole tape reader. EDSAC's "initial orders" (a bootstrap ROM wired on uniselectors) assembled the punched program into the store as it was read — the first assembler/loader.`,
@@ -2893,7 +3179,8 @@ minor cycles waited: ${i.waited}`,
         for (let M in r) {
           let T = r[M];
           ((T.act = Math.max(0, T.act - b * 2)),
-            (T.fil.emissiveIntensity = 0.7 + T.act * 1.6 + Math.random() * 0.05));
+            (T.fil.emissiveIntensity = 0.7 + T.act * 1.6 + Math.random() * 0.05),
+            T.meter && T.meter.userData.setVal(0.32 + T.act * 0.58));
         }
         let y = new je(),
           E = i.minor + (e ? n % 1 : 0);
@@ -2950,12 +3237,14 @@ R = ${i.R}`
   }
   function g() {
     let b = a.ctx;
-    ((b.fillStyle = "#031208"),
+    (b.save(),
+      b.scale(2, 2),
+      (b.fillStyle = "#031208"),
       b.fillRect(0, 0, 384, 336),
       (b.fillStyle = "#7dff9c"),
-      (b.font = "13px monospace"),
-      b.fillText("TANK 0", 8, 14),
-      b.fillText("TANK 1", 200, 14));
+      (b.font = "bold 13px monospace"),
+      b.fillText("TANK 0 (0..31)", 8, 14),
+      b.fillText("TANK 1 (32..63)", 200, 14));
     for (let y = 0; y < 2; y++)
       for (let E = 0; E < 32; E++) {
         let M = i.mem[y * 32 + E];
@@ -2964,18 +3253,32 @@ R = ${i.R}`
             w = 8 + y * 192 + (yn - 1 - T) * 10,
             v = 22 + E * 8.5;
           ((b.fillStyle = y * 32 + E === i.pc ? "#ffe680" : "#7dff9c"),
-            b.fillRect(w, v, A ? 8 : 2, 3));
+            b.fillRect(w, v, A ? 8 : 2, 3.2));
         }
       }
-    a.tex.needsUpdate = !0;
+    (b.restore(), (a.tex.needsUpdate = !0));
   }
   function m() {
     let b = l.ctx;
-    ((b.fillStyle = "#f2ecd8"),
+    (b.save(),
+      b.scale(2, 2),
+      (b.fillStyle = "#f2ecd8"),
       b.fillRect(0, 0, 256, 236),
-      (b.fillStyle = "#222"),
+      (b.fillStyle = "#c8bea2"));
+    for (let py = 8; py < 236; py += 16) {
+      (b.beginPath(), b.arc(8, py, 2.5, 0, Math.PI * 2), b.fill());
+      (b.beginPath(), b.arc(248, py, 2.5, 0, Math.PI * 2), b.fill());
+    }
+    ((b.fillStyle = "#6b5d45"),
+      (b.font = "bold 10px monospace"),
+      b.fillText("CAMBRIDGE MATH LAB · CREED 7B", 20, 14),
+      (b.fillStyle = "#1c1e24"),
       (b.font = "bold 16px monospace"),
-      c.slice(-12).forEach((y, E) => b.fillText(y, 10, 22 + E * 18)),
+      (c.length
+        ? c.slice(-11)
+        : ["[INITIAL ORDERS LOADED]", `SCR=${i.pc} ACC=${i.acc}`]
+      ).forEach((y, E) => b.fillText(y, 20, 34 + E * 18)),
+      b.restore(),
       (l.tex.needsUpdate = !0));
   }
   function S() {
@@ -3144,8 +3447,22 @@ Teletype`,
             name: "Programmer's console (front panel)",
             info: 'Incandescent lamps show every major register live; 12 switches form the Switch Register (SR). To load a program by hand: set an address on SR → LOAD ADD; set each word → DEPOSIT (auto-increments). This is how bootloaders were "toggled in". Click the 3D switches to toggle them.',
           }),
-          T = new B(new te(1.18, 0.6, 0.03), U.plastic(3875862, 0.4));
+          T = new B(chamferBox(1.18, 0.6, 0.032, 0.006, 1), U.plastic(3875862, 0.4));
         M.add(T);
+        for (let sx of [-0.595, 0.595]) {
+          let trim = new B(new te(0.024, 0.61, 0.042), U.alu());
+          trim.position.x = sx;
+          M.add(trim);
+        }
+        Nt(
+          y,
+          "digital · PROGRAMMED DATA PROCESSOR-8",
+          0.74,
+          0.036,
+          [0.06, 0.275, 0.018],
+          { bg: "#23140b", color: "#f6dfba" },
+          M,
+        );
         let A = [
           ["PC", 0.22],
           ["MA", 0.14],
@@ -3321,15 +3638,67 @@ core cycles: ${i.cycles}  (${((i.cycles * 1.5) / 1e3).toFixed(2)} ms machine tim
             info: "10 characters/second, 7-bit ASCII (1963 standard) over a 20 mA current loop. Keyboard, printer, paper-tape punch and reader in one. The printer output here comes from TLS instructions the emulator executes.",
             explode: [0.5, 0, 0],
           }),
-          Me = new B(new te(0.5, 0.7, 0.45), U.plastic(11117719));
-        ((Me.position.y = 0.35), ue.add(Me));
-        let ee = new B(new te(0.56, 0.24, 0.5), U.plastic(13157298));
-        ((ee.position.y = 0.82), ue.add(ee));
-        let X = new B(new te(0.4, 0.04, 0.16), U.plastic(5591112));
-        (X.position.set(0, 0.95, 0.15),
-          (X.rotation.x = 0.2),
-          ue.add(X),
-          (h = zi(y, 0.34, 0.3, [0, 1.12, -0.12], [340, 300], { rot: [-0.2, 0, 0] }, ue)),
+          Me = new B(chamferBox(0.5, 0.7, 0.44, 0.014, 2), U.plastic(11117719, 0.48));
+        ((Me.position.y = 0.35), (Me.castShadow = !0), ue.add(Me));
+        let ee = new B(chamferBox(0.58, 0.22, 0.48, 0.02, 2), U.plastic(13157298, 0.44));
+        (ee.position.set(0, 0.81, -0.02), (ee.castShadow = !0), ue.add(ee));
+        let shield = new B(
+          chamferBox(0.42, 0.09, 0.22, 0.01, 1),
+          U.glass(0xd8e0e8, 0.26),
+        );
+        shield.position.set(0.02, 0.945, -0.03);
+        let platen = new B(new ke(0.03, 0.03, 0.39, 24), U.rubber(0x1e2024));
+        platen.rotation.z = Math.PI / 2;
+        platen.position.set(0.02, 0.94, -0.09);
+        let rKnob = new B(new ke(0.024, 0.026, 0.026, 18), U.knurl(0x2a2c30, 0.38));
+        rKnob.rotation.x = Math.PI / 2;
+        rKnob.position.set(0.22, 0.84, 0.23);
+        let tapeUnit = new B(
+          chamferBox(0.11, 0.16, 0.34, 0.01, 2),
+          U.plastic(0xbab4a2, 0.46),
+        );
+        tapeUnit.position.set(-0.33, 0.83, -0.01);
+        let yellowReel = new B(
+          new ke(0.085, 0.085, 0.026, 28),
+          U.plastic(0xe5bf42, 0.42),
+        );
+        yellowReel.rotation.z = Math.PI / 2;
+        yellowReel.position.set(-0.34, 0.94, -0.08);
+        ue.add(shield, platen, rKnob, tapeUnit, yellowReel);
+        buildSculptedKeyboard(
+          y,
+          [0.02, 0.895, 0.165],
+          {
+            w: 0.42,
+            d: 0.17,
+            h: 0.032,
+            tilt: 0.18,
+            leds: false,
+            bodyColor: 0xc4beb0,
+            keyColor: 0x35373b,
+            modColor: 0x26282b,
+            legendColor: "#f2eee2",
+            rows: [
+              ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", ":", "-"],
+              ["ESC", "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "LF"],
+              ["CTRL", "A", "S", "D", "F", "G", "H", "J", "K", "L", ";", "CR"],
+              ["SHIFT", "Z", "X", "C", "V", "B", "N", "M", ",", ".", "/", "RUB"],
+              ["HERE", "SPACE", "BRK"],
+            ],
+            name: "ASR-33 ASCII keyboard",
+            info: "Upper-case 7-bit ASCII mechanical keyboard driving the 20 mA serial current loop.",
+          },
+          ue,
+        );
+        ((h = zi(
+          y,
+          0.34,
+          0.3,
+          [0.02, 1.12, -0.12],
+          [680, 600],
+          { rot: [-0.2, 0, 0] },
+          ue,
+        )),
           Dt(
             y,
             [
@@ -3549,17 +3918,29 @@ core cycles: ${i.cycles}  (${((i.cycles * 1.5) / 1e3).toFixed(2)} ms machine tim
   }
   function S() {
     let y = h.ctx;
-    ((y.fillStyle = "#f4f0dc"),
+    (y.save(),
+      y.scale(2, 2),
+      (y.fillStyle = "#f5efcf"),
       y.fillRect(0, 0, 340, 300),
-      (y.fillStyle = "#1a1a1a"),
-      (y.font = "bold 18px monospace"),
-      i.tty
-        .split(
-          `
-`,
-        )
-        .slice(-13)
-        .forEach((M, T) => y.fillText(M.slice(-26), 8, 22 + T * 21)),
+      (y.fillStyle = "#cfc39b"));
+    for (let py = 10; py < 300; py += 18) {
+      (y.beginPath(), y.arc(8, py, 3, 0, Math.PI * 2), y.fill());
+      (y.beginPath(), y.arc(332, py, 3, 0, Math.PI * 2), y.fill());
+    }
+    ((y.fillStyle = "#6e6242"),
+      (y.font = "bold 11px monospace"),
+      y.fillText("TELETYPE MODEL 33 ASR · 110 BAUD", 18, 16),
+      (y.fillStyle = "#1c1a24"),
+      (y.font = "bold 17px monospace"));
+    let ttyLines = i.tty.trim()
+      ? i.tty.split("\n").slice(-12)
+      : [
+          "*200",
+          `PC=${Kn(i.pc)} AC=${Kn(i.ac)} SR=${Kn(i.sr)}`,
+          "READY (LOAD 'HELLO' FOR TLS)",
+        ];
+    (ttyLines.forEach((M, T) => y.fillText(M.slice(-26), 18, 38 + T * 21)),
+      y.restore(),
       (h.tex.needsUpdate = !0));
   }
   function b() {
@@ -4667,17 +5048,68 @@ cycles ${a.cycles}`,
       ((K.rotation.z = Math.PI / 2), (K.position.y = 0.13), H.add(K));
       let ue = new B(new ke(0.07, 0.07, 0.22, 20), U.metal(2771616, 0.3));
       (ue.position.set(-0.3, 0.11, 0.05), H.add(ue));
-      let Me = v.group([1.45, 0, 0.1], {
-          name: "Video terminal (ADM-3A style)",
-          info: "Dumb terminal: 80×24 characters at 9600 baud over RS-232. Every byte the program OUTs to port 11h appears here. Type into the terminal box in the panel to send bytes back (RDRF).",
-          explode: [0.5, 0, 0],
-        }),
-        ee = new B(new te(0.8, 0.6, 0.7), U.plastic(14275261));
-      ((ee.position.y = 0.4), Me.add(ee));
-      let X = new B(new te(0.75, 0.06, 0.3), U.plastic(13222573));
-      (X.position.set(0, 0.06, 0.55),
-        Me.add(X),
-        (b = zi(v, 0.62, 0.45, [0, 0.42, 0.352], [512, 372], {}, Me)));
+      let Me = v.group([1.48, 0, 0.08], {
+        name: "Video terminal (ADM-3A style)",
+        info: "Dumb terminal: 80×24 characters at 9600 baud over RS-232. Every byte the program OUTs to port 11h appears here. Type into the terminal box in the panel to send bytes back (RDRF).",
+        explode: [0.5, 0, 0],
+      });
+      let admBase = new B(
+        chamferBox(0.76, 0.1, 0.68, 0.016, 2),
+        U.plastic(0xd8d0be, 0.45),
+      );
+      admBase.position.set(0, 0.05, 0.06);
+      admBase.castShadow = !0;
+      Me.add(admBase);
+      b = buildMonitor3D(
+        v,
+        [0, 0.095, -0.06],
+        {
+          crt: true,
+          stand: false,
+          w: 0.58,
+          h: 0.43,
+          res: [1024, 744],
+          color: 0xd8d0be,
+          name: "ADM-3A P31 CRT Display",
+          info: "12-inch monochrome green-phosphor cathode-ray tube driven by UART 80×24 character generator ROM.",
+        },
+        Me,
+      );
+      buildSculptedKeyboard(
+        v,
+        [0, 0.065, 0.36],
+        {
+          w: 0.68,
+          d: 0.24,
+          h: 0.042,
+          tilt: 0.11,
+          leds: false,
+          bodyColor: 0xd8d0be,
+          keyColor: 0x3b3530,
+          modColor: 0x26221e,
+          accentColor: 0x9e3b24,
+          legendColor: "#f2ece0",
+          name: "ADM-3A Integrated Keyboard",
+          info: "59-key mechanical ASCII keyboard (home-row arrows HJKL inspired vi!).",
+        },
+        Me,
+      );
+      buildCoiledCable(
+        v,
+        [
+          [0.85, 0.12, -0.35],
+          [1.08, 0.04, -0.25],
+          [1.26, 0.08, -0.12],
+        ],
+        0.016,
+        0.0055,
+        16,
+        0x26282e,
+        {
+          name: "RS-232 Serial Cable (DB-25)",
+          info: "Carries ±12 V EIA RS-232-C TXD/RXD serial bitstreams at 9600 baud between the 88-2SIO card and the ADM-3A terminal.",
+        },
+      );
     },
     onPick(v) {
       let R = v.userData;
@@ -4907,25 +5339,46 @@ cycles ${a.cycles}`,
   }
   function A() {
     let v = b.ctx;
-    ((v.fillStyle = "#0a0f0a"),
+    (v.save(),
+      v.scale(2, 2),
+      (v.fillStyle = "#061109"),
       v.fillRect(0, 0, 512, 372),
-      (v.fillStyle = "#9dffb0"),
-      (v.font = "17px monospace"));
-    let R = f
-      .split(
-        `
-`,
-      )
-      .slice(-16);
-    (R.forEach((_, P) => v.fillText(_.slice(-44), 10, 24 + P * 21)),
+      (v.fillStyle = "rgba(74,246,134,0.09)"),
+      v.fillRect(0, 0, 512, 26),
+      (v.fillStyle = "#4af686"),
+      (v.font = "bold 13px monospace"),
+      v.fillText("LEAR SIEGLER ADM-3A · MITS 88-2SIO 9600 8N1", 10, 17),
+      (v.strokeStyle = "rgba(74,246,134,0.28)"),
+      (v.lineWidth = 1),
+      v.beginPath(),
+      v.moveTo(0, 26),
+      v.lineTo(512, 26),
+      v.stroke(),
+      (v.fillStyle = "#8dffb0"),
+      (v.font = "bold 16px monospace"));
+    let R = f.trim()
+      ? f.split("\n").slice(-14)
+      : [
+          "MITS ALTAIR 8800 S-100 BUS MONITOR",
+          `CPU: INTEL 8080A @ 2.000 MHz (${c ? "RUNNING" : a.halted ? "HALTED" : "STOPPED"})`,
+          `PC=${bt(a.pc, 4)}h  SP=${bt(a.sp, 4)}h  A=${bt(a.r[7])}h  BC=${bt(a.r[0])}${bt(a.r[1])}h`,
+          `DE=${bt(a.r[2])}${bt(a.r[3])}h  HL=${bt(a.r[4])}${bt(a.r[5])}h  SW=${bt(l, 4)}h`,
+          `MEM[${bt(a.pc, 4)}h] = ${bt(a.mem[a.pc])}h   CYCLES = ${a.cycles}`,
+          "",
+          "2SIO PORT 10h/11h READY FOR SERIAL I/O:",
+          "> Select 'Hello via 88-2SIO' or 'Echo' preset",
+        ];
+    (R.forEach((_, P) => v.fillText(_.slice(-44), 10, 48 + P * 21)),
       Math.floor(performance.now() / 500) % 2 &&
         v.fillRect(
-          10 + Math.min(44, (R[R.length - 1] || "").length) * 10.2,
-          10 + (R.length - 1) * 21,
+          10 + Math.min(44, (R[R.length - 1] || "").length) * 9.6,
+          34 + (R.length - 1) * 21,
           10,
           17,
         ),
-      (b.tex.needsUpdate = !0));
+      (v.fillStyle = "rgba(0,0,0,0.18)"));
+    for (let sy = 0; sy < 372; sy += 3) v.fillRect(0, sy, 512, 1);
+    (v.restore(), (b.tex.needsUpdate = !0));
   }
   function w() {
     let v = a.r,

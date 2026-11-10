@@ -1044,11 +1044,96 @@ keyboard`,
           H.updateMatrix(),
           K.setMatrixAt(de, H.matrix));
       (_.add(K, {}),
-        Nt(_, "commodore-ish 64", 0.4, 0.04, [-0.45, 0.14 + 0.85 * 0.12 + 0.025, -0.36], {
-          bg: null,
-          color: "#d8d0c0",
+        Nt(_, "commodore 64", 0.36, 0.042, [-0.45, 0.14 + 0.85 * 0.12 + 0.026, -0.36], {
+          bg: "#231f1c",
+          color: "#e8e0d0",
           rot: [-Math.PI / 2 + 0.12, 0, 0],
         }));
+      const rainbowCols = [0xe03c28, 0xf08c20, 0xf4d028, 0x48b848, 0x2888d8];
+      rainbowCols.forEach((rc, ri) => {
+        let stripe = new B(new te(0.05, 0.004, 0.0075), U.plastic(rc, 0.35));
+        stripe.rotation.x = 0.12;
+        stripe.position.set(-0.23, 0.244 + ri * 0.001, -0.342 - ri * 0.008);
+        _.root.add(stripe);
+      });
+      let c64Pwr = new B(new Mt(0.009, 14, 10), U.glow(0xff3322, 1.5));
+      c64Pwr.position.set(0.68, 0.252, -0.35);
+      _.root.add(c64Pwr);
+      const c64Leg = Bt(2048, 512);
+      const c64Ctx = c64Leg.ctx;
+      c64Ctx.clearRect(0, 0, 2048, 512);
+      c64Ctx.fillStyle = "#ece4d4";
+      c64Ctx.font = '700 28px "JetBrains Mono", monospace';
+      c64Ctx.textAlign = "center";
+      c64Ctx.textBaseline = "middle";
+      const c64Rows = [
+        [
+          "←",
+          "1!",
+          '2"',
+          "3#",
+          "4$",
+          "5%",
+          "6&",
+          "7'",
+          "8(",
+          "9)",
+          "0",
+          "+",
+          "-",
+          "£",
+          "CLR",
+        ],
+        ["CTRL", "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "@", "*", "↑", "REST"],
+        [
+          "STOP",
+          "A",
+          "S",
+          "D",
+          "F",
+          "G",
+          "H",
+          "J",
+          "K",
+          "L",
+          ":",
+          ";",
+          "=",
+          "RETURN",
+          "",
+        ],
+        [
+          "C=",
+          "SHIFT",
+          "Z",
+          "X",
+          "C",
+          "V",
+          "B",
+          "N",
+          "M",
+          ",",
+          ".",
+          "/",
+          "SHIFT",
+          "CRSR",
+          "",
+        ],
+      ];
+      c64Rows.forEach((rArr, ri) => {
+        rArr.forEach((lbl, ci) => {
+          if (!lbl) return;
+          c64Ctx.fillText(lbl, 72 + ci * 134, 68 + ri * 112);
+        });
+      });
+      c64Leg.tex.needsUpdate = true;
+      let c64LegMesh = new B(
+        new mt(1.28, 0.34),
+        new xt({ map: c64Leg.tex, transparent: true, depthWrite: false }),
+      );
+      c64LegMesh.rotation.x = -Math.PI / 2 + 0.12;
+      c64LegMesh.position.set(-0.04, 0.215, 0.19);
+      _.root.add(c64LegMesh);
       let ue = _.group([0, 0.03, -0.05], {
           name: "Motherboard",
           info: 'Two-layer green PCB with ~40 chips. Everything shares one 8-bit data bus: the VIC-II steals half of every clock cycle (and whole "bad lines") to fetch screen RAM, which is why the CPU runs at 0.985 MHz instead of 1.02.',
@@ -1152,32 +1237,73 @@ screen RAM $0400, colour RAM $D800`,
           info: "Composite/S-video colour CRT. The image is the VIC-II's output rendered from the emulator's screen and colour RAM.",
           explode: [0, 0, -0.5],
         }),
-        G = new B(new te(1.2, 0.95, 0.9), U.plastic(9405036));
-      ((G.position.y = 0.5), W.add(G));
-      let le = new B(new te(1, 0.75, 0.04), U.plastic(2762274));
-      (le.position.set(0, 0.55, 0.46), W.add(le), (a = Bt(704, 464)));
+        G = new B(chamferBox(1.2, 0.96, 0.88, 0.024, 2), U.plastic(9405036, 0.48));
+      ((G.position.y = 0.5), (G.castShadow = !0), W.add(G));
+      let rearYoke = new B(
+        chamferBox(0.8, 0.64, 0.34, 0.024, 2),
+        U.plastic(0x7c715e, 0.52),
+      );
+      rearYoke.position.set(0, 0.52, -0.56);
+      let silverFace = new B(
+        chamferBox(1.14, 0.9, 0.03, 0.014, 1),
+        U.plastic(0x9a968c, 0.48),
+      );
+      silverFace.position.set(0, 0.5, 0.435);
+      let le = new B(chamferBox(0.99, 0.73, 0.036, 0.012, 2), U.plastic(0x212429, 0.55));
+      (le.position.set(0, 0.54, 0.452),
+        W.add(rearYoke, silverFace, le),
+        (a = Bt(1408, 928)));
       let pe = new B(new mt(0.92, 0.66), U.screen(a.tex));
-      (pe.position.set(0, 0.55, 0.485), W.add(pe));
+      (pe.position.set(0, 0.54, 0.472), W.add(pe));
+      let crtGlass = new B(new mt(0.93, 0.67), U.glass(0xe2f2ff, 0.14));
+      crtGlass.position.set(0, 0.54, 0.476);
+      let ctrlDoor = new B(
+        chamferBox(0.32, 0.065, 0.018, 0.004, 1),
+        U.plastic(0x6e6453, 0.48),
+      );
+      ctrlDoor.position.set(0.34, 0.11, 0.454);
+      let monLed = new B(new Mt(0.008, 12, 8), U.glow(0x4eff6b, 1.4));
+      monLed.position.set(0.52, 0.11, 0.456);
+      W.add(crtGlass, ctrlDoor, monLed);
       let Ee = _.group([1.15, 0, -0.2], {
           name: "1541 floppy drive",
           info: '5¼" single-sided 170 KB drive with its OWN 6502, 2 KB RAM and DOS in ROM — a computer itself, connected by a slow serial bus.',
           explode: [0.5, 0, 0],
         }),
-        be = new B(new te(0.5, 0.2, 0.8), U.plastic(13616293));
-      ((be.position.y = 0.1), Ee.add(be));
-      let re = new B(new te(0.34, 0.02, 0.02), U.plastic(2236962));
-      (re.position.set(0, 0.13, 0.41),
-        Ee.add(re),
-        Dt(
-          _,
-          [
-            [0.75, 0.06, -0.45],
-            [0.95, 0.03, -0.5],
-            [1, 0.1, -0.55],
-          ],
-          0.012,
-          2236962,
-        ),
+        be = new B(chamferBox(0.5, 0.21, 0.8, 0.014, 2), U.plastic(13616293, 0.46));
+      ((be.position.y = 0.105), (be.castShadow = !0), Ee.add(be));
+      let face1541 = new B(
+        chamferBox(0.47, 0.17, 0.025, 0.008, 1),
+        U.plastic(0x3a332c, 0.5),
+      );
+      face1541.position.set(0, 0.105, 0.4);
+      let re = new B(new te(0.34, 0.018, 0.024), U.plastic(0x141518, 0.6));
+      re.position.set(0, 0.125, 0.412);
+      let latch = new B(
+        chamferBox(0.055, 0.026, 0.028, 0.004, 1),
+        U.plastic(0x6e6252, 0.42),
+      );
+      latch.position.set(0, 0.155, 0.418);
+      let ledPwr = new B(new te(0.018, 0.008, 0.01), U.glow(0x48ff68, 1.3));
+      ledPwr.position.set(-0.18, 0.065, 0.415);
+      let ledAct = new B(new te(0.018, 0.008, 0.01), U.glow(0xff3b2f, 0.35));
+      ledAct.position.set(0.18, 0.065, 0.415);
+      Ee.add(face1541, re, latch, ledPwr, ledAct);
+      for (let vs = 0; vs < 6; vs++) {
+        let vent = new B(new te(0.32, 0.006, 0.016), U.plastic(0x2a2622, 0.7));
+        vent.position.set(0, 0.211, -0.12 - vs * 0.036);
+        Ee.add(vent);
+      }
+      (Dt(
+        _,
+        [
+          [0.75, 0.06, -0.45],
+          [0.95, 0.03, -0.5],
+          [1, 0.1, -0.55],
+        ],
+        0.012,
+        2236962,
+      ),
         Dt(
           _,
           [
@@ -1321,7 +1447,9 @@ $C000: ${Array.from(i.slice(49152, 49168), (P) => bt(P)).join(" ")}`),
   }
   function R() {
     let _ = a.ctx;
-    ((_.fillStyle = Uc[i[53280] & 15]),
+    (_.save(),
+      _.scale(2, 2),
+      (_.fillStyle = Uc[i[53280] & 15]),
       _.fillRect(0, 0, 704, 464),
       (_.fillStyle = Uc[i[53281] & 15]),
       _.fillRect(32, 32, 640, 400),
@@ -1349,8 +1477,9 @@ $C000: ${Array.from(i.slice(49152, 49168), (P) => bt(P)).join(" ")}`),
       !l &&
       w._blink % 2 &&
       ((_.fillStyle = Uc[i[646] & 15]), _.fillRect(32 + n * 16, 32 + t * 16, 16, 16)),
+      _.restore(),
       (a.tex.needsUpdate = !0),
-      o.view && o.view.getContext("2d").drawImage(a.canvas, 0, 0));
+      o.view && o.view.getContext("2d").drawImage(a.canvas, 0, 0, 704, 464));
   }
   return (
     (w.test = () => {
@@ -2314,7 +2443,7 @@ Blaster`,
           name: "Front bezel",
           info: 'Turbo button (it actually slowed the PC to 8 MHz-era speed for old games), power and HDD activity LEDs, 3.5" floppy slot.',
         }),
-        P = new B(new te(1.62, 0.48, 0.04), R);
+        P = new B(chamferBox(1.62, 0.48, 0.045, 0.012, 2), R);
       (_.add(P),
         (u = new B(new te(0.03, 0.015, 0.01), U.led(16752672))),
         u.position.set(-0.6, -0.1, 0.025),
@@ -2323,22 +2452,39 @@ Blaster`,
         f.position.set(-0.66, -0.1, 0.025),
         (f.material.emissiveIntensity = 2),
         _.add(f));
-      let V = new B(new te(0.06, 0.03, 0.02), U.plastic(11577488));
-      (V.position.set(-0.5, -0.1, 0.03),
-        _.add(V),
-        Nt(
-          v,
-          "66",
-          0.08,
-          0.04,
-          [-0.63, 0, 0.026],
-          { bg: "#300", color: "#ff3030", font: "bold 48px monospace" },
-          _,
-        ));
-      let k = new B(new te(0.3, 0.02, 0.02), U.plastic(546));
-      (k.position.set(0.4, 0.12, 0.02), _.add(k));
-      let L = new B(new te(0.46, 0.1, 0.02), U.plastic(13616813));
-      (L.position.set(0.4, -0.06, 0.025), _.add(L));
+      let V = new B(chamferBox(0.055, 0.032, 0.022, 0.004, 1), U.plastic(0xc2ba9e, 0.42));
+      V.position.set(-0.5, -0.1, 0.028);
+      let rstBtn = new B(
+        chamferBox(0.038, 0.026, 0.02, 0.004, 1),
+        U.plastic(0xa8a088, 0.45),
+      );
+      rstBtn.position.set(-0.42, -0.1, 0.026);
+      let keyLock = new B(new ke(0.018, 0.018, 0.016, 20), U.steel());
+      keyLock.rotation.x = Math.PI / 2;
+      keyLock.position.set(-0.73, 0.02, 0.024);
+      _.add(V, rstBtn, keyLock);
+      Nt(
+        v,
+        "66",
+        0.095,
+        0.048,
+        [-0.62, 0.02, 0.026],
+        { bg: "#091a0d", color: "#3eff68", font: "bold 52px monospace" },
+        _,
+      );
+      let k = new B(new te(0.3, 0.018, 0.02), U.plastic(0x1b1d20, 0.6));
+      k.position.set(0.4, 0.12, 0.024);
+      let fpyEj = new B(new te(0.036, 0.016, 0.022), U.plastic(0x888478, 0.45));
+      fpyEj.position.set(0.51, 0.092, 0.028);
+      let L = new B(chamferBox(0.46, 0.105, 0.024, 0.004, 1), U.plastic(13616813, 0.46));
+      L.position.set(0.4, -0.05, 0.024);
+      let cdTray = new B(new te(0.42, 0.036, 0.016), U.plastic(0xc8c1ae, 0.45));
+      cdTray.position.set(0.4, -0.035, 0.032);
+      let cdEj = new B(new te(0.032, 0.014, 0.016), U.plastic(0x55524a, 0.45));
+      cdEj.position.set(0.56, -0.08, 0.032);
+      let cdLed = new B(new Mt(0.005, 10, 8), U.glow(0x52ff68, 0.9));
+      cdLed.position.set(0.24, -0.08, 0.034);
+      _.add(k, fpyEj, L, cdTray, cdEj, cdLed);
       let z = v.group([-0.2, 0.04, -0.15], {
         name: "Baby-AT motherboard",
         info: "Socket 3 486 board with an Intel/SiS chipset bridging the 33 MHz CPU bus to PCI, and an ISA bridge for legacy 8 MHz cards. BIOS in EPROM, CMOS settings kept alive by a coin/barrel battery.",
@@ -2529,19 +2675,51 @@ cache ${i.disk.cacheOn ? "ON" : "OFF"} hits ${i.disk.hits} misses ${i.disk.misse
       });
       (W.add(Oc(new B(new te(0.4, 0.35, 0.5), U.metal(10132122)), 0, 0.175, 0)),
         ni(v, 0.12, [0, 0.18, -0.26], {}, W));
-      let G = v.group([0, 0.49, -0.1], {
+      a = buildMonitor3D(v, [0, 0.485, -0.08], {
+        crt: true,
+        w: 0.88,
+        h: 0.62,
+        res: [1440, 800],
+        color: 0xd8d1bd,
         name: '14" VGA CRT monitor',
         info: "640×400 text mode at 70 Hz, 31.5 kHz horizontal scan. The tube is a vacuum bottle with an electron gun and phosphor stripes behind a shadow mask.",
         explode: [0, 0.6, 0],
       });
-      G.add(Oc(new B(new te(1.1, 0.85, 0.7), U.plastic(14208950)), 0, 0.45, 0));
-      let le = new B(new te(0.7, 0.55, 0.5), U.plastic(13682605));
-      (le.position.set(0, 0.45, -0.55), G.add(le), (a = Bt(720, 400)));
-      let pe = new B(new mt(0.88, 0.62), U.screen(a.tex));
-      (pe.position.set(0, 0.47, 0.352), G.add(pe));
-      let Ee = v.box(1.3, 0.05, 0.4, U.plastic(13682605), [0, 0.03, 1.1], {
+      buildSculptedKeyboard(v, [-0.08, 0, 1.12], {
+        w: 1.22,
+        d: 0.42,
+        h: 0.056,
+        bodyColor: 0xd6cfc0,
+        keyColor: 0xe4dfd2,
+        modColor: 0xb7b09e,
+        accentColor: 0xb7b09e,
+        legendColor: "#22252a",
         name: "IBM Model M-style keyboard",
         info: "Buckling-spring keys; scan codes go to the 8042 keyboard controller → IRQ1 → BIOS INT 9. Click the screen in the panel and type commands.",
+      });
+      buildCoiledCable(
+        v,
+        [
+          [-0.3, 0.04, 0.9],
+          [-0.52, 0.03, 0.82],
+          [-0.72, 0.08, -0.65],
+        ],
+        0.018,
+        0.0055,
+        20,
+        0xc8c0ae,
+        {
+          name: "Coiled AT / PS2 Keyboard Cord",
+          info: "5-pin DIN / 6-pin Mini-DIN synchronous serial clock+data cable to the motherboard 8042 controller.",
+        },
+      );
+      buildMouse3D(v, [0.76, 0, 1.12], {
+        retro: true,
+        color: 0xd6cfc0,
+        btnColor: 0xb7b09e,
+        padColor: 0x164e63,
+        name: "2-Button Serial Ball Mouse (COM1)",
+        info: "Rubber steel-core ball turns X/Y slotted optical quadrature wheels; sends 3-byte packets at 1200 baud over RS-232 IRQ4.",
       });
     },
     ui(v) {
@@ -2657,15 +2835,18 @@ cache ${i.disk.cacheOn ? "ON" : "OFF"} hits ${i.disk.hits} misses ${i.disk.misse
   };
   function w() {
     let v = a.ctx;
-    ((v.fillStyle = "#000"),
+    (v.save(),
+      v.scale(2, 2),
+      (v.fillStyle = "#040608"),
       v.fillRect(0, 0, 720, 400),
-      (v.fillStyle = "#aaaaaa"),
-      (v.font = '15px "Courier New",monospace'),
+      (v.fillStyle = "#b8c0c8"),
+      (v.font = 'bold 15px "Courier New",monospace'),
       (v.textBaseline = "top"));
     for (let R = 0; R < A0; R++) v.fillText(e[R].join(""), 0, R * 16);
-    (A._bl % 2 && ((v.fillStyle = "#aaaaaa"), v.fillRect(n * 9, t * 16 + 13, 9, 2)),
+    (A._bl % 2 && ((v.fillStyle = "#d8e0e8"), v.fillRect(n * 9, t * 16 + 13, 9, 2)),
+      v.restore(),
       (a.tex.needsUpdate = !0),
-      o.view && o.view.getContext("2d").drawImage(a.canvas, 0, 0));
+      o.view && o.view.getContext("2d").drawImage(a.canvas, 0, 0, 720, 400));
   }
   return (
     (A.test = () => {
@@ -3422,19 +3603,80 @@ pipeline ${e.depth} stages, mispredict penalty ${e.depth - 1} cycles`,
         (R.add(Bc(new B(new te(0.6, 0.3, 0.55), U.metal(2763310)), 0, 0, 0)),
           ni(b, 0.1, [0, -0.16, 0], { rot: [Math.PI / 2, 0, 0] }, R),
           ni(b, 0.1, [-0.05, 1.1, -0.89], { name: "Rear exhaust fan" }));
-        let _ = new Pn(7321855, 2.5, 3, 1.5);
-        (_.position.set(0.2, 1.2, 0.2),
-          b.root.add(_),
-          Dt(
-            b,
-            [
-              [0, 1.45, -0.4],
-              [-0.15, 1.2, -0.3],
-              [-0.38, 1.25, -0.3],
-            ],
-            0.015,
-            15124544,
-          ),
+        let _ = new Pn(0x5bb8ff, 3.4, 3.2, 1.4);
+        (_.position.set(0.22, 1.15, 0.15), b.root.add(_));
+        let ccfl = new B(new ke(0.01, 0.01, 1.45, 12), U.glow(0x4cb8ff, 2.2));
+        ccfl.position.set(0.39, 0.9, 0.82);
+        b.root.add(ccfl);
+        let pwrBtn00 = new B(new ke(0.032, 0.032, 0.018, 24), U.metal(0xd8dde4, 0.25));
+        pwrBtn00.rotation.x = Math.PI / 2;
+        pwrBtn00.position.set(0, 1.05, 0.955);
+        let pwrRing00 = new B(new Pi(0.036, 0.004, 10, 28), U.glow(0x38bdf8, 1.8));
+        pwrRing00.position.set(0, 1.05, 0.956);
+        b.root.add(pwrBtn00, pwrRing00);
+        for (let bay = 0; bay < 3; bay++) {
+          let bayPlate = new B(
+            chamferBox(0.72, 0.12, 0.016, 0.004, 1),
+            U.plastic(0x252a32, 0.48),
+          );
+          bayPlate.position.set(0, 1.62 - bay * 0.145, 0.952);
+          b.root.add(bayPlate);
+        }
+        d._mon = buildMonitor3D(b, [0.84, 0, -0.78], {
+          crt: false,
+          w: 0.92,
+          h: 0.69,
+          res: [1024, 768],
+          color: 0x262b34,
+          rot: [0, 0.44, 0],
+          name: '19" 5:4 Workstation LCD (1280×1024)',
+          info: "Early-2000s dual-CCFL backlit TFT flat panel connected via DVI-D to the AGP Radeon 9700 card; displays live superscalar pipeline & cache telemetry.",
+          live: () =>
+            `IPC ${t.ipc.toFixed(3)} · L1 hit ${u(t.L1.hits, t.L1.hits + t.L1.misses)} · BP ${u(t.bp.correct, t.bp.total)}`,
+        });
+        buildSculptedKeyboard(b, [0.96, 0, -0.08], {
+          w: 0.92,
+          d: 0.34,
+          h: 0.044,
+          rot: [0, 0.44, 0],
+          bodyColor: 0x9aa3af,
+          keyColor: 0x232730,
+          modColor: 0x191c23,
+          accentColor: 0x2563eb,
+          legendColor: "#e5eaf2",
+          ledColor: 0x38bdf8,
+          name: "USB / PS2 Workstation Keyboard",
+          info: "Two-tone silver/black early-2000s tactile keyboard.",
+        });
+        buildMouse3D(b, [1.46, 0, -0.32], {
+          rot: [0, 0.44, 0],
+          color: 0x9aa3af,
+          padColor: 0x17253b,
+          rgb: 0xff2e44,
+          name: "IntelliMouse Optical (USB)",
+          info: "DSP optical surface correlation sensor at 6,000 frames/s — retired the mechanical mouse ball in 1999–2001.",
+        });
+        Dt(
+          b,
+          [
+            [0.82, 0.42, -0.82],
+            [0.44, 0.08, -0.92],
+            [-0.08, 0.85, -0.92],
+          ],
+          0.011,
+          0x22262e,
+          { name: "DVI-D Digital Video Cable" },
+        );
+        (Dt(
+          b,
+          [
+            [0, 1.45, -0.4],
+            [-0.15, 1.2, -0.3],
+            [-0.38, 1.25, -0.3],
+          ],
+          0.015,
+          15124544,
+        ),
           Dt(
             b,
             [
@@ -3580,6 +3822,94 @@ pipeline ${e.depth} stages, mispredict penalty ${e.depth - 1} cycles`,
           g(),
           m(),
           S());
+        if (d._mon && (d._monTick = ((d._monTick || 0) + 1) % 2) === 0) {
+          let mc = d._mon.ctx;
+          mc.fillStyle = "#080d16";
+          mc.fillRect(0, 0, 1024, 768);
+          mc.fillStyle = "#13294b";
+          mc.fillRect(0, 0, 1024, 54);
+          mc.fillStyle = "#7dd3fc";
+          mc.font = '700 22px "JetBrains Mono", monospace';
+          mc.fillText(
+            `SUPERSCALAR PIPELINE PROFILER · ${e.ghz.toFixed(2)} GHz · ${e.depth} STAGES`,
+            20,
+            35,
+          );
+          mc.fillStyle = "#e2e8f0";
+          mc.font = '600 19px "JetBrains Mono", monospace';
+          const l1Rate =
+            v.hits + v.misses
+              ? ((v.hits / (v.hits + v.misses)) * 100).toFixed(1)
+              : "100.0";
+          const l2Rate =
+            R.hits + R.misses
+              ? ((R.hits / (R.hits + R.misses)) * 100).toFixed(1)
+              : "100.0";
+          const bpRate = t.bp.total
+            ? ((t.bp.correct / t.bp.total) * 100).toFixed(1)
+            : "100.0";
+          mc.fillText(
+            `IPC: ${t.ipc.toFixed(3)}   L1D HIT: ${l1Rate}%   L2 HIT: ${l2Rate}%   BP (${e.pred}): ${bpRate}%`,
+            20,
+            88,
+          );
+          // Draw live instruction pipeline waterfall from t.recent
+          const rec = t.recent;
+          if (rec.length) {
+            const i0 = rec[0].issue;
+            const iEnd =
+              rec[rec.length - 1].issue + rec[rec.length - 1].stall + e.depth + 1;
+            const x0 = 270;
+            const cw = (1000 - x0) / Math.max(1, iEnd - i0);
+            const rh = 34;
+            const stageCols = [
+              "#60a5fa",
+              "#818cf8",
+              "#c084fc",
+              "#fb923c",
+              "#34d399",
+              "#facc15",
+            ];
+            rec.slice(0, 15).forEach((ins, idx) => {
+              const ry = 114 + idx * rh;
+              mc.fillStyle = ins.kind ? "#fca5a5" : "#94a3b8";
+              mc.font = '600 16px "JetBrains Mono", monospace';
+              mc.fillText(ins.src.slice(0, 22), 20, ry + 22);
+              let sx = x0 + (ins.issue - i0) * cw;
+              if (ins.stall) {
+                mc.fillStyle = ins.kind === "branch" ? "#dc2626" : "#ea580c";
+                mc.fillRect(sx, ry + 4, Math.max(2, ins.stall * cw), rh - 8);
+                sx += ins.stall * cw;
+              }
+              for (let stg = 0; stg < e.depth; stg++) {
+                mc.fillStyle = stageCols[Math.floor((stg / e.depth) * 6)];
+                mc.fillRect(sx + stg * cw, ry + 6, Math.max(2, cw - 1), rh - 12);
+              }
+            });
+          }
+          // Bottom throughput gauge bar
+          mc.fillStyle = "#111827";
+          mc.fillRect(20, 650, 984, 92);
+          mc.strokeStyle = "#1e3a5f";
+          mc.lineWidth = 2;
+          mc.strokeRect(20, 650, 984, 92);
+          const bars = [
+            ["IPC / 2.0", Math.min(1, t.ipc / 2), "#38bdf8"],
+            ["L1D HIT", parseFloat(l1Rate) / 100, "#34d399"],
+            ["BRANCH ACC", parseFloat(bpRate) / 100, "#c084fc"],
+          ];
+          bars.forEach(([lbl, frac, colStr], bi) => {
+            const bx = 42 + bi * 320;
+            mc.fillStyle = "#94a3b8";
+            mc.font = '700 15px "JetBrains Mono", monospace';
+            mc.fillText(`${lbl}: ${(frac * 100).toFixed(1)}%`, bx, 680);
+            mc.fillStyle = "#1f2937";
+            mc.fillRect(bx, 694, 280, 26);
+            mc.fillStyle = colStr;
+            mc.fillRect(bx, 694, 280 * Math.max(0.02, frac), 26);
+          });
+          d._mon.tex.needsUpdate = true;
+        }
       },
     },
     u = (b, y) => (y ? ((b / y) * 100).toFixed(1) + "%" : "–");
@@ -4173,7 +4503,15 @@ T4 T5`,
           let v = new B(new ke(0.008, 0.008, 0.4, 10), U.copper());
           (v.position.set(-0.06 + w * 0.04, 0.2, 0), y.add(v));
         }
-        (vn(p, 0.3, 0.12, 0.3, [0, 0.12, 0], { fins: 28, base: U.alu() }, y),
+        (vn(
+          p,
+          0.3,
+          0.12,
+          0.3,
+          [0, 0.12, 0],
+          { fins: 28, mat: U.darkAnodized(0x252d38), base: U.darkAnodized(0x202730) },
+          y,
+        ),
           ni(
             p,
             0.14,
@@ -4262,19 +4600,89 @@ T4 T5`,
             color: 1118481,
           }),
           ni(p, 0.13, [0, 1.2, 0.83], {}));
-        let A = new Pn(16724064, 2, 3, 1.5);
-        (A.position.set(0.2, 1, 0.3),
-          p.root.add(A),
-          Dt(
-            p,
-            [
-              [0.05, 0.3, -0.2],
-              [-0.2, 0.6, -0.3],
-              [-0.38, 0.8, -0.4],
-            ],
-            0.02,
-            1118481,
-          ));
+        let A = new Pn(0x7dd3fc, 3.2, 3.4, 1.4);
+        (A.position.set(0.2, 1.05, 0.2), p.root.add(A));
+        let warmFill = new Pn(0xff6b4a, 1.6, 2.5, 1.5);
+        warmFill.position.set(0.15, 0.65, -0.15);
+        p.root.add(warmFill);
+        let ledBar10 = new B(new te(0.012, 1.48, 0.014), U.glow(0x38bdf8, 2.0));
+        ledBar10.position.set(0.38, 0.88, 0.78);
+        p.root.add(ledBar10);
+        for (let fi = 0; fi < 2; fi++) {
+          let ring = new B(new Pi(0.135, 0.006, 10, 32), U.glow(0xef4444, 1.5));
+          ring.position.set(0, 0.6 + fi * 0.6, 0.898);
+          p.root.add(ring);
+        }
+        h._mon = buildMonitor3D(p, [0.88, 0, -0.78], {
+          crt: false,
+          w: 1.18,
+          h: 0.66,
+          res: [1280, 720],
+          color: 0x161a22,
+          rot: [0, 0.44, 0],
+          name: '27" 16:9 WQHD IPS Monitor',
+          info: "2560×1440-class slim-bezel IPS panel over DisplayPort 1.2 from the GTX 980; renders live 4-core/8-thread SMP scheduler & ring-bus activity.",
+          live: () => {
+            const mt = e.metrics();
+            return `SMP util ${(mt.util * 100).toFixed(0)}% · ${mt.switches} context switches`;
+          },
+        });
+        buildSculptedKeyboard(p, [1.02, 0, -0.06], {
+          w: 0.96,
+          d: 0.35,
+          h: 0.044,
+          rot: [0, 0.44, 0],
+          rgb: true,
+          rgbColor: 0x38bdf8,
+          bodyColor: 0x181c24,
+          keyColor: 0x222732,
+          modColor: 0x171b23,
+          accentColor: 0xe11d48,
+          legendColor: "#e2e8f0",
+          ledColor: 0x38bdf8,
+          name: "RGB Mechanical Gaming Keyboard",
+          info: "Per-key RGB Cherry MX mechanical switch matrix over 1000 Hz USB HID polling.",
+        });
+        buildMouse3D(p, [1.54, 0, -0.32], {
+          rot: [0, 0.44, 0],
+          color: 0x1c212b,
+          padColor: 0x111827,
+          rgb: 0x38bdf8,
+          name: "High-DPI Optical Gaming Mouse",
+          info: "PixArt PMW3360 optical sensor at 1000 Hz USB report rate with PTFE skates.",
+        });
+        Dt(
+          p,
+          [
+            [0.86, 0.42, -0.82],
+            [0.44, 0.06, -0.9],
+            [-0.12, 0.78, -0.87],
+          ],
+          0.011,
+          0x1b1f28,
+          { name: "DisplayPort 1.2 Cable" },
+        );
+        Dt(
+          p,
+          [
+            [0.05, 0.3, -0.2],
+            [-0.2, 0.6, -0.3],
+            [-0.38, 0.8, -0.4],
+          ],
+          0.02,
+          0x1e2430,
+        );
+        Dt(
+          p,
+          [
+            [0.12, 0.28, -0.35],
+            [0.24, 0.55, -0.05],
+            [0.12, 0.84, 0.08],
+          ],
+          0.014,
+          0xb91c1c,
+          { name: "Sleeved 8-Pin PCIe GPU Power" },
+        );
       },
       ui(p) {
         ((o.code = Ht(
@@ -4473,6 +4881,75 @@ T4 T5`,
                 `${S.name.padEnd(11)} ${S.state.padEnd(5)} ${String(S.nice).padStart(4)} ${S.cpuMs.toFixed(0).padStart(7)} ${String(S.wait).padStart(5)} ${S.done >= 0 ? S.done : ""}`,
             ).join(`
 `)));
+        if (h._mon && (h._monTick = ((h._monTick || 0) + 1) % 2) === 0) {
+          let mc = h._mon.ctx;
+          mc.fillStyle = "#070b12";
+          mc.fillRect(0, 0, 1280, 720);
+          mc.fillStyle = "#0f1e36";
+          mc.fillRect(0, 0, 1280, 52);
+          mc.fillStyle = "#38bdf8";
+          mc.font = '700 21px "JetBrains Mono", monospace';
+          mc.fillText(
+            `CORE i7-4770K SMP MONITOR · ${i.cores}C / ${i.smt ? i.cores * 2 : i.cores}T · POLICY: ${i.policy.toUpperCase()}`,
+            22,
+            34,
+          );
+          mc.fillStyle = "#e2e8f0";
+          mc.font = '600 18px "JetBrains Mono", monospace';
+          mc.fillText(
+            `UTIL: ${(g.util * 100).toFixed(0)}%   TIME: ${g.t} ms   CTX SWITCHES: ${g.switches}   DONE: ${g.done}/${e.T.length}`,
+            22,
+            84,
+          );
+          // Hardware thread Gantt timeline
+          const nRows = Math.max(1, e.gantt.length);
+          const rowH = Math.min(54, 410 / nRows);
+          const gx0 = 130;
+          const gw = (1248 - gx0) / 300;
+          e.gantt.forEach((hist, hi2) => {
+            const ry = 108 + hi2 * rowH;
+            mc.fillStyle = "#111827";
+            mc.fillRect(gx0, ry + 2, 1248 - gx0, rowH - 6);
+            mc.fillStyle = "#94a3b8";
+            mc.font = '700 16px "JetBrains Mono", monospace';
+            mc.fillText(
+              `C${e.hw[hi2].core}${i.smt ? "·T" + (hi2 & 1) : ""}`,
+              22,
+              ry + rowH * 0.62,
+            );
+            hist.slice(-300).forEach((tid, stepIdx) => {
+              if (tid >= 0 && e.T[tid]) {
+                mc.fillStyle = e.T[tid].color;
+                mc.fillRect(gx0 + stepIdx * gw, ry + 3, Math.ceil(gw), rowH - 8);
+              }
+            });
+          });
+          // Per-core tile status strip at bottom
+          for (let ci = 0; ci < i.cores; ci++) {
+            const bx = 22 + ci * Math.min(154, 1236 / i.cores);
+            const bw = Math.min(144, 1236 / i.cores - 10);
+            const activeTask = e.hw.filter((hw) => hw.core === ci && hw.task)[0]?.task;
+            mc.fillStyle = activeTask ? "rgba(56,189,248,0.16)" : "#0f172a";
+            mc.fillRect(bx, 560, bw, 132);
+            mc.strokeStyle = activeTask ? activeTask.color : "#1e293b";
+            mc.lineWidth = 2.5;
+            mc.strokeRect(bx, 560, bw, 132);
+            mc.fillStyle = "#94a3b8";
+            mc.font = '700 15px "JetBrains Mono", monospace';
+            mc.fillText(`CORE ${ci}`, bx + 12, 588);
+            mc.fillStyle = activeTask ? activeTask.color : "#475569";
+            mc.font = '700 18px "JetBrains Mono", monospace';
+            mc.fillText(
+              activeTask ? activeTask.name.slice(0, 9) : "C6 IDLE",
+              bx + 12,
+              626,
+            );
+            mc.fillStyle = "#cbd5e1";
+            mc.font = '600 13px "JetBrains Mono", monospace';
+            mc.fillText(i.turbo && activeTask ? "3.90 GHz" : "3.50 GHz", bx + 12, 668);
+          }
+          h._mon.tex.needsUpdate = true;
+        }
       },
     };
   function d() {

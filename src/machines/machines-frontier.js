@@ -381,35 +381,51 @@ all-reduce`,
         ],
       },
       build(g) {
-        let m = U.metal(13149792, 0.35),
-          S = U.metal(2500652, 0.45);
-        (g.box(0.03, 1.3, 1.1, S, [0.32, 0.65, 0], {
+        let m = U.metal(0xc8a660, 0.3),
+          S = U.darkAnodized(0x222832);
+        (g.mesh(chamferBox(0.032, 1.3, 1.1, 0.006), S, [0.32, 0.66, 0], {
           name: "Side panel",
           info: "Deskside chassis, ~1.5 kW at full load, quiet enough for an office thanks to the liquid loop.",
           shell: !0,
           explode: [0.6, 0, 0],
         }),
-          g.box(0.03, 1.3, 1.1, S, [-0.32, 0.65, 0], {
+          g.mesh(chamferBox(0.032, 1.3, 1.1, 0.006), S, [-0.32, 0.66, 0], {
             name: "Side panel",
             info: "",
             shell: !0,
             explode: [-0.6, 0, 0],
           }),
-          g.box(0.66, 0.03, 1.1, S, [0, 1.3, 0], {
+          g.mesh(chamferBox(0.66, 0.032, 1.1, 0.006), S, [0, 1.31, 0], {
             name: "Top",
             info: "",
             shell: !0,
             explode: [0, 0.4, 0],
           }),
-          g.box(0.66, 0.03, 1.1, S, [0, 0.015, 0], {}));
-        let b = g.group([0, 0.65, 0.56], {
+          g.mesh(chamferBox(0.66, 0.032, 1.1, 0.006), S, [0, 0.02, 0], {}));
+        // Machined deskside feet
+        for (let [fx, fz] of [
+          [-0.25, -0.45],
+          [0.25, -0.45],
+          [-0.25, 0.45],
+          [0.25, 0.45],
+        ])
+          g.cyl(0.044, 0.048, 0.018, m, [fx, 0.009, fz], { seg: 24 });
+        let b = g.group([0, 0.66, 0.56], {
           name: "Champagne-gold front grille",
           info: "Perforated metal intake: cool air in through the front, across the radiator, out the back.",
         });
-        b.add(qi(new B(new te(0.66, 1.3, 0.03), m), 0, 0, 0));
+        b.add(qi(new B(chamferBox(0.66, 1.3, 0.034, 0.008), m), 0, 0, 0));
+        // Recessed obsidian OLED bezel + illuminated DGX power bar
+        let oledFrame = qi(
+          new B(chamferBox(0.28, 0.15, 0.018, 0.004), U.darkAnodized(0x11151c)),
+          0,
+          0.52,
+          0.014,
+        );
+        b.add(oledFrame);
         let y = new ut(
-            new ke(0.008, 0.008, 0.032, 6).rotateX(Math.PI / 2),
-            U.plastic(1118481),
+            new ke(0.008, 0.008, 0.036, 6).rotateX(Math.PI / 2),
+            U.plastic(0x101318, 0.65),
             880,
           ),
           E = new je(),
@@ -424,7 +440,7 @@ all-reduce`,
               E.updateMatrix(),
               y.setMatrixAt(M++, E.matrix));
         (b.add(y),
-          [b.children[0], y].forEach((k) => {
+          [b.children[0], oledFrame, y].forEach((k) => {
             ((k.material = k.material.clone()),
               (k.material.userData.shell = !0),
               (k.userData.shellMesh = !0));
@@ -432,13 +448,13 @@ all-reduce`,
           b.userData.explode.set(0, 0, 0.5),
           (a = zi(
             g,
-            0.22,
-            0.1,
-            [0, 0.52, 0.02],
-            [320, 140],
+            0.24,
+            0.11,
+            [0, 0.52, 0.025],
+            [640, 280],
             {
               name: "Front status LCD",
-              info: "Shows the live training loss and accuracy.",
+              info: "High-DPI OLED telemetry display showing live step count, training loss, accuracy, and 4× SXM GPU load.",
             },
             b,
           )));
@@ -488,10 +504,25 @@ replica params ${i.model.P}  in sync: ${i.inSync()}`,
               F.add(Me),
               j.push(Me));
           }
-          let K = new B(new te(0.16, 0.02, 0.18), U.copper());
+          let K = new B(chamferBox(0.16, 0.022, 0.18, 0.003), U.copper());
           ((K.position.y = 0.04),
             F.add(K),
             (K.userData.cold = !0),
+            // Dual knurled brass G1/4" liquid manifold compression fittings per GPU cold-plate
+            F.add(
+              qi(
+                new B(new ke(0.014, 0.014, 0.024, 16), U.knurl(0xc69c46, 0.28)),
+                -0.04,
+                0.062,
+                -0.04,
+              ),
+              qi(
+                new B(new ke(0.014, 0.014, 0.024, 16), U.knurl(0xc69c46, 0.28)),
+                0.04,
+                0.062,
+                0.04,
+              ),
+            ),
             s.push({ g: F, die: H, hbm: j, cp: K }));
         });
         for (let k = 0; k < 4; k++) {
@@ -548,7 +579,27 @@ replica params ${i.model.P}  in sync: ${i.inSync()}`,
           info: "DDC-style pump moves ~1 L/min; reservoir catches air bubbles.",
           explode: [-0.2, 0.2, -0.2],
         });
-        R.add(qi(new B(new ke(0.05, 0.05, 0.22, 20), U.glass(10079487, 0.35)), 0, 0, 0));
+        R.add(
+          qi(new B(new ke(0.05, 0.05, 0.22, 24), U.glass(10079487, 0.35)), 0, 0, 0),
+          qi(
+            new B(new ke(0.054, 0.054, 0.022, 24), U.darkAnodized(0x181e28)),
+            0,
+            0.112,
+            0,
+          ),
+          qi(
+            new B(new ke(0.056, 0.056, 0.044, 24), U.darkAnodized(0x181e28)),
+            0,
+            -0.118,
+            0,
+          ),
+          qi(
+            new B(new ke(0.014, 0.014, 0.024, 16), U.knurl(0xc69c46, 0.28)),
+            0,
+            0.134,
+            0,
+          ),
+        );
         let _ = new B(new ke(0.044, 0.044, 0.18, 20), U.glow(1736959, 0.8));
         ((_.position.y = -0.01), R.add(_), o.push(_));
         let P = g.group([0.05, 1.18, -0.3], {
@@ -725,13 +776,9 @@ replica params ${i.model.P}  in sync: ${i.inSync()}`,
           );
           L.rotation.y = Math.PI / 2;
         }
-        for (let k = 0; k < 3; k++)
-          g.box(
-            0.08,
-            0.02,
-            0.12,
-            U.metal(3816e3),
-            [-0.18 + k * 0.1, 0.1, 0.42],
+        for (let k = 0; k < 3; k++) {
+          let ssd = g.group(
+            [-0.18 + k * 0.11, 0.1, 0.42],
             k
               ? {}
               : {
@@ -739,20 +786,40 @@ replica params ${i.model.P}  in sync: ${i.inSync()}`,
                   info: "Dataset cache. GPUDirect Storage can DMA from NVMe straight into GPU memory, bypassing the CPU.",
                 },
           );
-        for (let k = 0; k < 2; k++)
-          g.box(
-            0.25,
-            0.08,
-            0.35,
-            U.metal(7829367),
-            [-0.14 + k * 0.28, 0.06, -0.33],
+          ssd.add(
+            new B(chamferBox(0.088, 0.026, 0.13, 0.003), U.darkAnodized(0x283240)),
+            qi(
+              new B(chamferBox(0.076, 0.016, 0.012, 0.002), U.metal(0xc8a660, 0.3)),
+              0,
+              0,
+              0.068,
+            ),
+            qi(new B(new Mt(0.004, 10, 8), U.led(0x5fe08a, 0.9)), 0.03, 0.006, 0.068),
+          );
+        }
+        for (let k = 0; k < 2; k++) {
+          let psuG = g.group(
+            [-0.14 + k * 0.28, 0.065, -0.33],
             k
               ? {}
               : {
                   name: "2 × 1600 W PSUs",
-                  info: "Redundant titanium-efficiency supplies on a standard 15–20 A outlet.",
+                  info: "Redundant 80 PLUS Titanium hot-swap supplies with pull-latches, 40 mm exhaust fans, and status LEDs.",
                 },
           );
+          psuG.add(
+            new B(chamferBox(0.25, 0.084, 0.35, 0.005), U.darkAnodized(0x252c36)),
+            qi(new B(chamferBox(0.14, 0.016, 0.032, 0.003), U.alu()), 0, 0, -0.188),
+            qi(
+              new B(chamferBox(0.054, 0.038, 0.012, 0.002), U.plastic(0x0f1318, 0.55)),
+              -0.065,
+              0.008,
+              -0.178,
+            ),
+            qi(new B(new Mt(0.0055, 12, 8), U.led(0x5fe08a, 1.1)), 0.095, 0.022, -0.178),
+          );
+          ni(g, 0.03, [0.055, 0, -0.176], { rot: [Math.PI / 2, 0, 0], speed: 18 }, psuG);
+        }
       },
       ui(g) {
         ((n.board = It(260)),
@@ -1026,14 +1093,39 @@ replica params ${i.model.P}  in sync: ${i.inSync()}`,
   }
   function x() {
     let g = a.ctx;
-    ((g.fillStyle = "#001a10"),
-      g.fillRect(0, 0, 320, 140),
-      (g.fillStyle = "#76ff9a"),
-      (g.font = "bold 26px monospace"),
-      g.fillText("STEP " + i.step, 12, 38),
-      g.fillText("LOSS " + (i.lossHist.at(-1) ?? 0).toFixed(3), 12, 78),
-      g.fillText("ACC  " + (c * 100).toFixed(1) + "%", 12, 118),
-      (a.tex.needsUpdate = !0));
+    g.save();
+    g.scale(2, 2);
+    g.fillStyle = "#040d0b";
+    g.fillRect(0, 0, 320, 140);
+    g.strokeStyle = "#1b4d38";
+    g.lineWidth = 2;
+    g.strokeRect(3, 3, 314, 134);
+    g.fillStyle = "#c8a660";
+    g.font = "bold 12px ui-monospace, Menlo, Consolas, monospace";
+    g.fillText("◈ DGX STATION // 4× SXM H100", 12, 20);
+    g.fillStyle = "#76ff9a";
+    g.font = "bold 20px ui-monospace, Menlo, Consolas, monospace";
+    g.fillText("STEP " + String(i.step).padStart(5, "0"), 12, 48);
+    g.fillText("LOSS " + (i.lossHist.at(-1) ?? 0).toFixed(4), 12, 74);
+    g.fillStyle = "#58c4ff";
+    g.fillText("ACC  " + (c * 100).toFixed(1) + "%", 12, 100);
+    // 4× GPU utilization mini-bars on right half
+    for (let k = 0; k < 4; k++) {
+      let util = k < i.replicas.length && t ? l[k] : 0;
+      let bx = 198 + k * 28;
+      g.fillStyle = "#10221c";
+      g.fillRect(bx, 34, 20, 74);
+      g.fillStyle = "#76b900";
+      g.fillRect(bx, 34 + 74 * (1 - util), 20, 74 * util);
+      g.fillStyle = "#9fb3c8";
+      g.font = "10px ui-monospace, monospace";
+      g.fillText("G" + k, bx + 3, 122);
+    }
+    g.fillStyle = "#8ca49a";
+    g.font = "11px ui-monospace, monospace";
+    g.fillText(`NVLINK SYNC: ${i.inSync() ? "OK" : "WAIT"}`, 12, 124);
+    g.restore();
+    a.tex.needsUpdate = !0;
   }
   return (
     (h.test = () => {
@@ -1418,29 +1510,135 @@ predictable / noise`,
         ],
       },
       build(y) {
-        y.box(1.5, 0.06, 1, U.metal(14212578, 0.4), [0, 0.03, 0], {
+        // Calibrated Newport/Thorlabs M6 dark-anodized optical anti-vibration breadboard + pneumatic isolator legs
+        let benchGrp = y.group([0, 0.03, 0], {
           name: "Anti-vibration bench",
-          info: "",
+          info: "Honeycomb-core M6 tapped dark-anodized stainless optical breadboard on pneumatic vibration isolators so µV extracellular neural recordings aren't swamped by microphonic motion.",
         });
-        let E = y.box(0.9, 0.7, 0.8, U.glass(13625599, 0.12), [-0.2, 0.41, 0], {
+        benchGrp.add(
+          new B(chamferBox(1.52, 0.056, 1.02, 0.006), U.darkAnodized(0x1f252e)),
+          Co(new B(chamferBox(1.535, 0.018, 1.035, 0.003), U.steel()), 0, -0.02, 0),
+        );
+        let holeSurf = Bt(768, 512),
+          hCtx = holeSurf.ctx;
+        hCtx.clearRect(0, 0, 768, 512);
+        hCtx.fillStyle = "rgba(8, 11, 16, 0.72)";
+        hCtx.strokeStyle = "rgba(150, 164, 182, 0.32)";
+        hCtx.lineWidth = 1.2;
+        for (let hx = 24; hx < 768; hx += 24)
+          for (let hy = 24; hy < 512; hy += 24) {
+            hCtx.beginPath();
+            hCtx.arc(hx, hy, 3.2, 0, Math.PI * 2);
+            hCtx.fill();
+            hCtx.stroke();
+          }
+        holeSurf.tex.needsUpdate = !0;
+        let holePlane = new B(
+          new mt(1.48, 0.98),
+          new xt({ map: holeSurf.tex, transparent: !0, depthWrite: !1 }),
+        );
+        holePlane.rotation.x = -Math.PI / 2;
+        holePlane.position.y = 0.0285;
+        holePlane.raycast = () => {};
+        benchGrp.add(holePlane);
+        for (let [lx, lz] of [
+          [-0.68, -0.43],
+          [0.68, -0.43],
+          [-0.68, 0.43],
+          [0.68, 0.43],
+        ])
+          benchGrp.add(
+            Co(new B(new ke(0.048, 0.054, 0.028, 24), U.rubber()), lx, -0.024, lz),
+          );
+
+        let E = y.group([-0.2, 0.41, 0], {
           name: "Incubator chamber (37 °C, 5 % CO₂, humidified)",
           info: "Neurons only survive at body temperature with CO₂-buffered pH and high humidity. FinalSpark keeps organoids alive for 100+ days this way.",
           shell: !0,
           explode: [0, 0.6, 0],
         });
-        (y.box(0.92, 0.02, 0.82, U.metal(12568012), [-0.2, 0.77, 0], {
+        E.add(new B(chamferBox(0.9, 0.7, 0.8, 0.008), U.glass(0xcfe8ff, 0.14)));
+        // Brushed dark-anodized structural corner mullions & door latch
+        for (let [mx, mz] of [
+          [-0.445, -0.395],
+          [0.445, -0.395],
+          [-0.445, 0.395],
+          [0.445, 0.395],
+        ]) {
+          let post = Co(
+            new B(new te(0.018, 0.7, 0.018), U.darkAnodized(0x252d38)),
+            mx,
+            0,
+            mz,
+          );
+          ((post.material = post.material.clone()),
+            (post.material.userData.shell = !0),
+            (post.userData.shellMesh = !0),
+            E.add(post));
+        }
+        let lidGrp = y.group([-0.2, 0.77, 0], {
           shell: !0,
           name: "Incubator lid",
-          info: "",
+          info: "PID-regulated heated top plate preventing condensation over the optical window (37.0 °C · 5.0% CO₂ · 95% RH).",
           explode: [0, 0.8, 0],
-        }),
-          y
-            .group([-0.2, 0.06, 0], {
-              name: "MEA amplifier / stimulator headstage",
-              info: "64-channel low-noise amplifiers (~2 µV rms), 20–30 kHz sampling ADCs and current-controlled stimulators. Recording sees spikes as ~50–200 µV dips; stimulation is biphasic pulses of tens of µA (amplitude slider).",
-              explode: [0, -0.05, 0.3],
-            })
-            .add(Co(new B(new te(0.6, 0.1, 0.55), U.metal(3817544, 0.4)), 0, 0.05, 0)));
+        });
+        let lidMesh = new B(
+          chamferBox(0.93, 0.028, 0.83, 0.006),
+          U.darkAnodized(0x232b36).clone(),
+        );
+        ((lidMesh.material.userData.shell = !0),
+          (lidMesh.userData.shellMesh = !0),
+          lidGrp.add(lidMesh));
+        // PID Incubator OLED readout on front edge of lid
+        let pidSurf = Bt(320, 56),
+          pidCtx = pidSurf.ctx;
+        pidCtx.fillStyle = "#061118";
+        pidCtx.fillRect(0, 0, 320, 56);
+        pidCtx.strokeStyle = "#1e4b68";
+        pidCtx.lineWidth = 2;
+        pidCtx.strokeRect(2, 2, 316, 52);
+        pidCtx.fillStyle = "#5fe08a";
+        pidCtx.font = "bold 20px ui-monospace, Menlo, Consolas, monospace";
+        pidCtx.fillText("37.0°C  5.0% CO2  95% RH", 14, 35);
+        pidSurf.tex.needsUpdate = !0;
+        let pidMesh = Co(
+          new B(new mt(0.32, 0.052), U.screen(pidSurf.tex)),
+          0,
+          0.002,
+          0.418,
+        );
+        ((pidMesh.userData.shellMesh = !0), lidGrp.add(pidMesh));
+
+        let headstage = y.group([-0.2, 0.06, 0], {
+          name: "MEA amplifier / stimulator headstage",
+          info: "64-channel low-noise amplifiers (~2 µV rms), 20–30 kHz sampling ADCs and current-controlled stimulators. Recording sees spikes as ~50–200 µV dips; stimulation is biphasic pulses of tens of µA (amplitude slider).",
+          explode: [0, -0.05, 0.3],
+        });
+        headstage.add(
+          Co(
+            new B(chamferBox(0.62, 0.1, 0.57, 0.008), U.darkAnodized(0x28303d)),
+            0,
+            0.05,
+            0,
+          ),
+          // Machined 316L stainless MEA ZIF clamp collar + 4 knurled thumb-nuts
+          Co(new B(new Pi(0.24, 0.016, 12, 40), U.steel()), 0, 0.108, 0),
+        );
+        headstage.children[1].rotation.x = Math.PI / 2;
+        for (let [nx, nz] of [
+          [-0.22, -0.22],
+          [0.22, -0.22],
+          [-0.22, 0.22],
+          [0.22, 0.22],
+        ])
+          headstage.add(
+            Co(
+              new B(new ke(0.016, 0.016, 0.022, 18), U.knurl(0xbac1c9, 0.28)),
+              nx,
+              0.112,
+              nz,
+            ),
+          );
         let T = y.group([-0.2, 0.17, 0], {
           name: "Multi-electrode array (8×8, TiN on glass)",
           info: "64 titanium-nitride electrodes, 30 µm diameter at 200 µm pitch on glass, gold tracks to contact pads at the edge. Each electrode records and stimulates the neurons right above it.",
@@ -1674,7 +1872,7 @@ predictable / noise`,
           ((W.position.y = -0.065), F.add(W));
           let G = new B(new te(0.2, 0.004, 0.02), U.gold());
           (G.position.set(0.13, -0.066, 0), F.add(G));
-          let le = new B(new ke(0.008, 0.008, 0.36, 8), U.glass(16777215, 0.3));
+          let le = new B(new ke(0.005, 0.005, 0.36, 24), U.darkAnodized(0x222a34));
           ((le.position.y = -0.25), F.add(le));
         }
         {
@@ -1718,33 +1916,64 @@ predictable / noise`,
           let ee = new B(j, e);
           ((ee.position.y = 0.045), F.add(ee));
         }
-        let k = y.group([0.5, 0.06, -0.25], {
+        let k = y.group([0.5, 0.06, -0.22], {
           name: "Microfluidic perfusion pump",
-          info: "Slowly replaces medium (µL/min) so the culture is fed and waste removed without disturbing the cells.",
+          info: "4-roller peristaltic pump slowly replaces medium (µL/min) so the culture is fed and waste removed without shear stress on the neurons.",
           explode: [0.3, 0, -0.2],
         });
-        k.add(Co(new B(new te(0.22, 0.14, 0.18), U.plastic(15132390)), 0, 0.07, 0));
-        let L = new B(new ke(0.05, 0.05, 0.03, 20), U.steel());
-        ((L.rotation.x = Math.PI / 2),
-          L.position.set(0, 0.08, 0.1),
-          k.add(L),
-          (p._rot = L));
+        k.add(
+          Co(
+            new B(chamferBox(0.22, 0.14, 0.18, 0.006), U.darkAnodized(0x283240)),
+            0,
+            0.07,
+            0,
+          ),
+          Co(new B(new Pi(0.056, 0.007, 10, 28), U.glass(0xdff2ff, 0.3)), 0, 0.08, 0.098),
+        );
+        let L = new ft();
+        L.rotation.x = Math.PI / 2;
+        L.position.set(0, 0.08, 0.098);
+        L.add(new B(new ke(0.044, 0.044, 0.026, 24), U.steel()));
+        for (let rIdx = 0; rIdx < 4; rIdx++) {
+          let ang = (rIdx / 4) * Math.PI * 2;
+          L.add(
+            Co(
+              new B(new ke(0.011, 0.011, 0.032, 14), U.brass()),
+              Math.cos(ang) * 0.034,
+              0,
+              Math.sin(ang) * 0.034,
+            ),
+          );
+        }
+        (k.add(L), (p._rot = L));
         for (let F = 0; F < 2; F++) {
           let H = y.group(
             [0.45 + F * 0.14, 0.06, 0.25],
-            F ? {} : { name: "Media reservoirs (fresh / waste)", info: "" },
+            F
+              ? {}
+              : {
+                  name: "Media reservoirs (fresh / waste)",
+                  info: "Borosilicate GL45 media bottles: fresh phenol-red Neurobasal + B27 medium (pink, pH 7.4) and spent metabolic medium.",
+                },
           );
           (H.add(
-            Co(new B(new ke(0.05, 0.05, 0.2, 20), U.glass(16777215, 0.3)), 0, 0.1, 0),
+            Co(new B(new ke(0.05, 0.05, 0.2, 24), U.glass(16777215, 0.3)), 0, 0.1, 0),
+            Co(
+              new B(new ke(0.026, 0.026, 0.034, 20), U.knurl(0x1e5aa8, 0.42)),
+              0,
+              0.214,
+              0,
+            ),
           ),
             H.add(
               Co(
                 new B(
-                  new ke(0.046, 0.046, 0.13, 20),
+                  new ke(0.046, 0.046, 0.13, 24),
                   new et({
                     color: F ? 15910509 : 16740239,
                     transparent: !0,
                     opacity: 0.8,
+                    roughness: 0.15,
                   }),
                 ),
                 0,
@@ -1775,30 +2004,37 @@ predictable / noise`,
             U.glass(16770720, 0.6),
             {},
           ));
-        let z = y.group([0.5, 0.06, 0], {
+        let z = y.group([0.5, 0.06, 0.02], {
           name: "Closed-loop FPGA / DAQ",
           info: "Runs the loop in < 5 ms: detects spikes, decodes motor activity, updates the game, and drives the stimulation pattern for the next frame.",
           explode: [0.3, 0, 0],
         });
-        (z.add(Co(new B(new te(0.26, 0.03, 0.18), U.pcb()), 0, 0.02, 0)),
-          z.add(Co(new B(new te(0.06, 0.012, 0.06), U.chip()), 0, 0.04, 0)),
+        (z.add(
+          Co(new B(chamferBox(0.26, 0.024, 0.18, 0.003), U.pcb(0x123e2a)), 0, 0.018, 0),
+          Co(new B(chamferBox(0.068, 0.014, 0.068, 0.002), U.chip()), 0, 0.036, 0),
+          Co(new B(chamferBox(0.048, 0.018, 0.048, 0.002), U.alu()), 0, 0.05, 0),
+        ),
           Dt(
             y,
             [
-              [0.37, 0.08, 0],
+              [0.37, 0.08, 0.02],
               [0.2, 0.12, 0.1],
               [0.1, 0.09, 0.05],
             ],
-            0.012,
-            7829367,
+            0.01,
+            0x2b3340,
             { name: "Stim/record cable", info: "" },
           ),
-          (l = zi(y, 0.5, 0.36, [0.45, 0.62, -0.47], [320, 240], {
+          (l = buildMonitor3D(y, [0.56, 0.06, -0.42], {
+            crt: !1,
+            w: 0.54,
+            h: 0.38,
+            standH: 0.26,
+            rot: [0, -0.16, 0],
+            res: [640, 480],
             name: "Game monitor",
-            info: "The Pong the culture is playing (also in the panel).",
-          })),
-          y.box(0.54, 0.4, 0.03, U.plastic(1710618), [0.45, 0.62, -0.49], {}),
-          y.box(0.04, 0.32, 0.04, U.plastic(1710618), [0.45, 0.24, -0.49], {}));
+            info: "Closed-loop DishBrain Pong monitor driven live by the biological culture's motor-region firing rate.",
+          })));
       },
       onPick(y, E) {
         return (
@@ -2228,56 +2464,97 @@ sample in B₀`,
         ],
       },
       build(y) {
-        let E = U.plastic(15922423);
-        (y.box(1, 0.04, 0.66, E, [0, 0.02, 0], {}),
-          y.box(1, 0.56, 0.03, E, [0, 0.3, -0.32], {
-            name: "Housing",
-            info: "Gemini Mini is about the size of a desktop printer (~14 kg) and runs from a normal outlet: no cryogenics, because the qubits are nuclear spins in a liquid at room temperature.",
-            shell: !0,
-            explode: [0, 0, -0.4],
-          }),
-          y.box(0.03, 0.56, 0.66, E, [0.49, 0.3, 0], {
+        let E = U.metal(0xcad2dc, 0.32),
+          sapphireMat = U.darkAnodized(0x1b3556),
+          darkBaseMat = U.darkAnodized(0x181e28);
+        // Precision CNC baseplate + machined rubber/stainless feet
+        y.mesh(chamferBox(1.04, 0.042, 0.68, 0.008), darkBaseMat, [0, 0.024, 0], {});
+        for (let [fx, fz] of [
+          [-0.44, -0.27],
+          [0.44, -0.27],
+          [-0.44, 0.27],
+          [0.44, 0.27],
+        ])
+          y.cyl(0.036, 0.04, 0.014, U.steel(), [fx, 0.007, fz], { seg: 20 });
+
+        // Sculpted pearl-silver & sapphire-anodized SpinQ benchtop NMR enclosure (shell: true for Cutaway!)
+        (y.mesh(chamferBox(1.02, 0.56, 0.028, 0.008), E, [0, 0.31, -0.325], {
+          name: "Housing",
+          info: "SpinQ Gemini/Triangulum benchtop NMR quantum workstation (~14–40 kg): CNC pearl-silver aluminium & sapphire-anodized cowling running from a standard wall outlet at room temperature.",
+          shell: !0,
+          explode: [0, 0, -0.4],
+        }),
+          y.mesh(chamferBox(0.028, 0.56, 0.66, 0.008), E, [0.495, 0.31, 0], {
             shell: !0,
             name: "Housing",
             info: "",
             explode: [0.4, 0, 0],
           }),
-          y.box(0.03, 0.56, 0.66, E, [-0.49, 0.3, 0], {
+          y.mesh(chamferBox(0.028, 0.56, 0.66, 0.008), E, [-0.495, 0.31, 0], {
             shell: !0,
             name: "Housing",
             info: "",
             explode: [-0.4, 0, 0],
           }),
-          y.box(1, 0.03, 0.5, E, [0, 0.58, -0.08], {
+          y.mesh(chamferBox(1.02, 0.028, 0.52, 0.008), E, [0, 0.59, -0.075], {
             shell: !0,
             name: "Housing",
             info: "",
             explode: [0, 0.4, 0],
           }),
-          y.box(0.6, 0.3, 0.03, U.plastic(3832789), [-0.18, 0.2, 0.33], {
+          y.mesh(chamferBox(0.58, 0.34, 0.03, 0.008), sapphireMat, [-0.18, 0.22, 0.33], {
             shell: !0,
             name: "Front panel",
-            info: "",
+            info: "Sapphire-anodized front accent panel with RF status ring and sample-port access.",
             explode: [0, 0, 0.4],
           }));
+        // Illuminated cyan quantum status ring on front sapphire facade
+        let qRing = y.torus(0.036, 0.0045, U.led(0x38bdf8, 1.2), [-0.36, 0.22, 0.347], {
+          shell: !0,
+          explode: [0, 0, 0.4],
+        });
+        void qRing;
+
+        // Angled CNC SpinQuasar Capacitive Touchscreen (768×448 high-DPI!)
         let M = y.group([0.2, 0.47, 0.25], {
           name: "Touchscreen (results)",
-          info: "Shows the measured probabilities, like the built-in SpinQuasar software.",
+          info: "Capacitive SpinQuasar display showing exact state-vector probabilities, Monte-Carlo shot samples, and T₂ coherence status.",
           rot: [-0.6, 0, 0],
           explode: [0, 0.2, 0.3],
         });
-        (M.add(new B(new te(0.5, 0.3, 0.02), U.plastic(1118481))),
-          (r = zi(y, 0.46, 0.27, [0, 0, 0.011], [384, 224], {}, M)));
+        (M.add(
+          new B(chamferBox(0.52, 0.32, 0.024, 0.006), U.darkAnodized(0x11161f)),
+          wr(new B(chamferBox(0.53, 0.33, 0.012, 0.006), U.alu()), 0, 0, -0.008),
+        ),
+          (r = zi(y, 0.47, 0.275, [0, 0, 0.013], [768, 448], {}, M)));
+        let tsGlass = wr(
+          new B(new mt(0.475, 0.28), U.glass(0xd8ecff, 0.09)),
+          0,
+          0,
+          0.015,
+        );
+        ((tsGlass.raycast = () => {}), M.add(tsGlass));
+
+        // Precision Halbach / C-Yoke Permanent Magnet Assembly with Copper Thermal Collar
         let T = y.group([-0.18, 0.06, -0.02], {
-            name: "Permanent magnet assembly (B₀ ≈ 0.65 T)",
-            info: "Two NdFeB magnets on an iron yoke make a vertical static field B₀. ¹H then precesses at ~42.6 MHz/T, ³¹P at ~17.2 MHz/T. Field homogeneity of ~1 ppm across the sample is needed to resolve the J-split lines.",
+            name: "Permanent magnet assembly (B₀ ≈ 0.65–1.45 T)",
+            info: "Temperature-stabilised (32.000 ± 0.001 °C) NdFeB permanent magnet yoke with active copper shim coils producing a ~1 ppm homogeneous static B₀ field.",
             explode: [0, 0, 0],
           }),
-          A = U.metal(4869975, 0.5);
+          A = U.darkAnodized(0x2d3542);
         T.add(
-          wr(new B(new te(0.4, 0.05, 0.3), A), 0, 0.025, 0),
-          wr(new B(new te(0.4, 0.05, 0.3), A), 0, 0.445, 0),
-          wr(new B(new te(0.06, 0.47, 0.3), A), -0.17, 0.235, 0),
+          wr(new B(chamferBox(0.42, 0.052, 0.32, 0.006), A), 0, 0.026, 0),
+          wr(new B(chamferBox(0.42, 0.052, 0.32, 0.006), A), 0, 0.445, 0),
+          wr(new B(chamferBox(0.068, 0.47, 0.32, 0.006), A), -0.175, 0.235, 0),
+          // Cylindrical copper thermal-stabilisation shield barrel around bore
+          wr(new B(new ke(0.118, 0.118, 0.36, 36, 1, !0), U.copper()), 0.03, 0.235, 0),
+          // Top sample-insertion chimney collar
+          wr(
+            new B(new ke(0.032, 0.038, 0.07, 24), U.knurl(0xc69c46, 0.28)),
+            0.03,
+            0.505,
+            0,
+          ),
         );
         for (let [_, P] of [
           [0.1, "S"],
@@ -2416,10 +2693,38 @@ sample in B₀`,
             },
             v,
           ),
-          y.box(0.18, 0.1, 0.2, U.metal(8947848), [0.3, 0.11, 0.2], {
-            name: "Power supply",
-            info: "",
-          }));
+          y.mesh(
+            chamferBox(0.18, 0.1, 0.2, 0.005),
+            U.darkAnodized(0x262e3a),
+            [0.3, 0.11, 0.2],
+            {
+              name: "Power supply",
+              info: "Low-ripple linear + switched rail supply feeding the 100 W RF pulse PA and magnet Peltier controller.",
+            },
+          ),
+          // Semi-rigid gold/copper SMA RF coaxial feedlines from DDS/PA stack into NMR saddle coil
+          Dt(
+            y,
+            [
+              [0.16, 0.19, -0.04],
+              [0.04, 0.24, -0.02],
+              [-0.12, 0.28, -0.02],
+            ],
+            0.0055,
+            0xdcad48,
+            { mat: U.gold() },
+          ),
+          Dt(
+            y,
+            [
+              [0.14, 0.09, -0.08],
+              [0.02, 0.14, -0.06],
+              [-0.12, 0.22, -0.04],
+            ],
+            0.005,
+            0xc97448,
+            { mat: U.copper() },
+          ));
         for (let _ = 0; _ < 3; _++) {
           let P = y.group([-0.35 + _ * 0.35, 0.95, 0.05], {
             name: `Bloch sphere q${_}`,
@@ -2432,18 +2737,24 @@ sample in B₀`,
           });
           P.add(
             new B(
-              new Mt(0.14, 32, 16),
+              new Mt(0.14, 36, 20),
               new Cn({
-                color: 10406399,
+                color: 0x9ec9ff,
                 transparent: !0,
-                opacity: 0.12,
-                roughness: 0.1,
+                opacity: 0.14,
+                roughness: 0.06,
+                clearcoat: 1,
                 depthWrite: !1,
               }),
             ),
           );
-          let V = new B(new Pi(0.14, 0.002, 4, 48), U.glow(6719658, 0.6));
+          // Equatorial + twin orthogonal meridian rings + |0⟩/|1⟩ pole pips
+          let V = new B(new Pi(0.14, 0.0022, 6, 56), U.glow(0x58c4ff, 0.7));
           ((V.rotation.x = Math.PI / 2), P.add(V));
+          let mer1 = new B(new Pi(0.14, 0.0015, 6, 56), U.glow(0x3a6b9c, 0.45));
+          P.add(mer1);
+          let mer2 = new B(new Pi(0.14, 0.0015, 6, 56), U.glow(0x3a6b9c, 0.45));
+          ((mer2.rotation.y = Math.PI / 2), P.add(mer2));
           for (let [H, j] of [
             [[1, 0, 0], 16739179],
             [[0, 1, 0], 6283402],
@@ -2932,23 +3243,43 @@ sample in B₀`,
     let E = r.ctx,
       M = 384,
       T = 224;
-    ((E.fillStyle = "#0d1b2a"),
-      E.fillRect(0, 0, M, T),
-      (E.fillStyle = "#9ec9ff"),
-      (E.font = "bold 18px sans-serif"),
-      E.fillText(
-        "SpinQ-style  •  " + i.n + " qubits  •  " + i.ops.length + " gates",
-        10,
-        24,
-      ));
+    E.save();
+    E.scale(2, 2);
+    E.fillStyle = "#08121e";
+    E.fillRect(0, 0, M, T);
+    E.fillStyle = "#102238";
+    E.fillRect(0, 0, M, 30);
+    E.fillStyle = "#58c4ff";
+    E.font = "bold 13px ui-monospace, Menlo, Consolas, monospace";
+    E.fillText(
+      `◈ SPINQUASAR NMR · ${i.n}Q (${Qn[i.n].name}) · ${i.ops.length} GATES`,
+      10,
+      20,
+    );
     let A = y.length,
-      w = (M - 20) / A;
-    for (let v = 0; v < A; v++)
-      ((E.fillStyle = "#3a9bff"),
-        E.fillRect(10 + v * w + 3, T - 30 - y[v] * 150, w - 6, y[v] * 150),
-        (E.fillStyle = "#fff"),
-        (E.font = "13px monospace"),
-        E.fillText(s0(v, i.n), 10 + v * w + 4, T - 12));
+      w = (M - 24) / A,
+      totShots = (i.counts && i.counts.reduce((_, P) => _ + P, 0)) || 1;
+    for (let v = 0; v < A; v++) {
+      let bx = 12 + v * w + 4,
+        bw = Math.max(8, w - 8),
+        bh = y[v] * 144;
+      E.fillStyle = "#14263b";
+      E.fillRect(bx, 42, bw, 144);
+      E.fillStyle = "#3898ff";
+      E.fillRect(bx, 186 - bh, bw, bh);
+      if (i.counts) {
+        let sv = (i.counts[v] || 0) / totShots;
+        E.fillStyle = "#ffd166";
+        E.fillRect(bx + 2, 186 - sv * 144 - 2, bw - 4, 3);
+      }
+      E.fillStyle = "#e6edf3";
+      E.font = "bold 11px ui-monospace, monospace";
+      E.fillText("|" + s0(v, i.n) + "⟩", bx + 2, T - 18);
+      E.fillStyle = "#8fb3d9";
+      E.font = "10px ui-monospace, monospace";
+      E.fillText((y[v] * 100).toFixed(0) + "%", bx + 2, T - 6);
+    }
+    E.restore();
     r.tex.needsUpdate = !0;
   }
   return (
@@ -3917,13 +4248,28 @@ DL · DOR`,
         let $ = U.mosCeramic(),
           Y = U.gold(),
           se = U.plastic(1382171, 0.6);
-        D.box(5.6, 0.06, 3.2, U.metal(0x1b212b, 0.55), [0.3, 0.03, 0], {
-          name: "Display base",
-          info: "Stand for the exhibit: a purple-ceramic/gold MOS 6502 DIP-40 on the left with a 450× magnified silicon die above it, and a MOnSter 6502 discrete-transistor replica on the right.",
-        });
+        D.mesh(
+          chamferBox(5.6, 0.064, 3.2, 0.012),
+          U.darkAnodized(0x181e27),
+          [0.3, 0.032, 0],
+          {
+            name: "Display base",
+            info: "Stand for the exhibit: a purple-ceramic/gold MOS 6502 DIP-40 on the left with a 450× magnified silicon die above it, and a MOnSter 6502 discrete-transistor replica on the right.",
+          },
+        );
         // Carrier PCB + machined IC socket under the DIP-40
-        D.box(2.7, 0.025, 1.02, U.pcb(0x134a2c), [-1.5, 0.072, 1.05], {});
-        D.box(2.46, 0.045, 0.78, U.plastic(0x181c22, 0.52), [-1.5, 0.105, 1.05], {});
+        D.mesh(
+          chamferBox(2.7, 0.025, 1.02, 0.004),
+          U.pcb(0x134a2c),
+          [-1.5, 0.076, 1.05],
+          {},
+        );
+        D.mesh(
+          chamferBox(2.46, 0.045, 0.78, 0.004),
+          U.plastic(0x181c22, 0.52),
+          [-1.5, 0.108, 1.05],
+          {},
+        );
         let he = D.group([-1.5, 0.09, 1.05], {
             name: "DIP-40 package (ceramic, gold lid)",
             info: "Authentic MOS Technology 40-pin purple-brown alumina ceramic dual-in-line package (0.6 in row spacing, 0.1 in pitch) with brazed gold Kovar lid. Pins: A0–A15 address, D0–D7 data, R/W, φ0 clock in, φ1/φ2 out, RDY, IRQ, NMI, RES, SYNC, SO, VCC, 2×VSS. Explode or click 'Open/close lid' to inspect the cavity.",
@@ -3976,10 +4322,12 @@ DL · DOR`,
           let di = [(Te / 19 - 0.5) * 0.18, 0.26, ge * 0.1],
             Et = new oo(
               new N(...di),
-              new N((di[0] + De * 1.1) / 2, 0.3, (di[2] + tt * 1.25) / 2),
+              new N((di[0] + De * 1.1) / 2, 0.305, (di[2] + tt * 1.25) / 2),
               new N(De * 1.1, 0.259, tt * 1.25),
             );
-          I.add(new B(new Zn(Et, 8, 0.0025, 4, !1), J));
+          I.add(new B(new Zn(Et, 18, 0.0028, 8, !1), J));
+          let ballBond = new B(new Mt(0.0048, 8, 6), J);
+          (ballBond.position.set(...di), I.add(ballBond));
           // Stepped DIP shoulder + narrow pin leg
           let shldr = new B(new te(0.056, 0.055, 0.026), pinMetal);
           (shldr.position.set(Ue, 0.145, ge * 0.352), he.add(shldr));
@@ -4183,11 +4531,38 @@ DL · DOR`,
             [0, 0.12, 0.012],
             { bg: "#101010", color: "#e0d0a0" },
             Se,
+          ));
+        let clkCtrl = D.group([1.5, 0.075, 1.05], {
+          name: "Clock & reset controller",
+          info: 'Drives φ0 (the MOnSter needs ≤50 kHz; the chip ran at 1 MHz, later 2–3 MHz), RES and the memory emulation over an IDC ribbon cable (the real board uses a 40-pin "ICR" connector to a host).',
+        });
+        (clkCtrl.add(
+          new B(chamferBox(0.56, 0.022, 0.24, 0.004), U.pcb(0x16442b)),
+          wr(new B(chamferBox(0.14, 0.024, 0.12, 0.003), U.chip()), -0.08, 0.022, 0),
+          wr(new B(chamferBox(0.09, 0.028, 0.045, 0.004), U.steel()), 0.1, 0.024, -0.04),
+          wr(
+            new B(new ke(0.022, 0.022, 0.026, 16), U.plastic(0xc83a32, 0.4)),
+            0.19,
+            0.024,
+            0.04,
           ),
-          D.box(0.5, 0.05, 0.18, se, [1.5, 0.085, 1.05], {
-            name: "Clock & reset controller",
-            info: 'Drives φ0 (the MOnSter needs ≤50 kHz; the chip ran at 1 MHz, later 2–3 MHz), RES and the memory emulation over a ribbon cable (the real board uses a 40-pin "ICR" connector to a host).',
-          }),
+          wr(
+            new B(new te(0.24, 0.028, 0.036), U.plastic(0x151920, 0.5)),
+            0,
+            0.022,
+            -0.09,
+          ),
+        ),
+          Dt(
+            D,
+            [
+              [1.5, 0.095, 0.96],
+              [1.5, 0.08, 0.65],
+              [1.5, 0.12, 0.36],
+            ],
+            0.016,
+            0x4a5260,
+          ),
           (k._tg = at),
           F(!0));
       },
@@ -4942,14 +5317,25 @@ heaters`,
       ],
     },
     build(X) {
-      let W = U.pcb(1255754),
+      let W = U.pcb(0x13422a),
         G = U.plastic(3814736, 0.25),
         le = U.gold();
-      (X.box(5.2, 0.08, 3, W, [0, 0.04, 0], {
+      (X.mesh(chamferBox(5.2, 0.08, 3, 0.012), W, [0, 0.04, 0], {
         name: "Control PCB (DACs, TIAs, ADCs, FPGA)",
         info: "Electronics around the photonic chip: one DAC channel per heater (here 2 × (12 MZI phases + 4 output phases) + 4 modulators), transimpedance amplifiers and ADCs for the photodiodes, and an FPGA/host link for the training loop.",
       }),
-        X.box(2.7, 0.12, 1.5, U.ceramic(), [0, 0.14, 0.2], {
+        // 4 brass PCB corner mounting standoffs
+        [
+          [-2.42, -1.32],
+          [2.42, -1.32],
+          [-2.42, 1.32],
+          [2.42, 1.32],
+        ].forEach(([sx, sz]) =>
+          X.cyl(0.045, 0.045, 0.095, U.brass(), [sx, 0.048, sz], { seg: 6 }),
+        ),
+        // Ceramic Peltier TEC plate + copper sub-mount spreader
+        X.mesh(chamferBox(2.74, 0.036, 1.54, 0.005), U.copper(), [0, 0.098, 0.2], {}),
+        X.mesh(chamferBox(2.68, 0.084, 1.48, 0.006), U.ceramic(), [0, 0.158, 0.2], {
           name: "Thermo-electric cooler (TEC)",
           info: "Keeps the whole chip at a fixed temperature: silicon's refractive index changes by ≈1.8×10⁻⁴ per kelvin, so ambient drift would detune every interferometer.",
         }),
@@ -5012,43 +5398,106 @@ heaters`,
           }),
           b.push(se));
       }
-      let re = X.box(0.22, 0.12, 0.7, U.glass(13625599, 0.5), [-1.38, 0.27, 0.2], {
-          name: "Fiber array (V-groove, edge coupling)",
-          info: "A glass block holding fibres at 127 µm pitch, aligned and glued to the chip edge; spot-size converters taper the waveguides to match the ~10 µm fibre mode.",
-        }),
-        de = X.box(0.7, 0.28, 0.45, U.metal(10134445, 0.35), [-2, 0.22, -0.9], {
-          name: "Laser source (1550 nm DFB, butterfly package)",
-          info: "A narrow-linewidth continuous-wave laser. All channels must be mutually coherent (one laser, split on chip) so that the interference in the mesh is stable.",
-        });
-      ((y = new B(new Mt(0.035, 12, 8), U.glow(16724016, 2))),
-        y.position.set(-1.62, 0.25, -0.9),
+      let re = X.group([-1.38, 0.27, 0.2], {
+        name: "Fiber array (V-groove, edge coupling)",
+        info: "Precision etched fused-silica V-groove block holding single-mode fibres at 127 µm pitch, UV-epoxy bonded to the chip edge; spot-size converters taper the waveguides to match the ~10 µm fibre mode.",
+      });
+      re.add(
+        new B(chamferBox(0.24, 0.12, 0.72, 0.006), U.glass(0xd4ecff, 0.48)),
+        wr(
+          new B(chamferBox(0.08, 0.08, 0.64, 0.004), U.darkAnodized(0x1d242e)),
+          -0.14,
+          0,
+          0,
+        ),
+      );
+      for (let fb = 0; fb < 4; fb++) {
+        let fz = -0.22 + fb * 0.145;
+        re.add(wr(new B(new ke(0.014, 0.018, 0.08, 12), U.rubber()), -0.19, 0, fz));
+      }
+      // Authentic 14-pin gold-plated Kovar butterfly DFB laser package + finned TEC heatsink + FC/APC ferrule
+      let de = X.group([-2, 0.22, -0.9], {
+        name: "Laser source (1550 nm DFB, butterfly package)",
+        info: "14-pin hermetically sealed gold-plated Kovar butterfly DFB laser (1550 nm CW, <100 kHz linewidth) with internal optical isolator, monitor photodiode, and top finned TEC heatsink.",
+      });
+      de.add(new B(chamferBox(0.72, 0.22, 0.44, 0.008), U.gold()));
+      vn(
+        X,
+        0.64,
+        0.4,
+        0.09,
+        [0, 0.155, 0],
+        { fins: 14, mat: U.darkAnodized(0x202832), base: U.darkAnodized(0x202832) },
+        de,
+      );
+      for (let pSide of [-1, 1])
+        for (let pnIdx = 0; pnIdx < 7; pnIdx++)
+          de.add(
+            wr(
+              new B(new te(0.022, 0.008, 0.09), le),
+              -0.24 + pnIdx * 0.08,
+              -0.06,
+              pSide * 0.26,
+            ),
+          );
+      de.add(
+        wr(new B(new ke(0.036, 0.042, 0.14, 20), U.knurl(0x236b3e, 0.36)), 0.41, 0.02, 0),
+      );
+      ((y = new B(new Mt(0.032, 14, 10), U.glow(16724016, 1.8))),
+        y.position.set(-1.54, 0.24, -0.9),
         X.add(y, {}),
         Dt(
           X,
           [
-            [-1.62, 0.25, -0.9],
-            [-1.45, 0.3, -0.6],
-            [-1.6, 0.3, -0.2],
-            [-1.5, 0.3, 0.2],
+            [-1.54, 0.24, -0.9],
+            [-1.42, 0.29, -0.6],
+            [-1.62, 0.29, -0.18],
+            [-1.56, 0.27, 0.2],
           ],
-          0.02,
+          0.018,
           16765952,
           {
             name: "Single-mode fibre (yellow jacket)",
-            info: "Carries the laser light to the chip; on chip it is split into 4 paths, each with an MZ modulator that writes one input value as an amplitude.",
+            info: "SMF-28 single-mode optical fibre with green FC/APC angled physical-contact boot carrying 1550 nm CW light to the V-groove fibre array.",
           },
         ),
-        X.box(0.5, 0.06, 0.5, U.chip(), [1.65, 0.11, 0.9], {
-          name: "TIA + ADC array",
-          info: "Transimpedance amplifiers turn photocurrents into voltages; ADCs digitise them for the host.",
-        }),
-        X.box(0.6, 0.06, 0.6, U.chip(), [-0.4, 0.11, -1.05], {
-          name: "Heater DAC array",
-          info: "Multi-channel DACs drive the heater currents. Programming a matrix = writing a list of phases.",
-        }),
-        X.box(0.7, 0.06, 0.7, U.chip(), [0.6, 0.11, -1.05], {
-          name: "FPGA / host interface",
-          info: "Runs the calibration and the in-situ training loop: perturb a phase, measure the detectors, update.",
+        // BGA ASICs with dark-anodized pin-fin heatsinks
+        [
+          [
+            0.5,
+            0.5,
+            [1.65, 0.11, 0.9],
+            "TIA + ADC array",
+            "Transimpedance amplifiers turn photocurrents into voltages; high-speed ADCs digitise them for the host.",
+          ],
+          [
+            0.6,
+            0.6,
+            [-0.4, 0.11, -1.05],
+            "Heater DAC array",
+            "Multi-channel 16-bit precision DACs drive the TiN thermo-optic heater currents.",
+          ],
+          [
+            0.7,
+            0.7,
+            [0.6, 0.11, -1.05],
+            "FPGA / host interface",
+            "High-speed FPGA running calibration and the in-situ adjoint/perturbation training loop.",
+          ],
+        ].forEach(([cw, cd, cpos, cname, cinfo]) => {
+          let cg = X.group(cpos, { name: cname, info: cinfo });
+          cg.add(
+            new B(chamferBox(cw, 0.045, cd, 0.004), U.chip()),
+            wr(
+              new B(
+                chamferBox(cw * 0.84, 0.036, cd * 0.84, 0.004),
+                U.darkAnodized(0x262f3b),
+              ),
+              0,
+              0.04,
+              0,
+            ),
+          );
         }));
       for (let Y = 0; Y < 14; Y++) {
         let se = -1.1 + Y * 0.17;
@@ -5064,24 +5513,63 @@ heaters`,
         );
       }
       let D = X.group([0, 0.08, -1], {});
+      void D;
       A = [];
       for (let Y = 0; Y < 3; Y++) {
         let se = Bt(256, 256);
         A.push(se);
+        let plateGrp = X.group([1.7 + Y * 0.3, 0.55, -1], {
+          name: Y ? void 0 : "Diffractive layers (3D-printed phase plates)",
+          info: "D²NN after Lin et al., Science 361, 1004 (2018): each pixel of a 3D-printed plate delays the wave by its thickness (here 64 phase pixels in 1-D), held in a kinematic optical mount.",
+        });
         let he = new B(new te(0.02, 0.62, 0.62), [
-          new et({ map: se.tex, roughness: 0.6 }),
-          new et({ map: se.tex, roughness: 0.6 }),
-          U.plastic(14538956),
-          U.plastic(14538956),
-          U.plastic(14538956),
-          U.plastic(14538956),
-        ]);
-        (he.position.set(1.7 + Y * 0.3, 0.55, -1),
-          X.add(he, {
-            name: Y ? void 0 : "Diffractive layers (3D-printed phase plates)",
-            info: "D²NN after Lin et al., Science 361, 1004 (2018): each pixel of a 3D-printed plate delays the wave by its thickness (here 64 phase pixels in 1-D). Trained phase patterns route each input pattern's light to its own detector region. Their THz version used 0.4 THz (λ ≈ 0.75 mm); the same physics works for visible light at nanometre scale.",
+          new et({
+            map: se.tex,
+            roughness: 0.82,
+            metalness: 0.05,
+            envMapIntensity: 0.25,
           }),
-          w.push(he));
+          new et({
+            map: se.tex,
+            roughness: 0.82,
+            metalness: 0.05,
+            envMapIntensity: 0.25,
+          }),
+          U.plastic(0x6e6656, 0.68),
+          U.plastic(0x6e6656, 0.68),
+          U.plastic(0x6e6656, 0.68),
+          U.plastic(0x6e6656, 0.68),
+        ]);
+        plateGrp.add(
+          he,
+          // Black-anodized Thorlabs-style kinematic optical mount frame + post + brass micrometer screw
+          wr(
+            new B(chamferBox(0.038, 0.68, 0.035, 0.004), U.darkAnodized(0x181d24)),
+            0,
+            0,
+            -0.325,
+          ),
+          wr(
+            new B(chamferBox(0.038, 0.68, 0.035, 0.004), U.darkAnodized(0x181d24)),
+            0,
+            0,
+            0.325,
+          ),
+          wr(
+            new B(chamferBox(0.038, 0.035, 0.68, 0.004), U.darkAnodized(0x181d24)),
+            0,
+            -0.325,
+            0,
+          ),
+          wr(new B(new ke(0.016, 0.016, 0.28, 16), U.steel()), 0, -0.45, -0.3),
+          wr(
+            new B(new ke(0.012, 0.012, 0.045, 16), U.knurl(0xc69c46, 0.28)),
+            0.028,
+            0.28,
+            0.325,
+          ),
+        );
+        w.push(plateGrp);
       }
       v = Bt(512, 128);
       let $ = new B(
@@ -5470,9 +5958,7 @@ heaters`,
       let $ = de.ctx;
       for (let Y = 0; Y < 64; Y++) {
         let se = (((u.phi[D][Y] % 6.2832) + 6.2832) % 6.2832) / 6.2832;
-        (($.fillStyle = `rgb(${(200 + 50 * se) | 0},${(190 + 50 * se) | 0},${(170 + 60 * se) | 0})`),
-          $.fillRect(0, Y * 4, 256, 4),
-          ($.fillStyle = `rgba(0,0,0,${0.5 * (1 - se)})`),
+        (($.fillStyle = `rgb(${(72 + 96 * se) | 0},${(68 + 88 * se) | 0},${(96 + 98 * se) | 0})`),
           $.fillRect(0, Y * 4, 256, 4));
       }
       de.tex.needsUpdate = !0;
@@ -5490,7 +5976,7 @@ heaters`,
       Ee.forEach((de, D) => {
         for (let $ = 0; $ < 64; $++) {
           let Y = Math.sqrt(Ln(de[$]) / re);
-          ((X.fillStyle = `rgba(${(120 + 135 * Y) | 0},${(60 + 150 * Y) | 0},255,${Y})`),
+          ((X.fillStyle = `rgba(${(110 + 125 * Y) | 0},${(55 + 135 * Y) | 0},245,${(0.68 * Y).toFixed(3)})`),
             X.fillRect((D * W) / be, G - (($ + 1) * G) / 64, W / be - 2, G / 64 + 0.5));
         }
       }),
@@ -6036,13 +6522,23 @@ diffusion medium`,
           ((Me = !1), console.warn("alife GPU init failed, CPU fallback", Oe));
         }
         let J = U.metal(0x7c8694, 0.34),
-          ie = U.metal(0x1c222b, 0.38);
-        Q.box(5, 0.07, 3, U.metal(0x161d26, 0.48), [0, 0.035, 0], {
-          name: "Optical breadboard",
-          info: "Anodized honeycomb optical bench for the wet computers: vibration-isolated steel & aluminium deck where chemical & DNA logic are read out optically.",
-        });
+          ie = U.darkAnodized(0x1c222b);
+        Q.mesh(
+          chamferBox(5.05, 0.072, 3.05, 0.012),
+          U.darkAnodized(0x171e27),
+          [0, 0.036, 0],
+          {
+            name: "Optical breadboard",
+            info: "Anodized honeycomb optical bench for the wet computers: vibration-isolated steel & aluminium deck where chemical & DNA logic are read out optically.",
+          },
+        );
         // Anodized bezel + calibrated opal diffuser backlight (prevents HDR white clipping)
-        Q.box(1.98, 0.065, 1.98, U.metal(0x232a35, 0.38), [-0.9, 0.102, 0.1], {});
+        Q.mesh(
+          chamferBox(1.98, 0.065, 1.98, 0.008),
+          U.darkAnodized(0x232a35),
+          [-0.9, 0.102, 0.1],
+          {},
+        );
         let fe = Q.box(1.84, 0.075, 1.84, U.glow(0xb4d0e0, 0.18), [-0.9, 0.11, 0.1], {
             name: "LED light table (backlight)",
             info: "Calibrated uniform opal-glass transilluminator: patterns in the Petri dish are imaged by transmitted light without saturating the scientific camera sensor.",
@@ -6148,11 +6644,47 @@ diffusion medium`,
           name: "Droplets (picolitre reactors)",
           info: "Each droplet carries ~100 nM gate complex, reporter, and the inputs. Green = fluorescence from the reporter, i.e. released output strand. Brightness is computed from the strand-displacement kinetics at that droplet's age.",
         });
-        let Ke = Q.box(0.25, 0.12, 0.2, U.glow(4029439, 0.75), [1.2, 0.95, 0.55], {
+        // Machined 470 nm Blue Excitation LED Illuminator + 515 nm Dichroic Filter Barrel
+        let excGrp = Q.group([1.2, 0.95, 0.55], {
           name: "Blue excitation LED + emission filter",
-          info: "470 nm narrowband LED excites the FAM reporter fluorophore; a 515 nm dichroic long-pass filter passes only green emission to the camera.",
+          info: "470 nm narrowband royal-blue LED illuminator in finned anodized housing + 515 nm dichroic long-pass filter barrel passing only green FAM reporter emission.",
         });
-        Q.box(0.05, 0.85, 0.05, J, [1.2, 0.5, 0.25], {});
+        excGrp.add(
+          new B(chamferBox(0.26, 0.11, 0.22, 0.008), U.darkAnodized(0x202733)),
+          wr(
+            new B(new ke(0.082, 0.088, 0.055, 28), U.knurl(0x2e3948, 0.34)),
+            0,
+            -0.072,
+            0,
+          ),
+          wr(new B(new ke(0.072, 0.072, 0.018, 28), U.glow(4029439, 0.9)), 0, -0.098, 0),
+          wr(new B(chamferBox(0.16, 0.012, 0.06, 0.003), U.alu()), 0, 0.01, -0.14),
+        );
+        Q.cyl(0.022, 0.022, 0.88, U.steel(), [1.2, 0.51, 0.25], { seg: 18 });
+        // Printed volumetric syringe graduation scale (shared across all 3 borosilicate syringes)
+        let gradSurf = Bt(256, 128),
+          gCtx = gradSurf.ctx;
+        gCtx.clearRect(0, 0, 256, 128);
+        gCtx.strokeStyle = "rgba(230, 242, 255, 0.85)";
+        gCtx.fillStyle = "rgba(230, 242, 255, 0.9)";
+        gCtx.font = "bold 14px ui-monospace, monospace";
+        gCtx.lineWidth = 2;
+        for (let tIdx = 1; tIdx <= 20; tIdx++) {
+          let tx = 18 + tIdx * 11;
+          let major = tIdx % 5 === 0;
+          gCtx.beginPath();
+          gCtx.moveTo(tx, 52);
+          gCtx.lineTo(tx, major ? 82 : 68);
+          gCtx.stroke();
+          if (major) gCtx.fillText((tIdx / 10).toFixed(1), tx - 10, 98);
+        }
+        gradSurf.tex.needsUpdate = !0;
+        let gradMat = new xt({
+          map: gradSurf.tex,
+          transparent: !0,
+          depthWrite: !1,
+          toneMapped: !1,
+        });
         // 3 Precision Lead-Screw Laboratory Syringe Pumps (Gate, Input A, Input B)
         for (let Oe = 0; Oe < 3; Oe++) {
           let rt = -0.55 - Oe * 0.34,
@@ -6207,11 +6739,16 @@ diffusion medium`,
               0,
             ),
           );
-          // Clear borosilicate graduated syringe barrel + colored DNA reagent + plunger + Luer hub
+          // Clear borosilicate graduated syringe barrel + printed scale + colored DNA reagent + plunger + Luer hub
           let barrel = new B(new ke(0.046, 0.046, 0.52, 24), U.glass(0xdff2ff, 0.26));
           ((barrel.rotation.z = Math.PI / 2),
             barrel.position.set(0.16, 0.225, 0),
             pumpGrp.add(barrel));
+          let scalePlane = new B(new mt(0.46, 0.052), gradMat);
+          (scalePlane.position.set(0.16, 0.273, 0),
+            (scalePlane.rotation.x = -Math.PI / 2),
+            (scalePlane.raycast = () => {}),
+            pumpGrp.add(scalePlane));
           let liquid = new B(new ke(0.038, 0.038, 0.32, 20), U.glow(reagentCol, 0.25));
           ((liquid.rotation.z = Math.PI / 2),
             liquid.position.set(0.24, 0.225, 0),
