@@ -2,6 +2,23 @@
 
 All notable changes to **Computer Evolution Lab** are documented in this file.
 
+## [3.0.0] - 2026-11-11
+
+### Added
+
+- **4-Circle Architectural Campus (`32` Operational Machines / `33` Live 3D Scenes)**:
+  - Expanded the museum into 4 spatial Grand Circles connected by illuminated floor light-bridges, concentric plaza rings, raised **★ Capital Breakthrough** centerpieces, and 1-click `#plaza-nav` camera flights (`All 4 Circles`, `Circle I–IV`):
+    1. **Circle I — Personal, Logic & Bio/Optical (`16` machines, ★ Capital: `1975` MOS 6502)**: `m6502`, `turing`, `z1`, `analog`, `tube`, `pdp8`, `altair`, `home80`, `pc90`, `pc00`, `pc10`, `pc20`, `aibox`, `bci`, `photonic`, `alife`.
+    2. **Circle II — Mainframes & Enterprise Servers (`5` machines, ★ Capital: `1964` IBM System/360)**: `s360` (Model 50 ROS microcode, 8-bit byte, Packed-BCD ledger, autonomous `CCW` channels), `unix70` (DEC PDP-11/70 22-bit APR MMU, `fork`/`exec`/`pipe`, inodes & ARPANET), `sun90` (Sun SPARCcenter 4-CPU snooping `MESI` + 5-disk SCSI RAID-5 XOR recovery), `cloud10` (Open-Compute 48V rack + 5-node `Raft` consensus & Clos fabric), and `zmain20` (Telum z16 2 GB Virtual L3/L4 ring, 5-channel `RAIM` memory failover & `<1 ms` inline AI fraud ACID scoring).
+    3. **Circle III — Supercomputers (`5` machines, ★ Capital: `1976` Cray-1 Vector)**: `cray1` (270° Freon C-cylinder, `V0–V7` 64-element vector registers & single-chime Vector Chaining), `cm2` (Thinking Machines 65,536-PE SIMD Cube-of-Cubes, Hillis–Steele parallel prefix scan & 12-D hypercube `e-cube` XOR router), `bgene` (IBM Blue Gene 3D periodic Torus stencil + hardware binary-tree `MPI_Allreduce` + Amdahl/Gustafson law), `exascale` (ORNL Frontier `1.194 ExaFLOPS` mixed-precision iterative-refinement HPL + 3-hop Slingshot Dragonfly UGAL routing), and `gb200` (Blackwell NVL72 72-GPU liquid-cooled AI rack + trainable Top-2 Mixture-of-Experts over `130 TB/s` copper NVLink5).
+    4. **Circle IV — The Age of Quantum Computers (`6` machines, ★ Capital: `2045+` OMEGA-Q Horizon)**: `quantum` (SpinQ 2-qubit NMR), `qatom` (`⁸⁷Rb` Rydberg optical tweezers + RK4 `C₆/R⁶` blockade `CZ` gate & 2D AOD zone shuttling), `qtransmon` (`15 mK` `³He/⁴He` dilution chandelier + below-threshold `d=3/5` Rotated Surface Code QEC), `qphotonic` (room-temperature fusion photonic `|G₄⟩` cluster-state MBQC + `4 K` SNSPD Pauli feedforward), `qtopo` (Kitaev `16×16` BdG Majorana nanowire tetron + non-Abelian `σ₁, σ₂` braiding), and `qomega` (fault-tolerant `d=31` `qLDPC` horizon QPU executing exact `QFT₂₅₆` Shor factoring of `15, 21, 33, 35`, `256`-state Grover search, and exact `1s` Slater MO-CI `H₂` potential energy surface).
+- **135 New Hardware & Software Abstraction Layers (`288` Total Across 32 Machines)**:
+  - Added `src/layers/layers-expansion.js` with 10 custom Canvas2D domain visualizers (`s360ch`, `unixapr`, `mesiraid`, `raftquorum`, `craypipe`, `cm2cube`, `torus3d`, `surfcodesyn`, `majoranabdg`, `omegashor`) and 135 part-matched hardware/software layer probes.
+- **3-Tab MIT / Stanford / Caltech CS Engineering Atlas (`src/app/compare-modal.js`)**:
+  - Added Circle-filtered quantitative log plots, a chronological **Big-Drop Years vs. Quiet / Winter Bottleneck Years (`1936–2045+`)** breakdown, and a **Mainframe vs. Server vs. Supercomputer vs. Quantum** comparative systems matrix.
+- **Expanded Symphonic Score & Hardware Acoustics**:
+  - Added 15 new orchestral score profiles and edge-triggered hardware acoustic SFX bindings across all enterprise, supercomputing, and quantum machines.
+
 ## [2.0.0] - 2026-11-10
 
 ### Added
@@ -18,7 +35,7 @@ All notable changes to **Computer Evolution Lab** are documented in this file.
 - **Symphonic & Hybrid WebAudio Score Engine (`src/audio/cinematic-score.js`)**:
   - Concert-hall multi-reflection convolution reverb, stereo divisi strings with body formants & delayed vibrato, stretched-harmonic felt grand piano, 32'–2' cathedral pipe organ with wind chiff, conical-bore French horns & low brass swells, 3-formant choir, CS-80 ribbon lead, Bessel-mode timpani, pocket-watch escapement, 18 original multi-bar cues, manual Composer Palette selector, and 24 hardware acoustic SFX.
 - **Automated Verification & 4K Audit Tooling**:
-  - Zero-dependency HTTP server (`tools/serve.mjs`), Chrome DevTools Protocol WebGL2 harness (`tools/cdp-harness.mjs`), full 17-machine + 153-layer + audio + `file://` test suite (`tools/run-tests.mjs`), Node unit tests (`tests/simulators.test.mjs`), exhaustive static symbol auditor (`tools/audit-exhaustive.mjs`), and 4K UHD pixel-clipping auditor (`tools/render-4k-audit.mjs`).
+  - Zero-dependency HTTP server (`tools/serve.mjs`), Chrome DevTools Protocol WebGL2 harness (`tools/cdp-harness.mjs`), full WebGL2 + `file://` test suite (`tools/run-tests.mjs`), Node unit tests (`tests/simulators.test.mjs`), exhaustive static symbol auditor (`tools/audit-exhaustive.mjs`), and 4K UHD pixel-clipping auditor (`tools/render-4k-audit.mjs`).
 
 ### Fixed
 

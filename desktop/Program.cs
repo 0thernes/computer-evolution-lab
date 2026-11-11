@@ -566,8 +566,20 @@ internal sealed class LabWindow : Form
             }
 
             string pc20Check = await _webView.CoreWebView2.ExecuteScriptAsync(
-                "(() => { LAB.select('pc20'); for (let i = 0; i < 8; i++) { LAB.active.update(0.016, i * 0.016, { diagram: LAB.active.diag, openCard: () => {} }); } LAB.fx.render(); return { active: LAB.active.id, parts: LAB.active.kit.parts.length, machines: LAB.machines.length, webgl2: !!LAB.renderer.capabilities.isWebGL2 }; })()"
+                "(() => { for (const id of ['pc20', 's360', 'cray1', 'qomega']) { LAB.select(id); for (let i = 0; i < 6; i++) { LAB.active.update(0.016, i * 0.016, { diagram: LAB.active.diag, openCard: () => {} }); } } LAB.fx.render(); return { active: LAB.active.id, parts: LAB.active.kit.parts.length, machines: LAB.machines.length, webgl2: !!LAB.renderer.capabilities.isWebGL2 }; })()"
             );
+
+            if (!pc20Check.Contains("\"machines\":32", StringComparison.Ordinal))
+            {
+                File.WriteAllText(
+                    reportPath,
+                    $"VERIFY_FAIL: Expected 32 machines in UI check, got {pc20Check}",
+                    Encoding.UTF8
+                );
+                VerifyExitCode = 8;
+                Close();
+                return;
+            }
 
             await Task.Delay(250);
 

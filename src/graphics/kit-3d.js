@@ -76,6 +76,32 @@ function chamferBox(w, h, d, radius, segs = 3) {
     }
   }
 
+  geo.computeTangents();
+  const tan = geo.attributes.tangent;
+  if (tan) {
+    for (let i = 0; i < tan.count; i++) {
+      const tx = tan.getX(i),
+        ty = tan.getY(i),
+        tz = tan.getZ(i);
+      if (
+        !Number.isFinite(tx) ||
+        !Number.isFinite(ty) ||
+        !Number.isFinite(tz) ||
+        tx * tx + ty * ty + tz * tz < 1e-6
+      ) {
+        const nx = nrm.getX(i),
+          ny = nrm.getY(i),
+          nz = nrm.getZ(i);
+        // Orthonormal fallback tangent perpendicular to vertex normal
+        if (Math.abs(ny) < 0.9) {
+          const inv = 1 / Math.hypot(nz, nx);
+          tan.setXYZW(i, nz * inv, 0, -nx * inv, 1);
+        } else {
+          tan.setXYZW(i, 1, 0, 0, 1);
+        }
+      }
+    }
+  }
   geo.parameters = { width: w, height: h, depth: d };
   geo.userData.boxDims = [w, h, d];
   geo.computeBoundingBox();

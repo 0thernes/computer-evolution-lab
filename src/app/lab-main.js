@@ -38,7 +38,7 @@
 
   const scene = new Ni();
   scene.background = new Ae(0x090d14);
-  scene.fog = new pa(0x090d14, 24, 62);
+  scene.fog = new pa(0x090d14, 52, 138);
 
   const pmrem = new so(renderer);
   scene.environment = pmrem.fromScene(buildStudioEnvironmentScene(), 0.032).texture;
@@ -86,9 +86,43 @@
   const fx = new Qu(renderer, scene, camera, keyLight);
   const slicer = new CrossSectionSlicer(renderer, scene);
 
-  // ---- 2. Instantiate All 17 Functional Machines ----
-  const factories = [zm, qm, Wm, Xm, Zm, Km, Jm, o1, l1, c1, d1, p1, M1, y1, g1, S1, A1];
-  const frontierSet = new Set(["m6502", "quantum", "bci", "photonic", "alife"]);
+  // ---- 2. Instantiate All 32 Functional Machines Across 4 Grand Circles ----
+  const factories = [
+    zm,
+    qm,
+    Wm,
+    Xm,
+    Zm,
+    Km,
+    Jm,
+    o1,
+    l1,
+    c1,
+    d1,
+    p1,
+    M1,
+    y1,
+    g1,
+    S1,
+    A1,
+    makeMachineS360,
+    makeMachineUnix70,
+    makeMachineSun90,
+    makeMachineCloud10,
+    makeMachineZmain20,
+    makeMachineCray1,
+    makeMachineCm2,
+    makeMachineBgene,
+    makeMachineExascale,
+    makeMachineGb200,
+    makeMachineQtransmon,
+    makeMachineQatom,
+    makeMachineQphotonic,
+    makeMachineQtopo,
+    makeMachineQomega,
+  ];
+  const frontierSet = new Set(["m6502", "bci", "photonic", "alife"]);
+  const capitalSet = new Set(["m6502", "s360", "cray1", "qomega"]);
   const machines = [];
   const diagCanvas = $("#diag");
 
@@ -106,6 +140,7 @@
   for (const makeMachine of factories) {
     const m = makeMachine();
     if (frontierSet.has(m.id)) m.group = "center";
+    else if (m.id === "quantum") m.group = "quantum";
     const holder = new ft();
     const root = new ft();
     holder.add(root);
@@ -166,81 +201,224 @@
     if (sfxSpec) hi(sfxSpec[0], sfxSpec[1]);
   };
 
-  const historyRing = machines.filter((m) => m.group !== "center");
+  const historyRing = machines.filter(
+    (m) =>
+      m.group !== "center" &&
+      m.group !== "servers" &&
+      m.group !== "super" &&
+      m.group !== "quantum",
+  );
   const frontierCircle = machines.filter((m) => m.group === "center");
+  const serversCircle = machines.filter((m) => m.group === "servers");
+  const superCircle = machines.filter((m) => m.group === "super");
+  const quantumCircle = machines.filter((m) => m.group === "quantum");
 
-  // ---- 3. Hub Gallery Pedestal & Concentric Light Rings ----
+  const PLAZAS = {
+    c1: {
+      cx: 0,
+      cz: -6.5,
+      innerR: 4.15,
+      outerR: 8.8,
+      hex: 0xffb347,
+      css: "#ffb347",
+      title: "CIRCLE I · PERSONAL, LOGIC & BIO/OPTICAL",
+      sub: "★ Capital Centerpiece: 1975 MOS 6502 ($25 Microprocessor)",
+      camPos: [0, 17.5, 10.5],
+      camTarget: [0, 0, -6.5],
+    },
+    c2: {
+      cx: -17.5,
+      cz: 5.5,
+      innerR: 0,
+      outerR: 5.0,
+      hex: 0x38bdf8,
+      css: "#38bdf8",
+      title: "CIRCLE II · MAINFRAMES & ENTERPRISE SERVERS",
+      sub: "★ Capital Centerpiece: 1964 IBM System/360 (8-Bit Byte & Channels)",
+      camPos: [-17.5, 12.2, 17.5],
+      camTarget: [-17.5, 0, 5.5],
+    },
+    c3: {
+      cx: 17.5,
+      cz: 5.5,
+      innerR: 0,
+      outerR: 5.0,
+      hex: 0xf97316,
+      css: "#f97316",
+      title: "CIRCLE III · SUPERCOMPUTERS (VECTOR → EXASCALE → AI)",
+      sub: "★ Capital Centerpiece: 1976 Cray-1 Vector (80 MHz Chaining)",
+      camPos: [17.5, 12.2, 17.5],
+      camTarget: [17.5, 0, 5.5],
+    },
+    c4: {
+      cx: 0,
+      cz: 14.8,
+      innerR: 0,
+      outerR: 5.4,
+      hex: 0xc084fc,
+      css: "#c084fc",
+      title: "CIRCLE IV · THE AGE OF QUANTUM COMPUTERS",
+      sub: "★ Capital Centerpiece: 2045+ OMEGA-Q Fault-Tolerant Horizon",
+      camPos: [0, 12.6, 27.5],
+      camTarget: [0, 0, 14.8],
+    },
+  };
+
+  // ---- 3. 4-Plaza Hub Campus Pedestals, FloorPlaques & Light Bridges ----
   const hubStage = new ft();
   scene.add(hubStage);
   {
-    const dais = new B(
-      new ke(2.15, 2.35, 0.085, 72),
-      new et({
-        color: 0x18202c,
-        roughness: 0.36,
-        metalness: 0.68,
-        emissive: 0xff8a30,
-        emissiveIntensity: 0.04,
-      }),
-    );
-    dais.position.y = 0.042;
-    dais.receiveShadow = true;
-    hubStage.add(dais);
+    const rims = [];
+    const buildFloorPlaque = (cx, cz, title, sub, accentCss) => {
+      const surf = Bt(1024, 200);
+      const c = surf.ctx;
+      c.fillStyle = "rgba(9, 14, 22, 0.9)";
+      c.fillRect(0, 0, 1024, 200);
+      c.strokeStyle = accentCss;
+      c.lineWidth = 6;
+      c.strokeRect(8, 8, 1008, 184);
+      c.fillStyle = accentCss;
+      c.font = "700 38px Inter, system-ui, sans-serif";
+      c.textAlign = "center";
+      c.fillText(title, 512, 86);
+      c.fillStyle = "#e2ecf7";
+      c.font = "600 27px ui-monospace, Menlo, Consolas, monospace";
+      c.fillText(sub, 512, 146);
+      surf.tex.needsUpdate = true;
+      const plaque = new B(
+        new mt(5.4, 1.05),
+        new xt({ map: surf.tex, transparent: true, depthWrite: false }),
+      );
+      plaque.rotation.x = -Math.PI / 2;
+      plaque.position.set(cx, 0.016, cz);
+      hubStage.add(plaque);
+    };
 
-    const coreRim = new B(
-      new Pi(2.24, 0.03, 12, 120),
-      new et({ color: 0x1a140a, emissive: 0xffa638, emissiveIntensity: 0.72 }),
-    );
-    coreRim.rotation.x = Math.PI / 2;
-    coreRim.position.y = 0.09;
-    hubStage.add(coreRim);
+    for (const p of Object.values(PLAZAS)) {
+      const dais = new B(
+        new ke(1.95, 2.18, 0.095, 72),
+        new et({
+          color: 0x18202c,
+          roughness: 0.34,
+          metalness: 0.7,
+          emissive: p.hex,
+          emissiveIntensity: 0.06,
+        }),
+      );
+      dais.position.set(p.cx, 0.048, p.cz);
+      dais.receiveShadow = true;
+      hubStage.add(dais);
 
-    const innerRing = new B(
-      new Pi(4.6, 0.018, 8, 144),
-      new et({ color: 0x081822, emissive: 0x58c4ff, emissiveIntensity: 0.52 }),
-    );
-    innerRing.rotation.x = Math.PI / 2;
-    innerRing.position.y = 0.02;
-    hubStage.add(innerRing);
+      const coreRim = new B(
+        new Pi(2.06, 0.032, 12, 120),
+        new et({ color: 0x141820, emissive: p.hex, emissiveIntensity: 0.78 }),
+      );
+      coreRim.rotation.x = Math.PI / 2;
+      coreRim.position.set(p.cx, 0.096, p.cz);
+      hubStage.add(coreRim);
+      rims.push(coreRim);
 
-    const outerRing = new B(
-      new Pi(9.5, 0.015, 8, 192),
-      new et({ color: 0x101824, emissive: 0x7aa2d4, emissiveIntensity: 0.28 }),
-    );
-    outerRing.rotation.x = Math.PI / 2;
-    outerRing.position.y = 0.02;
-    hubStage.add(outerRing);
-    hubStage.userData.rim = coreRim;
+      if (p.innerR > 0) {
+        const innerRing = new B(
+          new Pi(p.innerR, 0.018, 8, 144),
+          new et({ color: 0x081822, emissive: 0x58c4ff, emissiveIntensity: 0.52 }),
+        );
+        innerRing.rotation.x = Math.PI / 2;
+        innerRing.position.set(p.cx, 0.02, p.cz);
+        hubStage.add(innerRing);
+      }
+
+      const outerRing = new B(
+        new Pi(p.outerR, 0.022, 10, 192),
+        new et({ color: 0x101824, emissive: p.hex, emissiveIntensity: 0.38 }),
+      );
+      outerRing.rotation.x = Math.PI / 2;
+      outerRing.position.set(p.cx, 0.02, p.cz);
+      hubStage.add(outerRing);
+
+      buildFloorPlaque(p.cx, p.cz + p.outerR + 1.25, p.title, p.sub, p.css);
+    }
+
+    // Glowing architectural floor walkways linking the 4 Circles
+    const addBridge = (a, b, hex) => {
+      const dx = b.cx - a.cx;
+      const dz = b.cz - a.cz;
+      const dist = Math.hypot(dx, dz);
+      const trimStart = a.outerR + 0.35;
+      const trimEnd = b.outerR + 0.35;
+      const len = Math.max(0.5, dist - trimStart - trimEnd);
+      const ang = Math.atan2(dx, dz);
+      const ux = dx / dist;
+      const uz = dz / dist;
+      const mx = a.cx + ux * (trimStart + len * 0.5);
+      const mz = a.cz + uz * (trimStart + len * 0.5);
+      const strip = new B(
+        new te(0.11, 0.008, len),
+        new et({ color: 0x101824, emissive: hex, emissiveIntensity: 0.45 }),
+      );
+      strip.position.set(mx, 0.012, mz);
+      strip.rotation.y = ang;
+      hubStage.add(strip);
+    };
+    addBridge(PLAZAS.c1, PLAZAS.c2, 0x38bdf8);
+    addBridge(PLAZAS.c1, PLAZAS.c3, 0xf97316);
+    addBridge(PLAZAS.c1, PLAZAS.c4, 0xc084fc);
+    addBridge(PLAZAS.c2, PLAZAS.c4, 0x7dd3fc);
+    addBridge(PLAZAS.c3, PLAZAS.c4, 0xfbbf24);
+
+    hubStage.userData.rims = rims;
   }
 
-  // ---- 4. Era Timeline Navigation Bar ----
+  // ---- 4. Era & 4-Circle Timeline Navigation Bar ----
   const timelineEl = $("#timeline");
-  const makeTimelineBtn = (item) =>
-    q(
+  const makeTimelineBtn = (item) => {
+    const cls = [
+      item.group === "center"
+        ? "ctr"
+        : item.group === "servers"
+          ? "srv"
+          : item.group === "super"
+            ? "sup"
+            : item.group === "quantum"
+              ? "qnt"
+              : "",
+      capitalSet.has(item.id) ? "cap" : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
+    return q(
       "button",
       {
         "data-id": item.id,
-        class: item.group === "center" ? "ctr" : "",
+        class: cls,
         onclick: () => selectMachine(item.id),
       },
-      q("span", { class: "y" }, item.era),
+      q("span", { class: "y" }, (capitalSet.has(item.id) ? "★ " : "") + item.era),
       item.short,
     );
+  };
 
   timelineEl.append(
     makeTimelineBtn({
       id: "hub",
       era: "HUB",
-      short: `All ${machines.length + 1} · Gallery`,
+      short: `All ${machines.length + 1} · 4 Circles`,
     }),
-    q("span", { class: "tl-sep" }, "RING · history"),
+    q("span", { class: "tl-sep" }, "I · PERSONAL & HISTORY"),
     ...historyRing.map(makeTimelineBtn),
-    q("span", { class: "tl-sep ctr" }, "CENTER · frontier"),
+    q("span", { class: "tl-sep ctr" }, "I · BIO/OPTICAL & ★6502"),
     ...frontierCircle.map(makeTimelineBtn),
+    q("span", { class: "tl-sep srv" }, "II · MAINFRAMES & SERVERS"),
+    ...serversCircle.map(makeTimelineBtn),
+    q("span", { class: "tl-sep sup" }, "III · SUPERCOMPUTERS"),
+    ...superCircle.map(makeTimelineBtn),
+    q("span", { class: "tl-sep qnt" }, "IV · QUANTUM AGE"),
+    ...quantumCircle.map(makeTimelineBtn),
   );
 
   // ---- 5. Selection, Camera Flight, Cutaway, Explode & Slicer State ----
   let activeMachine = null;
+  let activePlaza = "all";
   let cutawayOn = false;
   let explodeTarget = 0;
   let labelsOn = false;
@@ -264,36 +442,110 @@
   let selectedPart = null;
   let hoveredObj = null;
 
+  function placeCircleRing(ringList, cx, cz, radius, scaleSize = 2.15, phaseOffset = -Math.PI / 2) {
+    ringList.forEach((m, idx) => {
+      const ang = (idx / Math.max(1, ringList.length)) * Math.PI * 2 + phaseOffset;
+      const sc = scaleSize / Math.max(m.size.x, m.size.y, m.size.z);
+      m.holder.visible = true;
+      m.holder.scale.setScalar(sc);
+      m.holder.position.set(cx + Math.cos(ang) * radius, 0, cz + Math.sin(ang) * radius);
+      m.holder.rotation.y = -ang - Math.PI / 2;
+    });
+  }
+
+  function placeCapitalMonument(m, cx, cz, scaleSize = 3.25) {
+    if (!m) return;
+    m.holder.visible = true;
+    m.holder.scale.setScalar(scaleSize / Math.max(m.size.x, m.size.y, m.size.z));
+    m.holder.position.set(cx, 0.095, cz);
+    m.holder.rotation.y = 0;
+  }
+
   function layoutHubGallery() {
     hubStage.visible = true;
-    historyRing.forEach((m, idx) => {
-      const ang = (idx / historyRing.length) * Math.PI * 2 - Math.PI / 2;
-      const sc = 2.3 / Math.max(m.size.x, m.size.y, m.size.z);
-      m.holder.visible = true;
-      m.holder.scale.setScalar(sc);
-      m.holder.position.set(Math.cos(ang) * 9.5, 0, Math.sin(ang) * 9.5);
-      m.holder.rotation.y = -ang - Math.PI / 2;
-    });
+    // Circle I: Personal/History Outer Ring + Bio/Optical Inner Ring + ★ MOS 6502 Capital
+    placeCircleRing(historyRing, PLAZAS.c1.cx, PLAZAS.c1.cz, PLAZAS.c1.outerR, 2.2);
+    placeCircleRing(
+      frontierCircle.filter((m) => m.id !== "m6502"),
+      PLAZAS.c1.cx,
+      PLAZAS.c1.cz,
+      PLAZAS.c1.innerR,
+      1.95,
+      Math.PI / 6,
+    );
+    placeCapitalMonument(byId.m6502, PLAZAS.c1.cx, PLAZAS.c1.cz, 3.25);
 
-    const orbitFrontier = frontierCircle.filter((m) => m.id !== "m6502");
-    orbitFrontier.forEach((m, idx) => {
-      const ang = (idx / orbitFrontier.length) * Math.PI * 2 + Math.PI / 4;
-      const sc = 2.0 / Math.max(m.size.x, m.size.y, m.size.z);
-      m.holder.visible = true;
-      m.holder.scale.setScalar(sc);
-      m.holder.position.set(Math.cos(ang) * 4.6, 0, Math.sin(ang) * 4.6);
-      m.holder.rotation.y = -ang - Math.PI / 2;
-    });
+    // Circle II: Mainframes & Servers + ★ IBM System/360 Capital
+    placeCircleRing(
+      serversCircle.filter((m) => m.id !== "s360"),
+      PLAZAS.c2.cx,
+      PLAZAS.c2.cz,
+      PLAZAS.c2.outerR,
+      2.35,
+      -Math.PI / 4,
+    );
+    placeCapitalMonument(byId.s360, PLAZAS.c2.cx, PLAZAS.c2.cz, 3.35);
 
-    const core6502 = byId.m6502;
-    if (core6502) {
-      core6502.holder.visible = true;
-      core6502.holder.scale.setScalar(
-        3.4 / Math.max(core6502.size.x, core6502.size.y, core6502.size.z),
-      );
-      core6502.holder.position.set(0, 0.08, 0);
-      core6502.holder.rotation.y = 0;
+    // Circle III: Supercomputers + ★ Cray-1 Vector Capital
+    placeCircleRing(
+      superCircle.filter((m) => m.id !== "cray1"),
+      PLAZAS.c3.cx,
+      PLAZAS.c3.cz,
+      PLAZAS.c3.outerR,
+      2.35,
+      -Math.PI / 4,
+    );
+    placeCapitalMonument(byId.cray1, PLAZAS.c3.cx, PLAZAS.c3.cz, 3.35);
+
+    // Circle IV: Age of Quantum Computers + ★ OMEGA-Q Fault-Tolerant Horizon Capital
+    placeCircleRing(
+      quantumCircle.filter((m) => m.id !== "qomega"),
+      PLAZAS.c4.cx,
+      PLAZAS.c4.cz,
+      PLAZAS.c4.outerR,
+      2.25,
+      -Math.PI / 2,
+    );
+    placeCapitalMonument(byId.qomega, PLAZAS.c4.cx, PLAZAS.c4.cz, 3.45);
+  }
+
+  const plazaNavEl = $("#plaza-nav");
+  function flyToPlaza(key = "all", dur = 0.85) {
+    activePlaza = key;
+    if (plazaNavEl) {
+      plazaNavEl.querySelectorAll("button").forEach((b) => {
+        b.classList.toggle("on", b.dataset.plaza === key);
+      });
     }
+    if (key === "all" || !PLAZAS[key]) {
+      flyCamera(new N(0, 33, 35), new N(0, 0, 3.2), dur);
+    } else {
+      const p = PLAZAS[key];
+      flyCamera(new N(...p.camPos), new N(...p.camTarget), dur);
+    }
+  }
+
+  if (plazaNavEl) {
+    const navDefs = [
+      ["all", "◈ All 4 Circles"],
+      ["c1", "I · Personal & ★6502"],
+      ["c2", "II · Mainframes & ★S/360"],
+      ["c3", "III · Supercomputers & ★Cray-1"],
+      ["c4", "IV · Quantum & ★OMEGA-Q"],
+    ];
+    plazaNavEl.append(
+      ...navDefs.map(([k, label]) =>
+        q(
+          "button",
+          {
+            "data-plaza": k,
+            class: k === "all" ? "on" : "",
+            onclick: () => flyToPlaza(k, 0.85),
+          },
+          label,
+        ),
+      ),
+    );
   }
 
   function computeMachineHomePose(m, preset = "iso") {
@@ -324,9 +576,13 @@
   function setViewPreset(preset = "iso", instant = false) {
     if (!activeMachine) {
       if (preset === "top") {
-        flyCamera(new N(0, 28, 0.5), new N(0, 0, 0), instant ? 0 : 0.75);
+        flyCamera(new N(0, 54, 4.0), new N(0, 0, 3.2), instant ? 0 : 0.75);
+      } else if (preset === "front") {
+        flyCamera(new N(0, 14, 42), new N(0, 0, 3.2), instant ? 0 : 0.75);
+      } else if (preset === "macro") {
+        flyToPlaza(activePlaza === "all" ? "c1" : activePlaza, instant ? 0 : 0.75);
       } else {
-        flyCamera(new N(0, 21, 17.5), new N(0, 0, 0.6), instant ? 0 : 0.75);
+        flyToPlaza("all", instant ? 0 : 0.75);
       }
       return;
     }
@@ -418,14 +674,15 @@
 
     if (id === "hub") {
       activeMachine = null;
-      keyLight.position.set(8.5, 13.5, 9.5);
+      if (plazaNavEl) plazaNavEl.hidden = false;
+      keyLight.position.set(14.5, 28.0, 18.5);
       Object.assign(keyLight.shadow.camera, {
-        left: -12.5,
-        right: 12.5,
-        top: 12.5,
-        bottom: -12.5,
-        near: 1,
-        far: 48,
+        left: -27.5,
+        right: 27.5,
+        top: 27.5,
+        bottom: -27.5,
+        near: 2,
+        far: 98,
       });
       keyLight.shadow.radius = 3.0;
       keyLight.shadow.bias = -0.00035;
@@ -438,13 +695,13 @@
       syncToolbar();
       Ut.setMachine("hub");
       syncAudioUi();
-      controls.minDistance = 1.2;
-      controls.maxDistance = 62;
-      flyCamera(new N(0, 21, 17.5), new N(0, 0, 0.6), 0);
-      $("#p-era").textContent = "Gallery";
+      controls.minDistance = 1.4;
+      controls.maxDistance = 98;
+      flyToPlaza("all", 0);
+      $("#p-era").textContent = "4-Circle Campus · 33 Live 3D Scenes";
       $("#p-title").textContent = "Computer Evolution Lab";
       (($("#p-blurb").textContent =
-        `${machines.length} operational computers + this gallery = ${machines.length + 1} live 3D scenes. The outer chronological ring spans 1936–2020s from Turing's tape machine and Zuse's mechanical Z1 through vacuum tubes, core-memory minicomputers, home microcomputers, and our dual-engine RISC-V + WebGL2 Modern Mini PC to the 4-GPU AI supercomputer. The inner frontier circle surrounds the MOS 6502 with NMR quantum spin computing, living DishBrain biological neurons, nanophotonic interference meshes, and wet reaction-diffusion / DNA logic. Every machine genuinely computes in real time.`),
+        `${machines.length} operational computers across 4 Grand Circles + this campus = ${machines.length + 1} live 3D scenes. Circle I surrounds the ★ 1975 MOS 6502 with 1936–2020s personal/general machines plus living DishBrain neurons, nanophotonics & DNA logic. Circle II surrounds the ★ 1964 IBM System/360 with UNIX PDP-11/70, SPARC MESI/RAID-5 SMP, Warehouse Raft Cloud & Telum Zero-Downtime Mainframes. Circle III surrounds the ★ 1976 Cray-1 Vector supercomputer with the 65,536-PE CM-2, Blue Gene 3D Torus, Frontier Exascale & Blackwell NVL72 AI Rack. Circle IV surrounds the ★ OMEGA-Q Fault-Tolerant Horizon QPU with NMR, Neutral-Atom Tweezers, 15 mK Surface-Code Transmons, Fusion Photonics & Majorana Braiding.`),
         buildHubDiagram());
       muiEl.append(buildHubCards());
       rebuildLabels();
@@ -456,6 +713,7 @@
     if (!m) return;
 
     activeMachine = m;
+    if (plazaNavEl) plazaNavEl.hidden = true;
     keyLight.position.set(4.2, 6.8, 4.8);
     Object.assign(keyLight.shadow.camera, {
       left: -2.9,
@@ -568,60 +826,28 @@
 
   let hubDiagram;
   function buildHubDiagram() {
-    const palette = [
-      "#e8d9a8",
-      "#c9a45c",
-      "#ffb347",
-      "#ff7a1a",
-      "#58c4ff",
-      "#ff5f5f",
-      "#a0e060",
-      "#c9b07a",
-      "#7ab0ff",
-      "#62d0c0",
-      "#c08cff",
-      "#76b900",
+    const nodes = [
+      { id: "m6502", label: "★ MOS 6502\nCircle I", x: 0.5, y: 0.18, w: 0.24, h: 0.22, color: "#ffb347" },
+      { id: "pc20", label: "RISC-V PC\n+ Bio/Opt", x: 0.82, y: 0.18, w: 0.22, h: 0.2, color: "#5fe08a" },
+      { id: "turing", label: "1936–70s\nFoundations", x: 0.18, y: 0.18, w: 0.22, h: 0.2, color: "#e8d9a8" },
+      { id: "s360", label: "★ IBM S/360\nCircle II", x: 0.2, y: 0.52, w: 0.24, h: 0.22, color: "#38bdf8" },
+      { id: "zmain20", label: "UNIX · Raft\n· Telum z16", x: 0.2, y: 0.84, w: 0.24, h: 0.2, color: "#60a5fa" },
+      { id: "cray1", label: "★ Cray-1\nCircle III", x: 0.8, y: 0.52, w: 0.24, h: 0.22, color: "#f97316" },
+      { id: "gb200", label: "CM-2 · Exa\n· NVL72 AI", x: 0.8, y: 0.84, w: 0.24, h: 0.2, color: "#fb923c" },
+      { id: "qomega", label: "★ OMEGA-Q\nCircle IV", x: 0.5, y: 0.56, w: 0.24, h: 0.22, color: "#fde047" },
+      { id: "qtransmon", label: "NMR · Atom\nCryo · Topo", x: 0.5, y: 0.86, w: 0.26, h: 0.2, color: "#c084fc" },
     ];
-    const rowCols = Math.ceil(historyRing.length / 2);
-    const nodes = historyRing.map((m, idx) => ({
-      id: m.id,
-      label: m.era,
-      x: 0.06 + (idx % rowCols) * (0.88 / (rowCols - 1)),
-      y: idx < rowCols ? 0.14 : 0.42,
-      w: 0.118,
-      h: 0.17,
-      color: palette[idx % palette.length],
-    }));
-
-    const ctrColors = {
-      m6502: "#ffb347",
-      quantum: "#8fe3ff",
-      bci: "#ff8ab0",
-      photonic: "#ff5f5f",
-      alife: "#06d6a0",
-    };
-    const ctrX = [0.14, 0.32, 0.5, 0.68, 0.86];
-    const orderedCtr = ["quantum", "bci", "m6502", "photonic", "alife"].filter(
-      (id) => byId[id],
-    );
-    orderedCtr.forEach((id, idx) =>
-      nodes.push({
-        id,
-        label:
-          (id === "m6502" ? "★ " : "") + byId[id].short.split(" ").slice(0, 2).join(" "),
-        x: ctrX[idx],
-        y: id === "m6502" ? 0.8 : 0.82,
-        w: id === "m6502" ? 0.2 : 0.16,
-        h: id === "m6502" ? 0.24 : 0.18,
-        color: ctrColors[id],
-      }),
-    );
-
-    const edges = historyRing.slice(1).map((m, idx) => [historyRing[idx].id, m.id]);
-    for (const id of orderedCtr) {
-      if (id !== "m6502") edges.push(["m6502", id]);
-    }
-    edges.push([historyRing[historyRing.length - 1].id, "m6502"]);
+    const edges = [
+      ["turing", "m6502"],
+      ["m6502", "pc20"],
+      ["m6502", "s360"],
+      ["s360", "zmain20"],
+      ["m6502", "cray1"],
+      ["cray1", "gb200"],
+      ["s360", "qomega"],
+      ["cray1", "qomega"],
+      ["qtransmon", "qomega"],
+    ];
     hubDiagram = new Ra(nodes, edges);
     hubDiagram._edges = edges;
     sharedCtx.diagram = hubDiagram;
@@ -637,39 +863,91 @@
         q(
           "button",
           { class: "btn pri", onclick: () => Dc(selectMachine) },
-          "📊 Compare the eras (G)",
+          "📊 CS Atlas & Compare (G)",
+        ),
+        q(
+          "button",
+          { class: "btn", onclick: () => selectMachine("qomega") },
+          "★ OMEGA-Q Quantum",
         ),
         q(
           "button",
           { class: "btn", onclick: () => selectMachine("pc20") },
-          "★ Open 2020s Mini PC",
+          "2020s Mini PC",
         ),
-        q("button", { class: "btn", onclick: openHelp }, "❔ Shortcuts (?)"),
+        q("button", { class: "btn", onclick: openHelp }, "❔ (?)"),
       ),
-    );
-    const makeCard = (m) =>
       q(
         "div",
+        { class: "row" },
+        q("button", { class: "chip", onclick: () => flyToPlaza("all") }, "◈ View All 4"),
+        q("button", { class: "chip", onclick: () => flyToPlaza("c1") }, "Fly Circle I"),
+        q("button", { class: "chip", onclick: () => flyToPlaza("c2") }, "Fly Circle II"),
+        q("button", { class: "chip", onclick: () => flyToPlaza("c3") }, "Fly Circle III"),
+        q("button", { class: "chip", onclick: () => flyToPlaza("c4") }, "Fly Circle IV"),
+      ),
+    );
+    const groupColor = (m) =>
+      m.group === "servers"
+        ? "#38bdf8"
+        : m.group === "super"
+          ? "#f97316"
+          : m.group === "quantum"
+            ? "#c084fc"
+            : m.group === "center"
+              ? "#8fe3ff"
+              : "#ffb347";
+    const makeCard = (m) => {
+      const isCap = capitalSet.has(m.id);
+      return q(
+        "div",
         {
-          class: "box hubcard" + (m.id === "m6502" || m.id === "pc20" ? " core" : ""),
+          class: "box hubcard" + (isCap || m.id === "pc20" ? " core" : ""),
           onclick: () => selectMachine(m.id),
         },
         q(
           "div",
           {
             class: "sec-t",
-            style: { color: m.group === "center" ? "#8fe3ff" : "#ffb347" },
+            style: { color: isCap ? "#fde047" : groupColor(m) },
           },
-          `${m.era} · ${m.short}`,
+          `${isCap ? "★ CAPITAL BREAKTHROUGH · " : ""}${m.era} · ${m.short}`,
         ),
         q("b", {}, m.name),
         q("div", { class: "small" }, m.blurb),
       );
+    };
 
     wrap.append(
-      q("div", { class: "sec-t" }, "CENTER · the frontier (inner circle)"),
+      q(
+        "div",
+        { class: "sec-t", style: { color: "#38bdf8" } },
+        "CIRCLE II · Mainframes & Enterprise Servers (★ Capital: IBM System/360)",
+      ),
+      ...serversCircle.map(makeCard),
+      q(
+        "div",
+        { class: "sec-t", style: { color: "#f97316" } },
+        "CIRCLE III · Supercomputers: Vector → SIMD → Torus → Exascale → AI (★ Capital: Cray-1)",
+      ),
+      ...superCircle.map(makeCard),
+      q(
+        "div",
+        { class: "sec-t", style: { color: "#c084fc" } },
+        "CIRCLE IV · The Age of Quantum Computers: NMR → NISQ → QEC → Horizon (★ Capital: OMEGA-Q)",
+      ),
+      ...quantumCircle.map(makeCard),
+      q(
+        "div",
+        { class: "sec-t", style: { color: "#8fe3ff" } },
+        "CIRCLE I (Inner) · Microprocessor Capital & Bio/Optical/Chemical Frontier (★ Capital: MOS 6502)",
+      ),
       ...frontierCircle.map(makeCard),
-      q("div", { class: "sec-t" }, "RING · the history (outer ring, chronological)"),
+      q(
+        "div",
+        { class: "sec-t", style: { color: "#ffb347" } },
+        "CIRCLE I (Outer) · Chronological Foundations & Personal Computers (1936–2022)",
+      ),
       ...historyRing.map(makeCard),
     );
     return wrap;
@@ -693,6 +971,8 @@
               t: mat.transparent,
               o: mat.opacity,
               d: mat.depthWrite,
+              cc: mat.clearcoat ?? 0,
+              ei: mat.envMapIntensity ?? 1,
             };
           }
           const needTrans = amt > 0.001 ? true : mat.userData.o0.t;
@@ -702,6 +982,10 @@
           }
           mat.opacity = mat.userData.o0.o + (0.1 - mat.userData.o0.o) * amt;
           mat.depthWrite = amt > 0.001 ? false : mat.userData.o0.d;
+          if (mat.clearcoat !== undefined)
+            mat.clearcoat = mat.userData.o0.cc * (1 - amt * 0.92);
+          if (mat.envMapIntensity !== undefined)
+            mat.envMapIntensity = mat.userData.o0.ei * (1 - amt * 0.88);
         }
         obj.castShadow = amt < 0.5;
       });
@@ -833,10 +1117,26 @@
 
     if (!activeMachine) {
       for (const m of machines) {
+        const isCap = capitalSet.has(m.id);
+        const bCol = isCap
+          ? "#fde047"
+          : m.group === "servers"
+            ? "#38bdf8"
+            : m.group === "super"
+              ? "#f97316"
+              : m.group === "quantum"
+                ? "#c084fc"
+                : m.group === "center"
+                  ? "#8fe3ff"
+                  : "#ffb347";
         const el = q(
           "div",
-          { class: "lbl hub", onclick: () => selectMachine(m.id) },
-          `${m.era} ${m.short}`,
+          {
+            class: "lbl hub",
+            style: { borderColor: bCol, fontSize: isCap ? "12.5px" : "11px" },
+            onclick: () => selectMachine(m.id),
+          },
+          `${isCap ? "★ " : ""}${m.era} ${m.short}`,
         );
         container.append(el);
         activeLabels.push({
@@ -1451,7 +1751,7 @@
     ["[ / ]", "Step abstraction layer down / up"],
     ["\\", "Switch Hardware ↔ Software layer stack"],
     ["← / →", "Previous / next era machine"],
-    ["H", "Return to the 18-scene Hub Gallery"],
+    ["H", "Return to the 33-scene 4-Circle Hub Campus"],
     ["Esc", "Close part card / modal / tour"],
   ];
 
@@ -1698,14 +1998,20 @@
       const dctx = yt(diagCanvas);
       activeDiag.draw(dctx, diagCanvas.width, diagCanvas.height, dt);
     }
-    if (!activeMachine && hubDiagram && hubDiagram._edges && Math.random() < dt * 3) {
+    if (!activeMachine && hubDiagram && hubDiagram._edges && Math.random() < dt * 3.5) {
       const edge =
         hubDiagram._edges[Math.floor(Math.random() * hubDiagram._edges.length)];
-      hubDiagram.pulse(edge[0], edge[1], edge[0] === "m6502" ? "#8fe3ff" : "#ffb347");
+      hubDiagram.pulse(
+        edge[0],
+        edge[1],
+        edge[1] === "qomega" ? "#c084fc" : edge[1] === "s360" ? "#38bdf8" : "#ffb347",
+      );
     }
-    if (!activeMachine && hubStage.userData.rim) {
-      hubStage.userData.rim.material.emissiveIntensity =
-        0.65 + 0.25 * Math.sin(elapsedTotal * 2);
+    if (!activeMachine && hubStage.userData.rims) {
+      const glow = 0.68 + 0.24 * Math.sin(elapsedTotal * 2);
+      for (const rim of hubStage.userData.rims) {
+        rim.material.emissiveIntensity = glow;
+      }
     }
 
     try {
@@ -1775,6 +2081,7 @@
     slicer,
     flyToObjects,
     flyCamera,
+    flyToPlaza,
     setViewPreset,
     setCutaway(on, instant = false) {
       cutawayOn = !!on;

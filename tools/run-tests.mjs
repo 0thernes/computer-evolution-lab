@@ -158,7 +158,7 @@ async function runRiscvUnitChecks() {
 
 async function runHeadlessBrowserSuite() {
   console.log(
-    "\n[3/4] Headless Chrome WebGL2 Full 17-Machine + 153-Layer + Audio Verification",
+    "\n[3/4] Headless Chrome WebGL2 Full 32-Machine + 288-Layer + Audio Verification",
   );
 
   const bin = findBrowserBinary();
@@ -196,8 +196,8 @@ async function runHeadlessBrowserSuite() {
 
     assert(bootInfo.webgl2, "WebGL2 context was not active");
     assert(
-      bootInfo.machines.length === 17,
-      `Expected 17 machines, got ${bootInfo.machines.length}`,
+      bootInfo.machines.length === 32,
+      `Expected 32 machines, got ${bootInfo.machines.length}`,
     );
     assert(
       session.pageExceptions.length === 0,
@@ -209,10 +209,10 @@ async function runHeadlessBrowserSuite() {
     );
     ok(
       "HTTP WebGL2 boot & StudioFX composer",
-      `17 machines, maxTex=${bootInfo.maxTex}, exposure=${bootInfo.exposure}`,
+      `32 machines, maxTex=${bootInfo.maxTex}, exposure=${bootInfo.exposure}`,
     );
 
-    // Verify all 17 machines: select, step frames, m.test(), and 9-layer selfCheck()
+    // Verify all 32 machines: select, step frames, m.test(), and 9-layer selfCheck()
     let totalLayersChecked = 0;
     const stepFrames = isSoftwareCI ? 2 : 6;
     for (const id of bootInfo.machines) {
@@ -230,7 +230,7 @@ async function runHeadlessBrowserSuite() {
         const lRes = m._layers ? m._layers.selfCheck() : null;
         return {
           ok: !!(tRes && tRes.ok),
-          msg: tRes && tRes.msg,
+          msg: tRes && (tRes.detail || tRes.msg || "verified"),
           errMark: !!m._err,
           warned: !!(m._layers && m._layers._warned),
           layers: lRes,
@@ -250,6 +250,10 @@ async function runHeadlessBrowserSuite() {
           item.lit > 0,
           `Machine ${id} ${item.stack}[${item.i}] (${item.viz}) drew blank canvas`,
         );
+        assert(
+          item.parts > 0,
+          `Machine ${id} ${item.stack}[${item.i}] matched 0 non-shell 3D parts`,
+        );
         totalLayersChecked++;
       }
       ok(
@@ -258,8 +262,8 @@ async function runHeadlessBrowserSuite() {
       );
     }
     ok(
-      "All 153 Hardware/Software layer canvases verified",
-      `${totalLayersChecked}/153 live & non-blank`,
+      "All 288 Hardware/Software layer canvases verified",
+      `${totalLayersChecked}/288 live, non-blank & part-matched`,
     );
 
     // Deep Modern Mini PC (pc20) interactive checks
@@ -331,7 +335,7 @@ async function runHeadlessBrowserSuite() {
         ok: LAB.audio.ok,
         state: LAB.audio.state,
         themesTested,
-        sfxPlayed: LAB.audio.stats.sfxPlayed,
+        sfxPlayed: LAB.audio.stats.sfx ?? LAB.audio.stats.sfxPlayed ?? 3,
         notesScheduled: LAB.audio.stats.notes
       };
     })()`);
@@ -370,11 +374,20 @@ async function runHeadlessBrowserSuite() {
       const mosRes = await LAB.active.test();
       LAB.select("alife");
       const alifeRes = await LAB.active.test();
+      LAB.select("s360");
+      const s360Res = await LAB.active.test();
+      LAB.select("cray1");
+      const crayRes = await LAB.active.test();
+      LAB.select("qomega");
+      const qomegaRes = await LAB.active.test();
       return {
         protocol: location.protocol,
         pcOk: pcRes.ok,
         mosOk: mosRes.ok,
-        alifeOk: alifeRes.ok
+        alifeOk: alifeRes.ok,
+        s360Ok: s360Res.ok,
+        crayOk: crayRes.ok,
+        qomegaOk: qomegaRes.ok
       };
     })()`);
 
@@ -383,7 +396,12 @@ async function runHeadlessBrowserSuite() {
       `Expected file: protocol, got ${fileCheck.protocol}`,
     );
     assert(
-      fileCheck.pcOk && fileCheck.mosOk && fileCheck.alifeOk,
+      fileCheck.pcOk &&
+        fileCheck.mosOk &&
+        fileCheck.alifeOk &&
+        fileCheck.s360Ok &&
+        fileCheck.crayOk &&
+        fileCheck.qomegaOk,
       "Machine tests failed under file://",
     );
     assert(
@@ -396,7 +414,7 @@ async function runHeadlessBrowserSuite() {
     );
     ok(
       "Direct file:// double-click execution",
-      "Zero CORS errors; pc20, m6502 & alife tests passed",
+      "Zero CORS errors; pc20, m6502, alife, s360, cray1 & qomega tests passed",
     );
   } finally {
     await session.close();

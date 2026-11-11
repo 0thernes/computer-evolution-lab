@@ -254,7 +254,7 @@ function createMetricStudioFloor() {
   floorTex.colorSpace = Ot;
 
   const baseDisc = new B(
-    new Xn(64, 96),
+    new Xn(92, 112),
     new et({
       map: floorTex,
       roughness: 0.78,
@@ -300,7 +300,7 @@ function createMetricStudioFloor() {
       void main() {
         vec2 xz = vWorld.xz;
         float dist = length(xz);
-        float radialFade = 1.0 - smoothstep(6.0, 26.0, dist);
+        float radialFade = 1.0 - smoothstep(14.0, 44.0, dist);
         if (radialFade <= 0.002) discard;
 
         float fw = length(fwidth(xz));
@@ -315,7 +315,7 @@ function createMetricStudioFloor() {
     `,
   });
 
-  const gridMesh = new B(new mt(54, 54), gridMat);
+  const gridMesh = new B(new mt(92, 92), gridMat);
   gridMesh.rotation.x = -Math.PI / 2;
   gridMesh.position.y = 0.0018;
   gridMesh.renderOrder = 1;

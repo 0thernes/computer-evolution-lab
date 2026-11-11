@@ -3,7 +3,9 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Computer Evolution Lab — 17 Operational Computers in Live 3D</title>
+    <title>
+      Computer Evolution Lab — 32 Operational Computers · 4 Grand Circles in Live 3D
+    </title>
     <link rel="icon" type="image/x-icon" href="assets/icon/computer-evolution-lab.ico" />
     <style>
       /* Critical pre-JS boot screen so the page never flashes white */
@@ -131,7 +133,7 @@
     <div id="boot">
       <div class="bx">
         <h1>◈ Computer Evolution Lab</h1>
-        <p>Booting 18 interactive 4K HDR 3D scenes &amp; live simulators…</p>
+        <p>Booting 33 interactive 4K HDR 3D scenes across 4 Grand Circles…</p>
         <div class="bar"><i></i></div>
         <p class="small">
           Requires JavaScript &amp; WebGL2 (Chrome, Edge, Firefox, or Safari).
@@ -156,7 +158,7 @@
         <div>
           <h1 style="color: #ffb347">JavaScript is turned off</h1>
           <p>
-            The Computer Evolution Lab requires JavaScript and WebGL2 to run its 17 live
+            The Computer Evolution Lab requires JavaScript and WebGL2 to run its 32 live
             3D computer simulations.
           </p>
         </div>
@@ -206,7 +208,9 @@
           <button id="tb-tour" class="tog" title="Guided tour through every layer (T)">
             ▶ Tour
           </button>
-          <button id="tb-cmp" title="Compare the eras (G)">📊 Compare</button>
+          <button id="tb-cmp" title="CS Architecture Atlas & Era Comparator (G)">
+            📊 CS Atlas
+          </button>
           <select
             id="tb-q"
             title="Render quality (Q)"
@@ -262,6 +266,7 @@
         </div>
         <div id="toast" hidden></div>
         <div id="audiopop" hidden></div>
+        <div id="plaza-nav"></div>
         <div id="hint">
           Drag to orbit · scroll to zoom 10× · click any part · <b>X</b> slice ·
           <b>1–4</b> camera · <b>[ ]</b> layers · <b>?</b> help
@@ -293,13 +298,18 @@
     <script defer src="src/graphics/studio-stage.js"></script>
     <script defer src="src/sim/core-simulators.js"></script>
     <script defer src="src/sim/riscv-modern-pc.js"></script>
+    <script defer src="src/sim/enterprise-hpc-quantum-sims.js"></script>
     <script defer src="src/layers/layer-stack.js"></script>
+    <script defer src="src/layers/layers-expansion.js"></script>
     <script defer src="src/app/compare-modal.js"></script>
     <script defer src="src/audio/cinematic-score.js"></script>
     <script defer src="src/machines/machines-early.js"></script>
     <script defer src="src/machines/machines-pc.js"></script>
     <script defer src="src/machines/machine-pc20.js"></script>
     <script defer src="src/machines/machines-frontier.js"></script>
+    <script defer src="src/machines/machines-servers.js"></script>
+    <script defer src="src/machines/machines-super.js"></script>
+    <script defer src="src/machines/machines-quantum-age.js"></script>
     <script defer src="src/app/lab-main.js"></script>
   </body>
 </html>

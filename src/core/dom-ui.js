@@ -186,9 +186,9 @@ var Ra = class ArchDiagram {
     // Hardware/subsystem nodes
     const fontSize = Math.max(10, Math.round(h / 15));
     for (const node of Object.values(this.nodes)) {
-      const nx = node.x * w;
-      const ny = node.y * h;
-      const nw = node.w * w;
+      const nx = (node.x ?? 0.5) * w;
+      const ny = (node.y ?? 0.5) * h;
+      const nw = (node.w || 0.25) * w;
       const nh = (node.h || 0.16) * h;
       const act = node.act;
       node.act = Math.max(0, node.act - dt * 1.75);

@@ -95,6 +95,81 @@ var us = {
     style: "chiphero",
     mood: "heroic French horns, orchestral strings & pure pulse voice",
   },
+  s360: {
+    film: "Apollo 13 & Oppenheimer",
+    style: "oppenheimer",
+    mood: "propulsive spiccato strings, noble horns & mainframe timpani",
+  },
+  unix70: {
+    film: "A Beautiful Mind & All the President's Men",
+    style: "mind",
+    mood: "flowing piano triplets, warm horns & Bell Labs choir",
+  },
+  sun90: {
+    film: "Blade Runner & Heat",
+    style: "blade",
+    mood: "CS-80 brass ribbon, celesta bells & nocturnal strings",
+  },
+  cloud10: {
+    film: "Inception & The Social Network",
+    style: "inception",
+    mood: "driving cello ostinato, cathedral brass & optical pulse",
+  },
+  zmain20: {
+    film: "Blade Runner 2049 & Tenet",
+    style: "matrix",
+    mood: "hybrid orchestral ostinato, low brass swells & precision pulse",
+  },
+  cray1: {
+    film: "Apollo 13 & Tron: Legacy",
+    style: "chiphero",
+    mood: "soaring French horns, concert timpani & 80 MHz vector pulse",
+  },
+  cm2: {
+    film: "Tron: Legacy & Contact",
+    style: "tron",
+    mood: "symphonic strings over 65,536-PE hypercube arpeggiator",
+  },
+  bgene: {
+    film: "The Thin Red Line & Inception",
+    style: "inception",
+    mood: "cathedral brass build & synchronous torus ostinato",
+  },
+  exascale: {
+    film: "Oppenheimer & Interstellar",
+    style: "matrix",
+    mood: "titan low brass, spiccato strings & exascale timpani",
+  },
+  gb200: {
+    film: "Ex Machina & Blade Runner 2049",
+    style: "exmachina",
+    mood: "crystalline harmonic piano, organ pedal & neural choir",
+  },
+  qtransmon: {
+    film: "Interstellar",
+    style: "interstellar",
+    mood: "15 mK cathedral pipe organ, felt piano & breathing strings",
+  },
+  qatom: {
+    film: "Arrival & A Beautiful Mind",
+    style: "glass",
+    mood: "shimmering optical-tweezer harmonic waves & celesta",
+  },
+  qphotonic: {
+    film: "Solaris & Arrival",
+    style: "glass",
+    mood: "luminous 1550 nm glass harmonics, choir & triplet piano",
+  },
+  qtopo: {
+    film: "The Tree of Life & Annihilation",
+    style: "annihilation",
+    mood: "suspended Majorana divisi strings, organ & formant choir",
+  },
+  qomega: {
+    film: "Interstellar & 2001: A Space Odyssey",
+    style: "interstellar",
+    mood: "grand cathedral organ, French horns & horizon choir",
+  },
 };
 
 var SCORE_THEMES = [
@@ -2333,6 +2408,68 @@ var Oa = Math.random,
       "fb>sens": ["stim", { min: 0.03 }],
       "enc>sens": ["stim", { min: 0.03 }],
       "cul>mot": () => ["spike", { v: 0.15 + Oa() * 0.2, min: 0.015 }],
+    },
+    s360: {
+      "ros>cpu": () => ["tick", { f: 520 + Oa() * 680, v: 0.05, min: 0.05 }],
+      "chan>tape": ["tape", { min: 0.12 }],
+      "chan>disk": () => ["seek", { d: 0.4 + Oa() * 0.5, min: 0.09 }],
+      "chan>prn": ["clack", { min: 0.09 }],
+    },
+    unix70: {
+      "uni>vt": ["tty", { min: 0.08 }],
+      "uni>rp04": () => ["seek", { d: 0.35 + Oa() * 0.45, min: 0.09 }],
+      "cpu>mmu": () => ["tick", { f: 650 + Oa() * 500, v: 0.04, min: 0.06 }],
+    },
+    sun90: {
+      "c0>bus": () => ["tick", { f: 1100, v: 0.05, min: 0.08 }],
+      "bus>raid": () => ["seek", { d: 0.3 + Oa() * 0.4, min: 0.08 }],
+    },
+    cloud10: {
+      "lead>foll": () => ["tick", { f: 1500, v: 0.05, min: 0.09 }],
+      "foll>nvme": ["coil", { v: 0.55, min: 0.14 }],
+    },
+    zmain20: {
+      "pu>ai": ["coil", { v: 0.65, min: 0.14 }],
+      "lpar>ficon": () => ["tick", { f: 1750, v: 0.05, min: 0.1 }],
+    },
+    cray1: {
+      "fmul>fadd": ["coil", { v: 0.65, min: 0.12 }],
+      "mem>v0": () => ["tick", { f: 1350, v: 0.05, min: 0.08 }],
+    },
+    cm2: {
+      "pe>hyp": () => ["tick", { f: 920 + Oa() * 600, v: 0.05, min: 0.07 }],
+    },
+    bgene: {
+      "soc>tree": ["coil", { v: 0.5, min: 0.14 }],
+      "soc>torus": () => ["tick", { f: 1200, v: 0.04, min: 0.08 }],
+    },
+    exascale: {
+      "cdu>gpu": ["gurgle", { min: 1.4 }],
+      "nic>dfly": ["coil", { v: 0.72, min: 0.16 }],
+    },
+    gb200: {
+      "nvl>spine": ["coil", { v: 0.82, min: 0.16 }],
+      "top9>nvl": ["gurgle", { min: 1.6 }],
+    },
+    qtransmon: {
+      "awg>att": ["rf", { min: 0.1 }],
+      "syn>dec": () => ["photon", { f: 0.85 + Oa() * 0.3, min: 0.12 }],
+    },
+    qatom: {
+      "aod>uhv": ["rf", { min: 0.1 }],
+      "uhv>cmos": () => ["photon", { f: 1.0 + Oa() * 0.35, min: 0.12 }],
+    },
+    qphotonic: {
+      "src>fib": () => ["photon", { f: 1.15, min: 0.1 }],
+      "snspd>eom": ["stim", { min: 0.08 }],
+    },
+    qtopo: {
+      "mzm>qd": ["rf", { min: 0.12 }],
+      "qd>brd": () => ["photon", { f: 0.75 + Oa() * 0.25, min: 0.14 }],
+    },
+    qomega: {
+      "tele>core": () => ["photon", { f: 1.25 + Oa() * 0.35, min: 0.12 }],
+      "core>alg": ["rf", { min: 0.12 }],
     },
   };
 

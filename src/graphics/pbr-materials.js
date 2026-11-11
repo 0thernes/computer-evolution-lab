@@ -679,7 +679,6 @@ var U = {
         normalMap: bm.normal,
         normalScale: new ye(0.22, 0.22),
         roughnessMap: bm.rough,
-        anisotropy: 0.26,
       });
     }),
 
@@ -692,7 +691,6 @@ var U = {
         metalness: 0.86,
         normalMap: km.userData.normal,
         normalScale: new ye(0.55, 0.55),
-        anisotropy: 0.35,
       });
     }),
 
@@ -707,7 +705,6 @@ var U = {
         metalness: 0.96,
         normalMap: bm.normal,
         normalScale: new ye(0.14, 0.14),
-        anisotropy: 0.38,
         clearcoat: 0.16,
         clearcoatRoughness: 0.18,
       });
@@ -722,7 +719,6 @@ var U = {
         metalness: 0.92,
         normalMap: bm.normal,
         normalScale: new ye(0.2, 0.2),
-        anisotropy: 0.45,
       });
     }),
 
@@ -735,7 +731,6 @@ var U = {
         metalness: 0.95,
         normalMap: bm.normal,
         normalScale: new ye(0.2, 0.2),
-        anisotropy: 0.48,
       });
     }),
 
@@ -749,7 +744,6 @@ var U = {
         normalMap: bm.normal,
         normalScale: new ye(0.26, 0.26),
         roughnessMap: bm.rough,
-        anisotropy: 0.52,
       });
     }),
 
@@ -763,7 +757,6 @@ var U = {
         normalMap: bm.normal,
         normalScale: new ye(0.25, 0.25),
         roughnessMap: bm.rough,
-        anisotropy: 0.58,
       });
     }),
 
@@ -778,7 +771,6 @@ var U = {
         normalMap: bm.normal,
         normalScale: new ye(0.22, 0.22),
         roughnessMap: bm.rough,
-        anisotropy: 0.18,
       });
     }),
 

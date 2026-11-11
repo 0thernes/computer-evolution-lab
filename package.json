@@ -1,8 +1,8 @@
 {
   "name": "computer-evolution-lab",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "private": true,
-  "description": "17 operational historical, modern, and frontier computers + 18-scene 4K HDR 3D interactive museum with live RV32IM + WebGL2 Modern Mini PC and orchestral WebAudio score.",
+  "description": "32 operational computers across 4 Grand Circles (Personal & Logic, Mainframes & Servers, Supercomputers, Quantum Age) + 33-scene 4K HDR 3D interactive museum, CS Architecture Atlas, RV32IM + WebGL2 Modern Mini PC, and orchestral WebAudio score.",
   "scripts": {
     "start": "node tools/serve.mjs",
     "dev": "node tools/serve.mjs",

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
   "label": "coverage",
-  "message": "94.6% sim & 17/17 machines",
+  "message": "32/32 machines & 288/288 layers",
   "color": "brightgreen"
 }

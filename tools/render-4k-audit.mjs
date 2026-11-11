@@ -33,6 +33,21 @@ const SHOTS = [
   { name: "18-m6502-4k", id: "m6502", preset: "iso" },
   { name: "19-photonic-4k", id: "photonic", preset: "iso" },
   { name: "20-alife-4k", id: "alife", preset: "iso" },
+  { name: "21-s360-mainframe-4k", id: "s360", preset: "iso", cutaway: true },
+  { name: "22-unix70-pdp11-4k", id: "unix70", preset: "iso", cutaway: true },
+  { name: "23-sun90-sparccenter-4k", id: "sun90", preset: "iso", cutaway: true },
+  { name: "24-cloud10-ocp-rack-4k", id: "cloud10", preset: "iso", cutaway: true },
+  { name: "25-zmain20-telum-z16-4k", id: "zmain20", preset: "iso", cutaway: true },
+  { name: "26-cray1-vector-4k", id: "cray1", preset: "iso" },
+  { name: "27-cm2-hypercube-4k", id: "cm2", preset: "iso" },
+  { name: "28-bgene-torus-4k", id: "bgene", preset: "iso", cutaway: true },
+  { name: "29-exascale-frontier-4k", id: "exascale", preset: "iso", cutaway: true },
+  { name: "30-gb200-nvl72-4k", id: "gb200", preset: "iso", cutaway: true },
+  { name: "31-qtransmon-cryo-4k", id: "qtransmon", preset: "iso", cutaway: true },
+  { name: "32-qatom-rydberg-4k", id: "qatom", preset: "iso" },
+  { name: "33-qphotonic-mbqc-4k", id: "qphotonic", preset: "iso" },
+  { name: "34-qtopo-majorana-4k", id: "qtopo", preset: "iso", cutaway: true },
+  { name: "35-qomega-horizon-4k", id: "qomega", preset: "iso", cutaway: true },
 ];
 
 const srv = await startServer(0);
