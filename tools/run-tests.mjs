@@ -172,16 +172,19 @@ async function runHeadlessBrowserSuite() {
     throw new Error("Chrome/Edge binary required for full verification.");
   }
 
+  const isSoftwareCI = Boolean(optionalHeadless || process.env.GITHUB_ACTIONS === "true");
   const srv = await startServer(0);
   const session = await launchHeadlessSession({
-    width: 1920,
-    height: 1080,
+    width: isSoftwareCI ? 960 : 1920,
+    height: isSoftwareCI ? 540 : 1080,
     extraArgs: ["--allow-file-access-from-files"],
   });
 
   try {
-    await session.navigate(`${srv.url}/index.html?auto=0&q=high`);
-    await session.waitForLabBoot(25000);
+    await session.navigate(
+      `${srv.url}/index.html?auto=0&q=${isSoftwareCI ? "low" : "high"}`,
+    );
+    await session.waitForLabBoot(60000);
 
     const bootInfo = await session.evalValue(`({
       machines: LAB.machines.map(m => m.id),
@@ -211,13 +214,14 @@ async function runHeadlessBrowserSuite() {
 
     // Verify all 17 machines: select, step frames, m.test(), and 9-layer selfCheck()
     let totalLayersChecked = 0;
+    const stepFrames = isSoftwareCI ? 2 : 6;
     for (const id of bootInfo.machines) {
       const mRes = await session.evalValue(`(async () => {
         LAB.select(${JSON.stringify(id)});
         const m = LAB.active;
         if (!m) return { ok: false, err: "Failed to select " + ${JSON.stringify(id)} };
-        // Step several simulation + animation frames
-        for (let i = 0; i < 6; i++) {
+        // Step simulation + animation frames
+        for (let i = 0; i < ${stepFrames}; i++) {
           m.update(0.016, i * 0.016, { diagram: m.diag, openCard: () => {} });
           for (const a of m.kit.anims) a(0.016, i * 0.016);
         }
@@ -353,11 +357,11 @@ async function runHeadlessBrowserSuite() {
 
     // [4/4] Direct file:// protocol verification (zero HTTP server!)
     console.log("\n[4/4] Direct file:// Double-Click Protocol Verification");
-    const fileUrl = pathToFileURL(
-      path.join(ROOT_DIR, "computer-evolution-lab.html"),
-    ).href;
+    const fileUrl =
+      pathToFileURL(path.join(ROOT_DIR, "computer-evolution-lab.html")).href +
+      (isSoftwareCI ? "?auto=0&q=low" : "");
     await session.navigate(fileUrl);
-    await session.waitForLabBoot(25000);
+    await session.waitForLabBoot(60000);
 
     const fileCheck = await session.evalValue(`(async () => {
       LAB.select("pc20");

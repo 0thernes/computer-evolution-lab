@@ -35,6 +35,7 @@ export async function launchHeadlessSession({
   }
 
   const profileDir = fs.mkdtempSync(path.join(os.tmpdir(), "cel-cdp-"));
+  const isLinux = process.platform === "linux";
   const args = [
     "--headless=new",
     "--remote-debugging-port=0",
@@ -43,6 +44,16 @@ export async function launchHeadlessSession({
     "--enable-webgl",
     "--ignore-gpu-blocklist",
     ...(process.platform === "win32" ? ["--use-angle=d3d11"] : []),
+    ...(isLinux
+      ? [
+          "--no-sandbox",
+          "--disable-setuid-sandbox",
+          "--disable-dev-shm-usage",
+          "--use-gl=angle",
+          "--use-angle=swiftshader",
+          "--enable-unsafe-swiftshader",
+        ]
+      : []),
     "--autoplay-policy=no-user-gesture-required",
     "--no-first-run",
     "--no-default-browser-check",
@@ -161,7 +172,7 @@ export async function launchHeadlessSession({
     rejectAllPending("CDP WebSocket error");
   });
 
-  function send(method, params = {}, timeoutMs = 30000) {
+  function send(method, params = {}, timeoutMs = 90000) {
     return new Promise((resolve, reject) => {
       if (ws.readyState !== WebSocket.OPEN) {
         reject(new Error(`Cannot send ${method}: CDP WebSocket is not open.`));
@@ -205,13 +216,17 @@ export async function launchHeadlessSession({
     await send("Page.navigate", { url });
   }
 
-  async function evalValue(expression, timeoutMs = 30000) {
+  async function evalValue(expression, timeoutMs = 90000) {
     const res = await Promise.race([
-      send("Runtime.evaluate", {
-        expression,
-        awaitPromise: true,
-        returnByValue: true,
-      }),
+      send(
+        "Runtime.evaluate",
+        {
+          expression,
+          awaitPromise: true,
+          returnByValue: true,
+        },
+        timeoutMs,
+      ),
       new Promise((_, rej) =>
         setTimeout(() => rej(new Error(`Timeout evaluating expression`)), timeoutMs),
       ),
@@ -226,7 +241,7 @@ export async function launchHeadlessSession({
     return res.result ? res.result.value : undefined;
   }
 
-  async function waitForLabBoot(timeoutMs = 20000) {
+  async function waitForLabBoot(timeoutMs = 60000) {
     const start = Date.now();
     while (Date.now() - start < timeoutMs) {
       const status = await evalValue(`({

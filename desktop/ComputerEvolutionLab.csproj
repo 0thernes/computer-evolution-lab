@@ -12,8 +12,8 @@
     <Title>Computer Evolution Lab</Title>
     <Product>Computer Evolution Lab — Interactive 4K 3D Architecture &amp; Computing Museum</Product>
     <Company>0thernes</Company>
-    <Version>2.1.0</Version>
-    <FileVersion>2.1.0.0</FileVersion>
+    <Version>2.1.1</Version>
+    <FileVersion>2.1.1.0</FileVersion>
     <PublishSingleFile>true</PublishSingleFile>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     <SelfContained>false</SelfContained>
@@ -24,5 +24,9 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2903.40" />
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('obj\lab-assets.zip')">
+    <EmbeddedResource Include="obj\lab-assets.zip" LogicalName="lab-assets.zip" />
   </ItemGroup>
 </Project>

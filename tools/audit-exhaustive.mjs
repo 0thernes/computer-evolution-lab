@@ -34,7 +34,7 @@ let totalLines = 0;
 
 const jsContents = new Map();
 for (const f of allFiles) {
-  if (/\.(ico|png|jpg|jpeg|webp|exe|dll|pdb|woff2|wasm)$/i.test(f.rel)) continue;
+  if (/\.(ico|png|jpg|jpeg|webp|exe|dll|pdb|woff2|wasm|zip)$/i.test(f.rel)) continue;
   const txt = fs.readFileSync(f.full, "utf8");
   const lines = txt.split(/\r?\n/);
   totalLines += lines.length;

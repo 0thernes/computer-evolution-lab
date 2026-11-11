@@ -1,10 +1,15 @@
 # ◈ Computer Evolution Lab (v2.0)
 
 [![CI](https://github.com/0thernes/computer-evolution-lab/actions/workflows/ci.yml/badge.svg)](https://github.com/0thernes/computer-evolution-lab/actions/workflows/ci.yml)
+[![Live Demo](https://img.shields.io/badge/live%204K%20web%20lab-0thernes.github.io-0284c7)](https://0thernes.github.io/computer-evolution-lab/)
+[![Windows x64 .exe](https://img.shields.io/badge/Windows%20x64-Standalone%20.exe-2563eb)](https://github.com/0thernes/computer-evolution-lab/releases/latest)
 [![Coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2F0thernes%2Fcomputer-evolution-lab%2Fmain%2Fdocs%2Fbadges%2Fcoverage.json)](docs/badges/coverage.json)
 [![License](https://img.shields.io/badge/license-Cosmogonic%20Non--Commercial-0f766e)](LICENSE)
 
 > **17 operational historical, modern, and frontier computers + an 18-scene 4K HDR 3D interactive museum** — featuring a live dual-engine **RISC-V `RV32IM` + WebGL2 GPU Modern Mini PC**, real-time **X/Y/Z 3D Cross-Section Slicer**, **153 live hardware & software abstraction layer visualizers**, and a **real-time symphonic WebAudio score engine**.
+>
+> - **Launch Live in Browser (Zero Install)**: **[https://0thernes.github.io/computer-evolution-lab/](https://0thernes.github.io/computer-evolution-lab/)**
+> - **Download Standalone Windows `.exe` (`2.2 MB`)**: **[GitHub Releases (`Computer Evolution Lab.exe`)](https://github.com/0thernes/computer-evolution-lab/releases/latest)**
 
 ---
 
