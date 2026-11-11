@@ -17,6 +17,12 @@ renders/
 audit-out/
 coverage/
 
+# Native launcher build artifacts
+desktop/bin/
+desktop/obj/
+Computer Evolution Lab.exe
+*.pdb
+
 # Environment / local secrets
 .env
 .env.*

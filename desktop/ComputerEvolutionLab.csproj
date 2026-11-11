@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <AssemblyName>Computer Evolution Lab</AssemblyName>
+    <RootNamespace>ComputerEvolutionLab</RootNamespace>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    <ApplicationIcon>..\assets\icon\computer-evolution-lab.ico</ApplicationIcon>
+    <Title>Computer Evolution Lab</Title>
+    <Product>Computer Evolution Lab — Interactive 4K 3D Architecture &amp; Computing Museum</Product>
+    <Company>0thernes</Company>
+    <Version>2.1.0</Version>
+    <FileVersion>2.1.0.0</FileVersion>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <SelfContained>false</SelfContained>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    <NoWarn>$(NoWarn);MSB3277</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2903.40" />
+  </ItemGroup>
+</Project>

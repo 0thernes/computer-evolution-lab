@@ -9,6 +9,9 @@
     "test": "node tools/run-tests.mjs",
     "test:ci": "node tools/run-tests.mjs --ci-headless-optional",
     "audit:4k": "node tools/render-4k-audit.mjs",
+    "build:icon": "node tools/build-icon.mjs",
+    "build:exe": "node tools/build-desktop.mjs",
+    "install:desktop": "node tools/build-desktop.mjs --install",
     "format": "prettier --write \"**/*.{html,css,js,mjs,json,md,yml}\"",
     "format:check": "prettier --check \"**/*.{html,css,js,mjs,json,md,yml}\""
   },

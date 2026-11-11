@@ -12,7 +12,12 @@ function walkAll(dir, rel = "") {
   }
   const files = [];
   for (const e of entries) {
-    if (e.name === "node_modules" || e.name === ".git") continue;
+    if (
+      e.name === "node_modules" ||
+      e.name === ".git" ||
+      (rel === "desktop" && (e.name === "bin" || e.name === "obj"))
+    )
+      continue;
     const childRel = rel ? `${rel}/${e.name}` : e.name;
     const full = path.join(dir, e.name);
     if (e.isDirectory()) {
@@ -29,6 +34,7 @@ let totalLines = 0;
 
 const jsContents = new Map();
 for (const f of allFiles) {
+  if (/\.(ico|png|jpg|jpeg|webp|exe|dll|pdb|woff2|wasm)$/i.test(f.rel)) continue;
   const txt = fs.readFileSync(f.full, "utf8");
   const lines = txt.split(/\r?\n/);
   totalLines += lines.length;

@@ -19,6 +19,7 @@
 **Supported Platforms & Hardware**:
 
 - **Browsers**: Chrome `>= 120`, Edge `>= 120`, Firefox `>= 122`, Safari `>= 17.4` with WebGL2 and WebAudio enabled across Windows, macOS, Linux, iPadOS, and Android (`360px` responsive mobile layout up to `3840×2160` 4K UHD).
+- **Native Windows Desktop App**: Standalone single-file x64 executable (`Computer Evolution Lab.exe` in [`desktop/`](desktop/)) with Per-Monitor V2 High-DPI support, Windows 11 Immersive Dark Mode titlebar, embedded loopback server, and hardware-accelerated Edge WebView2 (`F11` / `Alt+Enter` fullscreen).
 - **Offline `file://` & HTTP**: Runs directly by double-clicking [`computer-evolution-lab.html`](computer-evolution-lab.html) (zero server required) or via the built-in zero-dependency loopback server (`npm start`).
 - **Help & Security**: Press `?` inside the lab for interactive controls, see [`docs/INDEX.md`](docs/INDEX.md) for architecture documentation, or consult [`.github/SECURITY.md`](.github/SECURITY.md) for private security disclosures.
 
@@ -30,10 +31,14 @@ Zero build step and zero npm runtime dependencies are required:
 
 ```bash
 # Option A: Zero-install offline launch — double-click directly in Explorer / Finder:
-computer-evolution-lab.html   # or index.html (10.2 KB modular entrypoint)
+computer-evolution-lab.html   # or index.html (10.3 KB modular entrypoint)
 
 # Option B: Local HTTP dev server on http://127.0.0.1:4173 (Node.js >= 20):
 node tools/serve.mjs
+
+# Option C: Native Windows x64 single-file executable (.NET 10 + WebView2):
+npm run build:exe         # builds "Computer Evolution Lab.exe"
+npm run install:desktop   # installs to Windows Desktop & Start Menu Programs
 ```
 
 ---
@@ -130,6 +135,7 @@ npm run audit:4k
 | `[` / `]` / `\`                  | Step abstraction layer down / up / switch `Hardware ↔ Software`      |
 | `T` / `G` / `H`                  | Guided Layer Tour / Era Comparison Chart / Return to Hub Gallery     |
 | `Q` / `M` / `?`                  | Cycle Render Quality / Mute Score & SFX / Help Modal                 |
+| `F11` / `Alt+Enter`              | Toggle borderless 4K fullscreen (Windows Desktop `.exe`)             |
 
 ---
 
