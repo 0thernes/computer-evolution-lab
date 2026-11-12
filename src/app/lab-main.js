@@ -2543,7 +2543,13 @@
       window.requestIdleCallback ||
       ((fn) => setTimeout(() => fn({ timeRemaining: () => 12 }), 16));
     const pump = (deadline) => {
-      while (queue.length && (deadline.timeRemaining() > 6 || deadline.didTimeout)) {
+      // When the idle deadline timed out (busy main thread), build for at most ~50 ms
+      // per callback so frames still get through between builds.
+      const t0 = performance.now();
+      while (
+        queue.length &&
+        (deadline.didTimeout ? performance.now() - t0 < 50 : deadline.timeRemaining() > 6)
+      ) {
         const m = queue.shift();
         ensureBuilt(m);
         if (!activeMachine) showFull(m, true);
@@ -2555,7 +2561,8 @@
         window.__hubFullyBuilt = true;
       }
     };
-    ric(pump, { timeout: 400 });
+    // Start after the first two frames so the hub paints before any heavy build.
+    requestAnimationFrame(() => requestAnimationFrame(() => ric(pump, { timeout: 400 })));
   } else {
     window.__hubFullyBuilt = true;
   }
