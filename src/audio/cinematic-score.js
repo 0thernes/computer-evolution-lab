@@ -2016,6 +2016,10 @@ var Nm = class LabAudioController {
     return us[this.machine] || us.hub;
   }
 
+  get scoreMode() {
+    return this.music && this.music.mode ? this.music.mode : "procedural";
+  }
+
   get nowPlaying() {
     if (!this.music) return null;
     return {
@@ -2091,7 +2095,11 @@ var Nm = class LabAudioController {
       this.roomIn.connect(this.room);
       this.room.connect(this.sfxBus);
 
-      this.music = new OrchestralScoreEngine(this);
+      this.procMusic = new OrchestralScoreEngine(this);
+      this.music =
+        typeof StemScoreEngine === "function"
+          ? new StemScoreEngine(this, this.procMusic)
+          : this.procMusic;
       this.applyVol();
       this.ok = true;
 
