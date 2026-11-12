@@ -495,7 +495,14 @@ internal sealed class LabWindow : Form
 
         var settings = _webView.CoreWebView2.Settings;
         settings.AreDefaultContextMenusEnabled = true;
+#if DEBUG
         settings.AreDevToolsEnabled = true;
+#else
+        // Release builds ship without DevTools (REVIEW-v5 I7); pass --devtools to enable for support sessions.
+        settings.AreDevToolsEnabled = Environment.GetCommandLineArgs().Any(a =>
+            string.Equals(a, "--devtools", StringComparison.OrdinalIgnoreCase)
+        );
+#endif
         settings.IsStatusBarEnabled = false;
         settings.IsZoomControlEnabled = false;
 
@@ -712,7 +719,10 @@ internal sealed class LoopbackLabServer : IDisposable
 
     public LoopbackLabServer(string? rootDir, Dictionary<string, byte[]> embedded)
     {
-        _rootDir = rootDir is not null ? Path.GetFullPath(rootDir) : null;
+        // Normalise with a trailing separator so "C:\\Lab" never matches "C:\\Lab-other" (REVIEW-v5 B2).
+        _rootDir = rootDir is not null
+            ? Path.TrimEndingDirectorySeparator(Path.GetFullPath(rootDir)) + Path.DirectorySeparatorChar
+            : null;
         _embedded = embedded;
         _listener = new TcpListener(IPAddress.Loopback, 0);
     }
@@ -762,7 +772,26 @@ internal sealed class LoopbackLabServer : IDisposable
                 }
 
                 string? headerLine;
-                while (!string.IsNullOrEmpty(headerLine = await reader.ReadLineAsync(ct))) { }
+                string? hostHeader = null;
+                string? originHeader = null;
+                while (!string.IsNullOrEmpty(headerLine = await reader.ReadLineAsync(ct)))
+                {
+                    int colon = headerLine.IndexOf(':');
+                    if (colon <= 0)
+                    {
+                        continue;
+                    }
+                    string name = headerLine[..colon].Trim();
+                    string value = headerLine[(colon + 1)..].Trim();
+                    if (name.Equals("Host", StringComparison.OrdinalIgnoreCase))
+                    {
+                        hostHeader = value;
+                    }
+                    else if (name.Equals("Origin", StringComparison.OrdinalIgnoreCase))
+                    {
+                        originHeader = value;
+                    }
+                }
 
                 string[] parts = requestLine.Split(' ');
                 if (parts.Length < 2)
@@ -771,6 +800,21 @@ internal sealed class LoopbackLabServer : IDisposable
                 }
 
                 string method = parts[0].ToUpperInvariant();
+
+                // Localhost-only hardening (REVIEW-v5 B2): reject DNS-rebinding hosts, foreign
+                // origins and anything but GET/HEAD. No CORS headers are ever emitted.
+                if (!IsAllowedHost(hostHeader) || !IsAllowedOrigin(originHeader) || (method != "GET" && method != "HEAD"))
+                {
+                    await WriteResponseAsync(
+                        stream,
+                        "403 Forbidden",
+                        "text/plain; charset=utf-8",
+                        Encoding.UTF8.GetBytes("Forbidden"),
+                        method == "HEAD",
+                        ct
+                    );
+                    return;
+                }
                 string rawTarget = parts[1];
                 int qIdx = rawTarget.IndexOf('?');
                 string urlPath = Uri.UnescapeDataString(qIdx >= 0 ? rawTarget[..qIdx] : rawTarget);
@@ -788,10 +832,7 @@ internal sealed class LoopbackLabServer : IDisposable
                 {
                     string relPath = urlPath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar);
                     string fullPath = Path.GetFullPath(Path.Combine(_rootDir, relPath));
-                    if (
-                        fullPath.StartsWith(_rootDir, StringComparison.OrdinalIgnoreCase)
-                        && File.Exists(fullPath)
-                    )
+                    if (IsInsideRoot(fullPath) && File.Exists(fullPath))
                     {
                         body = await File.ReadAllBytesAsync(fullPath, ct);
                     }
@@ -835,6 +876,24 @@ internal sealed class LoopbackLabServer : IDisposable
         }
     }
 
+    private int Port => ((IPEndPoint)_listener.LocalEndpoint).Port;
+
+    internal bool IsInsideRoot(string fullPath) =>
+        _rootDir is not null && fullPath.StartsWith(_rootDir, StringComparison.OrdinalIgnoreCase);
+
+    private bool IsAllowedHost(string? host) =>
+        host is not null
+        && (
+            host.Equals($"127.0.0.1:{Port}", StringComparison.OrdinalIgnoreCase)
+            || host.Equals($"localhost:{Port}", StringComparison.OrdinalIgnoreCase)
+        );
+
+    private bool IsAllowedOrigin(string? origin) =>
+        origin is null
+        || origin.Equals("null", StringComparison.Ordinal)
+        || origin.Equals($"http://127.0.0.1:{Port}", StringComparison.OrdinalIgnoreCase)
+        || origin.Equals($"http://localhost:{Port}", StringComparison.OrdinalIgnoreCase);
+
     private static async Task WriteResponseAsync(
         NetworkStream stream,
         string status,
@@ -848,7 +907,7 @@ internal sealed class LoopbackLabServer : IDisposable
             $"HTTP/1.1 {status}\r\n"
             + $"Content-Type: {contentType}\r\n"
             + $"Content-Length: {body.Length}\r\n"
-            + "Access-Control-Allow-Origin: *\r\n"
+            + "X-Content-Type-Options: nosniff\r\n"
             + "Cache-Control: no-cache\r\n"
             + "Connection: close\r\n\r\n";
 

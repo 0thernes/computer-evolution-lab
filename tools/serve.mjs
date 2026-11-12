@@ -19,8 +19,23 @@ const MIME_TYPES = {
   ".webp": "image/webp",
   ".ico": "image/x-icon",
   ".txt": "text/plain; charset=utf-8",
+  ".wav": "audio/wav",
+  ".opus": "audio/ogg",
+  ".mp3": "audio/mpeg",
+  ".ogg": "audio/ogg",
+  ".hdr": "application/octet-stream",
   ".md": "text/markdown; charset=utf-8",
 };
+
+/**
+ * True only when `absPath` is ROOT_DIR itself or a descendant of it.
+ * A bare `startsWith(ROOT_DIR)` check is not enough: a sibling folder such as
+ * `<root>-secrets/` shares the string prefix (REVIEW-v5 B1).
+ */
+export function isInsideRoot(absPath, root = ROOT_DIR) {
+  const rel = path.relative(root, absPath);
+  return rel === "" || (!rel.startsWith("..") && !path.isAbsolute(rel));
+}
 
 export function startServer(port = 4173, host = "127.0.0.1") {
   return new Promise((resolve, reject) => {
@@ -31,7 +46,7 @@ export function startServer(port = 4173, host = "127.0.0.1") {
         if (relPath === "/") relPath = "/index.html";
 
         const safePath = path.resolve(ROOT_DIR, "." + relPath);
-        if (!safePath.startsWith(ROOT_DIR)) {
+        if (!isInsideRoot(safePath)) {
           res.writeHead(403, { "Content-Type": "text/plain; charset=utf-8" });
           res.end("403 Forbidden");
           return;
@@ -43,12 +58,22 @@ export function startServer(port = 4173, host = "127.0.0.1") {
           return;
         }
 
+        if (req.method !== "GET" && req.method !== "HEAD") {
+          res.writeHead(405, { Allow: "GET, HEAD" });
+          res.end();
+          return;
+        }
         const ext = path.extname(safePath).toLowerCase();
         const mime = MIME_TYPES[ext] || "application/octet-stream";
         res.writeHead(200, {
           "Content-Type": mime,
           "Cache-Control": "no-cache",
+          "X-Content-Type-Options": "nosniff",
         });
+        if (req.method === "HEAD") {
+          res.end();
+          return;
+        }
         fs.createReadStream(safePath).pipe(res);
       } catch (err) {
         res.writeHead(500, { "Content-Type": "text/plain; charset=utf-8" });
