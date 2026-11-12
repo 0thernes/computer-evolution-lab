@@ -44,7 +44,7 @@ Screenshots were rendered headless with SwiftShader at the High tier, 1280×720.
 Zero build step and zero npm runtime dependencies are required:
 
 ```bash
-# Option A (recommended): local server on http://127.0.0.1:4173 (Node.js >= 20), works offline.
+# Option A (recommended): local server on http://127.0.0.1:4173 (Node.js >= 26), works offline.
 # Loads the CC0 textures, HDRI, sampled score and recorded SFX.
 node tools/serve.mjs
 

@@ -4,6 +4,10 @@ All notable changes to **Computer Evolution Lab** are documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+- CI runs on the latest Node.js only (26.x; current LTS "Lithium" is 26.13.1). Node 20 was removed after its headless WebGL job hung for 25+ minutes on the v6.0.0 push. `engines.node` is now `>=26.0.0`.
+
 ## [6.0.0] - 2026-11-13
 
 Ports the v6 prototype's graphics, sampled score and sound into the 48-machine lab, and fixes all 49 findings of the v5 review ([`docs/REVIEW-v5.md`](docs/REVIEW-v5.md)).

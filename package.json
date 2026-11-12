@@ -16,7 +16,7 @@
     "format:check": "prettier --check \"**/*.{html,css,js,mjs,json,md,yml}\""
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=26.0.0"
   },
   "author": "0thernes LLC <0_0@0thernes.art> (https://0thernes.art)",
   "license": "SEE LICENSE IN LICENSE"
