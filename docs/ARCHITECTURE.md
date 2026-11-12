@@ -25,7 +25,7 @@ flowchart TD
   LAYERS_EXP --> GATE_ENG
   GATE_ENG --> CMP["src/app/compare-modal.js (5-Tab CS Roofline & Physics Atlas)"]
   HTML --> SFX["assets/audio/sfx-clips.js"]
-  SFX --> AUDIO["src/audio/cinematic-score.js (Acoustic Orchestral Film-Score + Hardware SFX)"]
+  SFX --> AUDIO["src/audio/cinematic-score.js (procedural orchestral score + hardware SFX)"]
   STAGE --> M1["src/machines/machines-early.js (turing, z1, analog, tube, pdp8, altair)"]
   STAGE --> M1B["src/machines/machines-milestones.js (agc66, alto73, arm07)"]
   STAGE --> M1C["src/machines/machines-hardwired.js (eniac46, lisp83, wse24)"]
@@ -81,3 +81,17 @@ Inside `src/sim/riscv-modern-pc.js` and `src/machines/machine-pc20.js`, the CPU 
 1. **Scene Illumination**: Three-point studio softbox equirectangular PMREM environment (`buildStudioEnvironmentScene`) paired with shadow-casting key light (`2048×2048` `PCFSoftShadowMap`), cool rim light, and warm bounce fill.
 2. **Dielectric & Cutaway Calibration**: `calibrateDielectricColor()` clamps non-metallic diffuse albedos below `0.80` luminance so high-key enclosures retain surface shading gradients, while `applyCutawayOpacity()` attenuates `opacity`, `clearcoat`, and `envMapIntensity` on `shell: true` enclosures so internal hardware remains glare-free during Cutaway inspection.
 3. **Post-Processing (`StudioFX`)**: Renders into a `HalfFloatType` `WebGLRenderTarget` with hardware `samples: 4` MSAA (`Ultra` / `High`), subtle high-threshold `UnrealBloomPass` (`threshold: 0.90`, `strength: 0.22` in `High`), `OutputPass` (`ACESFilmicToneMapping`, `exposure: 0.96`), and optional `SMAAPass` fallback when MSAA is disabled on `Medium`.
+
+## v6.0.0 modules
+
+| File                              | Role                                                                                                                                            |
+| :-------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/core/boot-guard.js`          | Boot watchdog, moved out of `index.html` for the CSP                                                                                            |
+| `src/assets/asset-locator.js`     | `CelAssets`: reads `assets/tier.json` and builds the texture, HDRI, stem and SFX paths. On `file://` nothing external loads                     |
+| `src/graphics/pbr-assets.js`      | `CelPBR`: wraps the `U.*` material factories with CC0 detail maps (world-box UVs) and loads the HDRI. Swaps happen only after a successful load |
+| `src/graphics/pbr-materials.js`   | `U.screen(tex, {crt                                                                                                                             | lcd})`: CRT/LCD display shaders |
+| `src/graphics/studio-stage.js`    | `StudioFX`: quality tiers, GTAO, SMAA, selective bloom, DoF, Ultra supersampling                                                                |
+| `src/graphics/die-detail-6502.js` | `CelDieDetail`: transistor-scale close-zoom patch for the 6502 die                                                                              |
+| `src/audio/stem-score.js`         | `StemScoreEngine`: 18 sampled cues × 3 stems, with the procedural score as fallback                                                             |
+| `src/app/hub-proxy-sizes.js`      | Proxy box sizes for the lazy hub (`tools/gen-hub-proxy-sizes.mjs`)                                                                              |
+| `src/app/lab-main.js`             | `deviceClass`, `hubMode`, `ensureBuilt` / `showFull` / LRU disposal                                                                             |
