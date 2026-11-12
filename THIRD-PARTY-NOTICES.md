@@ -30,21 +30,31 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 
 ---
 
-## 2. Public-Domain / CC0 Archival Hardware Audio Recordings
+## 2. Media assets (CC0 1.0 / public domain)
 
-Embedded in `assets/audio/sfx-clips.js` and credited in the in-app **Sound Credits** modal:
+All textures (ambientCG), the HDRI (Poly Haven), the orchestral samples and impulse responses used to render the score (VSCO 2 CE, Freesound), and the recorded sound effects (Freesound, Wikimedia Commons) are CC0 1.0. Each file is listed with its author and source URL in [`CREDITS.md`](CREDITS.md):
 
-1. **Teletype / Typewriter Carriage Bell**: _Typewriter ding_ (`bell`) — Wikimedia Commons, CC0 1.0 Universal Public Domain Dedication.
-2. **Mechanical Keyboard Switch Grains**: _Computer keyboard typing_ (`keys`) — Wikimedia Commons, CC0 1.0 Universal Public Domain Dedication.
-3. **3.5-inch / 5.25-inch Floppy Stepper Seek**: _Floppy disk drive sound_ (`floppy`) — Wikimedia Commons, CC0 1.0 Universal Public Domain Dedication.
-4. **Hard Disk Platter Spin & Head Seek**: _Hard drive spinning and seeking_ (`hdd`) — Wikimedia Commons, CC0 1.0 Universal Public Domain Dedication.
+- `assets/tex/1k/` (14 maps) and, in the full-tier release zip, `assets/full/tex/2k/`
+- `assets/hdri/studio_1k.hdr` and, in the full tier, `assets/full/hdri/studio_2k.hdr`
+- `assets/music/lite/` (18 cues × 3 stems) and, in the full tier, `assets/full/music/`
+- `assets/audio/*.mp3` (8 files) and `assets/audio/sfx-clips.js` (base64 copies of `bell`, `floppy`, `keys`, `modem`)
 
 ---
 
-## 3. Historical Netlist & Scientific Literature References
+## 3. Data fetched at run time (not redistributed)
 
-- **MOS Technology 6502 Switch-Level Netlist**: Inspired by the open reverse-engineering documentation of the Visual 6502 project (`visual6502.org`, Greg James, Brian Silverman, Barry Silverman) and Eric Schlaepfer's MOnSter 6502 hardware specification.
+- **visual6502 netlist** (Greg James, Brian Silverman, Barry Silverman), **CC BY-NC-SA 3.0**. It is downloaded from `raw.githubusercontent.com/trebonian/visual6502` at a pinned commit, and verified by SHA-256, only when you turn on the 6502's transistor-level mode. It is not included in this repository or the `.exe`. The procedural die artwork and the behavioural 6502 core are original work. Eric Schlaepfer's MOnSter 6502 inspired the discrete-board model.
+- **Klaus Dormann 6502 functional test**, **GPL-3.0**. `tools/dormann-6502.mjs` downloads it in CI to test the 6502 core. It is not included in this repository.
+
+---
+
+## 4. Scientific literature references
+
 - **DishBrain Wetware Model**: Kagan et al., _"In vitro neurons learn and exhibit sentience when embodied in a simulated game-world"_, _Neuron_ 110 (2022) 3952; spiking dynamics modeled via E. M. Izhikevich, _IEEE Trans. Neural Networks_ 14 (2003) 1569.
 - **Programmable Nanophotonic Processor**: Clements et al., _Optica_ 3 (2016) 1460; Shen et al., _Nature Photonics_ 11 (2017) 441.
 - **Enzyme-Free Nucleic Acid Logic**: Seelig, Soloveichik, Zhang & Winfree, _"Enzyme-free nucleic acid logic circuits"_, _Science_ 314 (2006) 1585.
-- **Original Orchestral Score**: All 18 musical cues in `src/audio/cinematic-score.js` are 100% original procedural compositions synthesized live via WebAudio API. No copyrighted melodies, samples, or recordings are included.
+- **H₂ STO-3G integrals**: A. Szabo & N. S. Ostlund, _Modern Quantum Chemistry_ (Dover, 1996), §3.5.
+
+## 5. Music
+
+The score is original. There are 49 scene cues in the procedural engine (`src/audio/cinematic-score.js`) and 18 sampled cues (`assets/music/`) rendered from CC0 samples. No copyrighted melody, sample or recording is included.
