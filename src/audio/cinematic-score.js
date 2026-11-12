@@ -3063,6 +3063,55 @@ function Qy(machineId, fromNode, toNode) {
 var g0 = {
   real: [
     {
+      use: "Relay armature clacks (Z1, analog, relay and tube machines)",
+      title: "relay1.wav",
+      author: "Mihacappy (Freesound)",
+      license: "CC0 1.0",
+      url: "https://freesound.org/people/Mihacappy/sounds/876593/",
+    },
+    {
+      use: "Relay armature clacks",
+      title: "Relay 3",
+      author: "JoontheFloof (Freesound)",
+      license: "CC0 1.0",
+      url: "https://freesound.org/people/JoontheFloof/sounds/740253/",
+    },
+    {
+      use: "Relay armature clacks",
+      title: "Relay and loud click",
+      author: "bassmosphere (Freesound)",
+      license: "CC0 1.0",
+      url: "https://freesound.org/people/bassmosphere/sounds/384701/",
+    },
+    {
+      use: "Toggle snaps (Altair) and paddle clacks (PDP-8)",
+      title: "toggle switch 1",
+      author: "TheTechTinkerer (Freesound)",
+      license: "CC0 1.0",
+      url: "https://freesound.org/people/TheTechTinkerer/sounds/795663/",
+    },
+    {
+      use: "Toggle snaps",
+      title: "Toggle Switch",
+      author: "pillwave (Freesound)",
+      license: "CC0 1.0",
+      url: "https://freesound.org/people/pillwave/sounds/423957/",
+    },
+    {
+      use: "Teletype print-hammer strikes (ASR-33)",
+      title: "R20-17-Teletype Machine.wav",
+      author: "craigsmith (Freesound)",
+      license: "CC0 1.0",
+      url: "https://freesound.org/people/craigsmith/sounds/483336/",
+    },
+    {
+      use: "Hard-disk voice-coil seek clicks",
+      title: "computer hard drive access fan click.wav",
+      author: "martian (Freesound)",
+      license: "CC0 1.0",
+      url: "https://freesound.org/people/martian/sounds/570733/",
+    },
+    {
       use: "Modem (90s PC, DIAL command)",
       title: "Dial up connection (short)",
       author: "PDSounds (pdsounds.org)",
