@@ -18,11 +18,15 @@ Thank you for exploring **Computer Evolution Lab**! Every exhibit in this reposi
 3. **Required Checks Before Any Commit**:
 
    ```bash
-   node --test tests/simulators.test.mjs
+   node --test tests/*.test.mjs
+   node tools/dormann-6502.mjs
    node tools/audit-exhaustive.mjs
    node tools/run-tests.mjs
-   npx prettier --check "**/*.{html,css,js,mjs,json,md,yml}"
+   npx prettier@3.10.1 --check "**/*.{html,css,js,mjs,json,md,yml}"
    ```
 
-4. **Licensing**:
+4. **History model: plain commits on `main`**:
+   No pull requests, feature branches, rebases or merges, and no Dependabot, CodeRabbit or Copilot bots. Make small, frequent commits directly on `main`. Record user-visible changes in `CHANGELOG.md` and track work in GitHub Issues.
+
+5. **Licensing**:
    Contributions are governed by the non-commercial research & play terms in `LICENSE` (`0thernes LLC`).

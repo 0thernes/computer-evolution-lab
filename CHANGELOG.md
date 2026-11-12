@@ -30,7 +30,8 @@ Ports the v6 prototype's graphics, sampled score and sound into the 48-machine l
   - `tests/security.test.mjs`, `tests/analog-patch.test.mjs` and `tests/version.test.mjs`;
   - `tools/dormann-6502.mjs` runs Klaus Dormann's functional test, fetched at CI time;
   - CI runs on a Node 20/22 matrix with SHA-pinned actions and a Prettier check;
-  - dependabot, CODEOWNERS, a PR template, `.editorconfig` and `CITATION.cff`.
+  - CODEOWNERS, `.editorconfig` and `CITATION.cff`;
+  - history model documented in `CONTRIBUTING.md`: plain commits on `main`, no PRs, branches or dependency bots.
 - **Offline build pipeline:** `tools/score/` and `tools/assets/`.
 - **Docs:** `CREDITS.md`, `SOUNDS.md` and ADRs 0001–0006.
 
