@@ -769,7 +769,7 @@ test("v5.0 Hard-Wired Operational Frontier Simulators (ENIAC, Symbolics LISP, Wa
   );
 });
 
-test("Universal HardWiredNetlistSolver verifies exact Boolean & physical switching behavior across all 8 hardware families", () => {
+test("Universal HardWiredNetlistSolver verifies exact Boolean & physical switching behavior across all hardware families", () => {
   const env = loadClassicScripts([
     "src/core/dom-ui.js",
     "src/sim/core-simulators.js",
@@ -816,7 +816,7 @@ test("Universal HardWiredNetlistSolver verifies exact Boolean & physical switchi
         Number.isFinite(snap.critDelayPs) &&
           snap.critDelayPs > 0 &&
           Number.isFinite(snap.totalEnergyFj) &&
-          snap.totalEnergyFj > 0 &&
+          (fam.key === "mech_plate" ? snap.totalEnergyFj === 0 : snap.totalEnergyFj > 0) &&
           env.HardWiredNetlistSolver.formatDelay(snap.critDelayPs).length > 0,
         `${id} physical delay & switching energy are positive and finite`,
       );
@@ -825,6 +825,9 @@ test("Universal HardWiredNetlistSolver verifies exact Boolean & physical switchi
   assert.equal(
     familiesSeen.size,
     8,
-    `Expected all 8 physical switching families to be represented across 48 machines, got ${familiesSeen.size}`,
+    `Expected 8 physical switching families to be represented across 48 machines, got ${familiesSeen.size}`,
   );
+  // C9: every view is a labelled family template; Z1 is mechanical, not relay.
+  assert.equal(env.HardWiredNetlistSolver.familyFor("z1").key, "mech_plate");
+  assert.equal(env.HardWiredNetlistSolver.familyFor("pc20").template, true);
 });

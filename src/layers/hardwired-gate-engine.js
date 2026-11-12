@@ -2,7 +2,7 @@
 // Expands all 48 machines × 11 primary rungs = 528 primary layers (and × 3 interactive sub-lenses = 1,584 live views).
 //
 // HONESTY NOTE (review finding C9): the gate bench and eye scope are driven by
-// 9 generic switching-family TEMPLATES below, not per-machine netlists. Every
+// 8 generic switching-family TEMPLATES below, not per-machine netlists. Every
 // machine in a family shows the same 6-gate adder slice with that family's
 // voltages and delays. The only real per-machine netlist in the lab is the
 // MOS 6502 die (visual6502 data, fetched at runtime). The UI labels these
@@ -23,16 +23,6 @@
       gateDelayPs: 250000000000, // ~0.25 s per Z1 machine cycle phase (1 Hz clock, 4 phases)
       switchEnergyFj: 0, // mechanical work, not electrical; not modelled
       eyeJitterPct: 20,
-    },
-    mech_relay_plate: {
-      title: "Mechanical Sliding-Plate / Relay Contact Netlist",
-      device: "Series/Shunt Relay Armature & Slotted Brass Linkage",
-      vLow: "OPEN (0 V)",
-      vHigh: "CLOSED (+24 V)",
-      vddVolts: 24.0,
-      gateDelayPs: 22000000000, // 22 ms mechanical armature travel
-      switchEnergyFj: 120000000000, // 0.12 mJ solenoid pull-in
-      eyeJitterPct: 18,
     },
     thermionic_tube: {
       title: "6SN7 Twin-Triode / Pentode Pulse Gate Netlist",
@@ -469,7 +459,7 @@
         c.fillStyle = Z.dim;
         c.font = Ce(9.5, "600");
         c.fillText(
-          `${fam.device.slice(0, 42)} · t_crit=${HardWiredNetlistSolver.formatDelay(res.critDelayPs)} · E_sw=${res.totalEnergyFj} fJ · Hi=${fam.vHigh}`,
+          `${fam.device.slice(0, 42)} · t_crit=${HardWiredNetlistSolver.formatDelay(res.critDelayPs)} · E_sw=${fam.switchEnergyFj ? res.totalEnergyFj + " fJ" : "n/a (mechanical)"} · Hi=${fam.vHigh}`,
           8,
           h - 5,
           w - 16,
