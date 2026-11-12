@@ -2,6 +2,31 @@
 
 All notable changes to **Computer Evolution Lab** are documented in this file.
 
+## [4.0.0] - 2026-11-11
+
+### Added
+
+- **Complete 40-Machine MIT / Stanford / Caltech CS Watershed Lineup (`40` Operational Computers / `41` Live 4K 3D Scenes / `360` Layers)**:
+  - **Circle I Milestones (`src/machines/machines-milestones.js`)**:
+    - **`agc66` (`1966` Apollo Guidance Computer Block II + DSKY)**: First IC computer (`5,600` Fairchild flat-pack `NOR3` gates), woven copper core-rope ROM (`36,864` 15-bit words), Hal Laning priority-scheduled Executive (`P63`/`P64`/`P66` lunar descent guidance), and live **1202 Executive Overflow** shedding low-priority radar jobs without aborting guidance, paired with an interactive EL-green **DSKY (`VERB` / `NOUN` / `PRO` / `KEY REL`)**.
+    - **`alto73` (`1973` Xerox PARC Alto Workstation)**: `170 ns` 8-task cooperative microcode processor (`MRT`, `DHT`, `CURT`, `DWT`, `ETHT`, `EMULATOR`), hardware **`BitBlt` rasterop** (`SRC`, `OR`, `XOR`, `NOT`) driving a `606×808` portrait CRT with overlapping Smalltalk/Bravo windows, 3-button optical-mechanical mouse, Diablo removable disk pack, and `3 Mbps` Metcalfe/Boggs Ethernet ALOHA CSMA/CD transceiver.
+    - **`arm07` (`2007` Mobile ARM big.LITTLE Heterogeneous SoC)**: Dennard-breakdown mobile paradigm (`P = C·V²·f + V·I_leak` DVFS governor + Tj thermal throttling) scheduling interactive/AI/background tasks across **Performance (`P`)** and **Efficiency (`E`)** cores, **Tile-Based Deferred Rendering (`TBDR`)** on-chip SRAM GPU, systolic INT8 **NPU**, camera **ISP**, and **5G OFDM** baseband inside a cutaway glass/titanium handset with PoP LPDDR5X.
+  - **Circle II Virtual-Memory Milestone (`src/machines/machines-servers.js`)**:
+    - **`vax78` (`1978` DEC VAX-11/780 32-Bit Virtual-Memory Server)**: Canonical `1.0 MIPS` architectural baseline implementing a `4 GiB` virtual address space (`P0` user, `P1` stack, `S0` VMS system space), 2-way set-associative Translation Buffer (`TB` TLB), two-handed **Working-Set clock** page replacement + Modified/Free Page Lists (demonstrating zero-thrashing locality vs. naive FIFO), `K/E/S/U` 4-ring protection, and `SBI` + `UNIBUS` cabinet hardware.
+  - **Circle III Out-of-Order & TeraFLOPS Milestones (`src/machines/machines-super.js`)**:
+    - **`cdc6600` (`1964` CDC 6600 First Supercomputer — Seymour Cray & James Thornton)**: Plus-shaped `+` 4-wing glass/aluminum Freon-cooled chassis (`600,000` silicon transistors + dense cordwood backplane wiring) running a cycle-accurate **Thornton Scoreboard** (`Issue` → `ReadOps` → `Exec` → `WriteRes`) resolving `WAW`, `RAW`, and `WAR` hazards dynamically across **10 heterogeneous Functional Units** and **10 barrel-multithreaded Peripheral Processors (`PP0–PP9`)**.
+    - **`ascired97` (`1997` Intel ASCI Red — First `>1 TeraFLOPS` Commodity MPP)**: Multi-cabinet x86 mesh (`9,298` Pentium Pro CPUs) simulating **dimension-ordered `X→Y` Wormhole Flit Routing** (`Head` / `Body` / `Tail` flits holding channel reservations under contention without store-and-forward full-packet buffering) + `MPI` halo-exchange / `Allreduce`.
+  - **Circle IV Complete 8-Modality Quantum Lineup & Upgraded `OMEGA-Q` (`src/machines/machines-quantum-age.js`)**:
+    - **`qion` (`1995+` Trapped-Ion Linear Paul & QCCD Quantum Computer)**: UHV octagon chamber, gold RF/DC blade electrodes suspending a glowing `¹⁷¹Yb⁺` crystal chain, all-to-all **Mølmer–Sørensen (`XX(χ)`)** bichromatic shared-phonon entangling gates, `369.5 nm` state-dependent fluorescence histogram (`|1⟩` bright vs. `|0⟩` dark), and **QCCD** ion shuttling + sympathetic cooling.
+    - **`qanneal` (`2011+` Superconducting Flux-Qubit Quantum Annealer)**: Multi-stage magnetic-shielded `15 mK` cryostat and Pegasus/Chimera niobium flux-qubit processor integrating the exact `256×256` (`2⁸`) transverse-field **Ising Hamiltonian** (`H(s) = -A(s)∑σᵢˣ + B(s)[∑hᵢσᵢᶻ + ∑Jᵢⱼσᵢᶻσⱼᶻ]`) with live instantaneous ground/excited spectral gap `Δ₀₁(s)` and Max-Cut / Spin-Glass / Fraud QUBO presets.
+    - **Upgraded `qomega` (`2045+` OMEGA-Q Fault-Tolerant Horizon QPU)**: Expanded 3D monolithic spire with 6-tier gold cryo-stages, **4-module Photonic QPU Interconnect Ring** (`1,550 nm` telecom entanglement links), **Cryo-CMOS Magic-State `|T⟩` Factory Bank**, interactive Grover target selector, and arbitrary `R(Å)` `H₂` bond-length sweep.
+- **72 New Abstraction Layers (`360` Total) & 4-Tab CS Engineering Atlas**:
+  - Added 8 custom Canvas2D domain visualizers (`agcdsky`, `altoblt`, `armdvfs`, `vaxtlb`, `cdcscore`, `wormhole`, `ionpaul`, `annealising`) and `72` part-matched HW/SW layers (`src/layers/layers-expansion.js`).
+  - Added **Tab 4 (`⚛️ 8 Quantum Eras & Modalities`)** in `src/app/compare-modal.js` comparing all 8 physical quantum computing eras & architectures side-by-side.
+- **Acoustic Concert-Hall Orchestral Film-Score Overhaul & Macro PBR Materials**:
+  - Upgraded `src/audio/cinematic-score.js` with Contrabass-reinforced divisi string formants (`2.05 kHz` Bridge Hill + `-4.8 dB` harshness dip + staggered bow entries + horsehair air), spruce-soundboard bichord felt grand piano, dual-formant nonlinear French horns, expressive `soloCello`, elegiac `soloTrumpet`, `concertSnareRoll`, bespoke `Malick` & `Stone` cues, `Nolan` palette, `400 Hz` Apollo inverter hum, and `1.4 Hz` Pulse-Tube dilution cryocooler breath.
+  - Added `512×512` procedural `U.perfMesh`, `U.cryoGold`, and `U.corePlane` PBR materials (`0.00%` HDR bloom white-clipping) and `15×` macro zoom (`minDistance = 0.16`).
+
 ## [3.0.0] - 2026-11-11
 
 ### Added

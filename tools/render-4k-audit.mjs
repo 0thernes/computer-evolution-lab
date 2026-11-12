@@ -48,6 +48,14 @@ const SHOTS = [
   { name: "33-qphotonic-mbqc-4k", id: "qphotonic", preset: "iso" },
   { name: "34-qtopo-majorana-4k", id: "qtopo", preset: "iso", cutaway: true },
   { name: "35-qomega-horizon-4k", id: "qomega", preset: "iso", cutaway: true },
+  { name: "36-agc66-apollo-4k", id: "agc66", preset: "iso", cutaway: true },
+  { name: "37-alto73-xerox-4k", id: "alto73", preset: "iso", cutaway: true },
+  { name: "38-arm07-mobile-soc-4k", id: "arm07", preset: "iso", cutaway: true },
+  { name: "39-vax78-vms-4k", id: "vax78", preset: "iso", cutaway: true },
+  { name: "40-cdc6600-scoreboard-4k", id: "cdc6600", preset: "iso", cutaway: true },
+  { name: "41-ascired97-mpp-4k", id: "ascired97", preset: "iso", cutaway: true },
+  { name: "42-qion-trapped-ion-4k", id: "qion", preset: "iso", cutaway: true },
+  { name: "43-qanneal-ising-4k", id: "qanneal", preset: "iso", cutaway: true },
 ];
 
 const srv = await startServer(0);

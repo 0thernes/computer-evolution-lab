@@ -95,7 +95,11 @@ function makeMachineCray1() {
       const by = 516 + idx * 70;
       c.fillStyle = "#e2e8f0";
       c.font = '700 15px "JetBrains Mono", monospace';
-      c.fillText(`${lbl}: ${clks} clocks (${((clks * 12.5) / 1000).toFixed(2)} µs)`, 36, by);
+      c.fillText(
+        `${lbl}: ${clks} clocks (${((clks * 12.5) / 1000).toFixed(2)} µs)`,
+        36,
+        by,
+      );
       c.fillStyle = "#1e293b";
       c.fillRect(36, by + 10, W - 76, 30);
       const frac = Math.min(1, clks / maxClk);
@@ -173,20 +177,38 @@ function makeMachineCray1() {
           [0.06, 0.89, 0],
           {
             shell: true,
-            name: isRed ? "Cray Crimson Wedge Panel" : "Anodized Gold-Aluminum Wedge Panel",
+            name: isRed
+              ? "Cray Crimson Wedge Panel"
+              : "Anodized Gold-Aluminum Wedge Panel",
           },
           colGrp,
         );
 
         // Internal Copper Freon Coldbar + Stacked Horizontal ECL Logic Boards
-        kit.box(0.03, 1.66, 0.28, U.copper(), [-0.02, 0.86, 0], {
-          name: "Freon-12 Copper Thermal Coldbar",
-          info: "Conducts 115 kW of Emitter-Coupled Logic (ECL) heat out of module edges to keep silicon junctions at 54 °C.",
-        }, colGrp);
+        kit.box(
+          0.03,
+          1.66,
+          0.28,
+          U.copper(),
+          [-0.02, 0.86, 0],
+          {
+            name: "Freon-12 Copper Thermal Coldbar",
+            info: "Conducts 115 kW of Emitter-Coupled Logic (ECL) heat out of module edges to keep silicon junctions at 54 °C.",
+          },
+          colGrp,
+        );
         for (let b = 0; b < 8; b++) {
-          kit.box(0.22, 0.016, 0.24, U.pcb(0x165b38), [0.02, 0.24 + b * 0.19, 0], {
-            name: "ECL Sub-Nanosecond Vector Module",
-          }, colGrp);
+          kit.box(
+            0.22,
+            0.016,
+            0.24,
+            U.pcb(0x165b38),
+            [0.02, 0.24 + b * 0.19, 0],
+            {
+              name: "ECL Sub-Nanosecond Vector Module",
+            },
+            colGrp,
+          );
         }
 
         // Iconic Circular Padded Naugahyde Bench Cushion around outside of column!
@@ -224,7 +246,11 @@ function makeMachineCray1() {
         kit.tube(
           [
             [Math.cos(a0) * 0.56, y0, Math.sin(a0) * 0.56],
-            [Math.cos((a0 + a1) * 0.5) * 0.24, (y0 + y1) * 0.5, Math.sin((a0 + a1) * 0.5) * 0.24],
+            [
+              Math.cos((a0 + a1) * 0.5) * 0.24,
+              (y0 + y1) * 0.5,
+              Math.sin((a0 + a1) * 0.5) * 0.24,
+            ],
             [Math.cos(a1) * 0.56, y1, Math.sin(a1) * 0.56],
           ],
           0.008,
@@ -254,12 +280,18 @@ function makeMachineCray1() {
           color: 0xd4cec0,
           name: "Vector Chime & Register CRT",
           info: "Live oscilloscope view of 64-element vector registers V0, V3, V4 and hardware Vector Chaining speedup.",
-          live: () => `${sim.mflops.toFixed(1)} MFLOPS · ×${sim.speedupVsScalar.toFixed(1)} vs scalar`,
+          live: () =>
+            `${sim.mflops.toFixed(1)} MFLOPS · ×${sim.speedupVsScalar.toFixed(1)} vs scalar`,
           explode: [0, 0.28, 0],
         },
         desk,
       );
-      buildSculptedKeyboard(kit, [0, 0.65, 0.26], { w: 0.5, d: 0.19, name: "Operator Console Keyboard" }, desk);
+      buildSculptedKeyboard(
+        kit,
+        [0, 0.65, 0.26],
+        { w: 0.5, d: 0.19, name: "Operator Console Keyboard" },
+        desk,
+      );
 
       drawCrayScope();
     },
@@ -275,10 +307,14 @@ function makeMachineCray1() {
         statsUi.set("vl", `${sim.VL} × 64-bit FP`);
       };
 
-      const runBtn = Fe(running ? "⏸ Pause" : "▶ Run", () => {
-        running = !running;
-        runBtn.textContent = running ? "⏸ Pause" : "▶ Run";
-      }, "pri");
+      const runBtn = Fe(
+        running ? "⏸ Pause" : "▶ Run",
+        () => {
+          running = !running;
+          runBtn.textContent = running ? "⏸ Pause" : "▶ Run";
+        },
+        "pri",
+      );
 
       const chainBtn = Fe(
         sim.chaining ? "Chaining: ON (1 Chime)" : "Chaining: OFF (3 Chimes)",
@@ -485,9 +521,23 @@ function makeMachineCm2() {
     );
     c.font = '600 15px "JetBrains Mono", monospace';
     c.fillStyle = "#94a3b8";
-    c.fillText("IN : " + Array.from(sim.scanIn).map((v) => String(v).padStart(3)).join(" "), 36, 632);
+    c.fillText(
+      "IN : " +
+        Array.from(sim.scanIn)
+          .map((v) => String(v).padStart(3))
+          .join(" "),
+      36,
+      632,
+    );
     c.fillStyle = "#34d399";
-    c.fillText("OUT: " + Array.from(sim.scanOut).map((v) => String(v).padStart(3)).join(" "), 36, 676);
+    c.fillText(
+      "OUT: " +
+        Array.from(sim.scanOut)
+          .map((v) => String(v).padStart(3))
+          .join(" "),
+      36,
+      676,
+    );
     c.fillStyle = "#fbbf24";
     c.fillText(
       `Total Hypercube Packets Routed: ${sim.routedPackets.toLocaleString()} · Active PEs: ${sim.activePop || 128}/256`,
@@ -529,9 +579,17 @@ function makeMachineCm2() {
         name: "CM-2 Cube-of-Cubes Monolith",
         info: "Eight subcubes separated by illuminated cross-aisles; houses 4,096 custom chips (16 1-bit PEs + hypercube router node per chip = 65,536 processors).",
       });
-      kit.box(1.56, 0.1, 1.56, U.darkAnodized(0x111318), [0, 0.05, 0], {
-        name: "Air-Plenum Base Skirt",
-      }, cubeRoot);
+      kit.box(
+        1.56,
+        0.1,
+        1.56,
+        U.darkAnodized(0x111318),
+        [0, 0.05, 0],
+        {
+          name: "Air-Plenum Base Skirt",
+        },
+        cubeRoot,
+      );
 
       let faceCount = 0;
       for (const sx of [-1, 1]) {
@@ -546,15 +604,31 @@ function makeMachineCm2() {
               },
               cubeRoot,
             );
-            kit.box(0.62, 0.6, 0.62, U.darkAnodized(0x121317), [0, 0, 0], {
-              shell: true,
-              name: "Smoked Lexan Subcube Housing",
-            }, sub);
+            kit.box(
+              0.62,
+              0.6,
+              0.62,
+              U.darkAnodized(0x121317),
+              [0, 0, 0],
+              {
+                shell: true,
+                name: "Smoked Lexan Subcube Housing",
+              },
+              sub,
+            );
             // Internal vertical PCB blades visible in cutaway!
             for (let b = 0; b < 5; b++) {
-              kit.box(0.52, 0.5, 0.014, U.pcb(0x184e35), [0, 0, -0.2 + b * 0.1], {
-                name: "CM-2 16-PE + Router PCB Blade",
-              }, sub);
+              kit.box(
+                0.52,
+                0.5,
+                0.014,
+                U.pcb(0x184e35),
+                [0, 0, -0.2 + b * 0.1],
+                {
+                  name: "CM-2 16-PE + Router PCB Blade",
+                },
+                sub,
+              );
             }
             // Live Crimson LED Matrix Planes on front/side exterior of the monolith!
             if (sz > 0) {
@@ -578,10 +652,18 @@ function makeMachineCm2() {
       }
 
       // Glowing crimson central cross-aisle spine inside the monolith
-      kit.box(0.06, 1.32, 1.38, U.glow(0xdc2626, 0.85), [0, 0.78, 0], {
-        name: "Central Hypercube Router Backplane",
-        info: "12-dimensional packet-switched hypercube crossbar routing messages via Feynman's XOR dimension-order algorithm.",
-      }, cubeRoot);
+      kit.box(
+        0.06,
+        1.32,
+        1.38,
+        U.glow(0xdc2626, 0.85),
+        [0, 0.78, 0],
+        {
+          name: "Central Hypercube Router Backplane",
+          info: "12-dimensional packet-switched hypercube crossbar routing messages via Feynman's XOR dimension-order algorithm.",
+        },
+        cubeRoot,
+      );
 
       // 2. SYMBOLICS / VAX FRONT-END HOST CONSOLE (Right)
       const host = kit.group([0.92, 0, 0.14], {
@@ -603,7 +685,12 @@ function makeMachineCm2() {
         },
         host,
       );
-      buildSculptedKeyboard(kit, [0, 0.65, 0.25], { w: 0.48, d: 0.18, name: "Symbolics Lisp Keyboard" }, host);
+      buildSculptedKeyboard(
+        kit,
+        [0, 0.65, 0.25],
+        { w: 0.48, d: 0.18, name: "Symbolics Lisp Keyboard" },
+        host,
+      );
 
       drawLedMatrixFaces();
       drawCm2FrontEnd();
@@ -620,10 +707,14 @@ function makeMachineCm2() {
         statsUi.set("topo", "12-Dim Hypercube");
       };
 
-      const runBtn = Fe(running ? "⏸ Pause" : "▶ Run", () => {
-        running = !running;
-        runBtn.textContent = running ? "⏸ Pause" : "▶ Run";
-      }, "pri");
+      const runBtn = Fe(
+        running ? "⏸ Pause" : "▶ Run",
+        () => {
+          running = !running;
+          runBtn.textContent = running ? "⏸ Pause" : "▶ Run";
+        },
+        "pri",
+      );
 
       statsUi = Pt([
         ["pop", "Active SIMD PEs"],
@@ -652,7 +743,8 @@ function makeMachineCm2() {
             Fe(
               "Run Hillis–Steele Scan",
               () => {
-                for (let i = 0; i < 16; i++) sim.scanIn[i] = ((sim.steps + i * 3) % 9) + 1;
+                for (let i = 0; i < 16; i++)
+                  sim.scanIn[i] = ((sim.steps + i * 3) % 9) + 1;
                 sim.runParallelPrefixScan();
                 if (ctx.diagram) ctx.diagram.pulse("pe", "hyp", "#f472b6");
                 hi("tick", { f: 980, v: 0.08, min: 0.04 });
@@ -699,7 +791,10 @@ function makeMachineCm2() {
       const cm = new ConnectionMachineCM2();
       const out = cm.runParallelPrefixScan();
       const sum = cm.scanIn.reduce((a, b) => a + b, 0);
-      return { ok: out[15] === sum && cm.routeHypercube(0, 0b1011) === 3, scan15: out[15] };
+      return {
+        ok: out[15] === sum && cm.routeHypercube(0, 0b1011) === 3,
+        scan15: out[15],
+      };
     },
   };
   return machine;
@@ -786,7 +881,11 @@ function makeMachineBgene() {
     c.strokeRect(20, 560, W - 40, 182);
     c.fillStyle = "#6ee7b7";
     c.font = '700 16px "JetBrains Mono", monospace';
-    c.fillText("5-NETWORK PETASCALE ARCHITECTURE: 3D TORUS + COLLECTIVE BINARY TREE", 36, 592);
+    c.fillText(
+      "5-NETWORK PETASCALE ARCHITECTURE: 3D TORUS + COLLECTIVE BINARY TREE",
+      36,
+      592,
+    );
     c.fillStyle = "#e2e8f0";
     c.font = '600 15px "JetBrains Mono", monospace';
     c.fillText(
@@ -838,15 +937,31 @@ function makeMachineBgene() {
           explode: [(r - 1) * 0.34, 0, 0],
         });
         // Main vertical body + iconic angled front prism shroud (shell: true)
-        kit.box(0.62, 1.96, 0.86, U.darkAnodized(0x102347), [0, 0.98, 0], {
-          shell: true,
-          name: "Sapphire Laminar-Airflow Cabinet Shell",
-        }, rack);
-        kit.box(0.6, 1.88, 0.14, U.plastic(0x1d4ed8, 0.36), [0, 0.96, 0.44], {
-          rot: [-0.11, 0, 0],
-          shell: true,
-          name: "Angled Blue Gene Front Baffle",
-        }, rack);
+        kit.box(
+          0.62,
+          1.96,
+          0.86,
+          U.darkAnodized(0x102347),
+          [0, 0.98, 0],
+          {
+            shell: true,
+            name: "Sapphire Laminar-Airflow Cabinet Shell",
+          },
+          rack,
+        );
+        kit.box(
+          0.6,
+          1.88,
+          0.14,
+          U.plastic(0x1d4ed8, 0.36),
+          [0, 0.96, 0.44],
+          {
+            rot: [-0.11, 0, 0],
+            shell: true,
+            name: "Angled Blue Gene Front Baffle",
+          },
+          rack,
+        );
 
         // Internal 2x16 Node Cards + Compute ASICs visible in cutaway
         for (let nc = 0; nc < 8; nc++) {
@@ -932,14 +1047,21 @@ function makeMachineBgene() {
         statsUi.set("halo", `${sim.haloMessages.toLocaleString()} msgs`);
         statsUi.set("red", `${sim.allreduceCalls} tree ops`);
         statsUi.set("amd", `×${sim.amdahlSpeedup(65536).toFixed(1)} (64K cores)`);
-        statsUi.set("gus", `×${Math.round(sim.gustafsonSpeedup(65536)).toLocaleString()}`);
+        statsUi.set(
+          "gus",
+          `×${Math.round(sim.gustafsonSpeedup(65536)).toLocaleString()}`,
+        );
         statsUi.set("topo", "4×4×4 3D Torus");
       };
 
-      const runBtn = Fe(running ? "⏸ Pause" : "▶ Run", () => {
-        running = !running;
-        runBtn.textContent = running ? "⏸ Pause" : "▶ Run";
-      }, "pri");
+      const runBtn = Fe(
+        running ? "⏸ Pause" : "▶ Run",
+        () => {
+          running = !running;
+          runBtn.textContent = running ? "⏸ Pause" : "▶ Run";
+        },
+        "pri",
+      );
 
       statsUi = Pt([
         ["res", "L2 PDE Residual"],
@@ -1177,50 +1299,110 @@ function makeMachineExascale() {
         name: "Exascale Liquid-Cooled Compute Cabinet",
         info: "3.5-ton high-density rack packing 64 liquid-cooled blades (256 multi-die GPUs = ~17 PetaFLOPS per rack) and 32 Slingshot Rosetta switches.",
       });
-      kit.box(1.12, 2.2, 1.08, U.darkAnodized(0x121923), [0, 1.1, 0], {
-        shell: true,
-        name: "Olympus High-Density Rack Enclosure",
-        explode: [-0.45, 0.2, 0],
-      }, cab);
+      kit.box(
+        1.12,
+        2.2,
+        1.08,
+        U.darkAnodized(0x121923),
+        [0, 1.1, 0],
+        {
+          shell: true,
+          name: "Olympus High-Density Rack Enclosure",
+          explode: [-0.45, 0.2, 0],
+        },
+        cab,
+      );
       // Teal geometric accent trim
-      kit.box(0.05, 2.08, 0.04, U.glow(0x14b8a6, 1.3), [-0.52, 1.1, 0.54], { shell: true }, cab);
-      kit.box(0.05, 2.08, 0.04, U.glow(0x14b8a6, 1.3), [0.52, 1.1, 0.54], { shell: true }, cab);
+      kit.box(
+        0.05,
+        2.08,
+        0.04,
+        U.glow(0x14b8a6, 1.3),
+        [-0.52, 1.1, 0.54],
+        { shell: true },
+        cab,
+      );
+      kit.box(
+        0.05,
+        2.08,
+        0.04,
+        U.glow(0x14b8a6, 1.3),
+        [0.52, 1.1, 0.54],
+        { shell: true },
+        cab,
+      );
 
       // 8 Blade Chassis Sub-Enclosures with Copper Coldplates & HBMChiplets
       for (let b = 0; b < 8; b++) {
         const by = 0.26 + b * 0.23;
-        const blade = kit.group([0, by, 0], {
-          name: `4-GPU Liquid-Cooled Exascale Blade ${b + 1}`,
-          info: "1× 64-core CPU + 4× Multi-Die HBM2e GPUs connected by coherent Infinity Fabric and cooled by micro-skived copper water blocks.",
-          explode: [0, 0, 0.44],
-        }, cab);
+        const blade = kit.group(
+          [0, by, 0],
+          {
+            name: `4-GPU Liquid-Cooled Exascale Blade ${b + 1}`,
+            info: "1× 64-core CPU + 4× Multi-Die HBM2e GPUs connected by coherent Infinity Fabric and cooled by micro-skived copper water blocks.",
+            explode: [0, 0, 0.44],
+          },
+          cab,
+        );
         kit.box(0.94, 0.15, 0.9, U.metal(0x222b38, 0.42), [0, 0, 0], {}, blade);
         kit.box(0.86, 0.016, 0.8, U.pcb(0x134e4a), [0, -0.02, 0], {}, blade);
         for (let g = 0; g < 4; g++) {
-          kit.box(0.16, 0.045, 0.18, U.copper(), [-0.27 + g * 0.18, 0.02, 0.06], {
-            name: "GPU HBM Coldplate Block",
-          }, blade);
+          kit.box(
+            0.16,
+            0.045,
+            0.18,
+            U.copper(),
+            [-0.27 + g * 0.18, 0.02, 0.06],
+            {
+              name: "GPU HBM Coldplate Block",
+            },
+            blade,
+          );
         }
       }
 
       // Vertical Blue Supply (32°C) & Warm-Amber Return (41.4°C) Stainless Coolant Manifolds!
-      kit.cyl(0.036, 0.036, 2.02, U.plastic(0x0284c7, 0.28), [-0.44, 1.1, 0.46], {
-        name: "32 °C Warm-Water Supply Manifold",
-        info: "Delivers 32 °C treated water through dripless blind-mate quick disconnects, eliminating energy-hungry chillers.",
-        explode: [-0.35, 0, 0.35],
-      }, cab);
-      kit.cyl(0.036, 0.036, 2.02, U.plastic(0xd97706, 0.28), [0.44, 1.1, 0.46], {
-        name: "41.4 °C Heated Return Manifold",
-        info: "Carries 350+ kW of captured rack heat out to cooling towers.",
-        explode: [0.35, 0, 0.35],
-      }, cab);
+      kit.cyl(
+        0.036,
+        0.036,
+        2.02,
+        U.plastic(0x0284c7, 0.28),
+        [-0.44, 1.1, 0.46],
+        {
+          name: "32 °C Warm-Water Supply Manifold",
+          info: "Delivers 32 °C treated water through dripless blind-mate quick disconnects, eliminating energy-hungry chillers.",
+          explode: [-0.35, 0, 0.35],
+        },
+        cab,
+      );
+      kit.cyl(
+        0.036,
+        0.036,
+        2.02,
+        U.plastic(0xd97706, 0.28),
+        [0.44, 1.1, 0.46],
+        {
+          name: "41.4 °C Heated Return Manifold",
+          info: "Carries 350+ kW of captured rack heat out to cooling towers.",
+          explode: [0.35, 0, 0.35],
+        },
+        cab,
+      );
 
       // Rear Slingshot Dragonfly Optical Switch Cartridge
-      kit.box(0.86, 0.46, 0.18, U.metal(0x1e3a5f, 0.35), [0, 1.15, -0.46], {
-        name: "HPE Slingshot Rosetta 64-Port Switch",
-        info: "25.6 Tbps Dragonfly router limiting any node-to-node communication across 9,408 nodes to at most 3 optical hops.",
-        explode: [0, 0, -0.45],
-      }, cab);
+      kit.box(
+        0.86,
+        0.46,
+        0.18,
+        U.metal(0x1e3a5f, 0.35),
+        [0, 1.15, -0.46],
+        {
+          name: "HPE Slingshot Rosetta 64-Port Switch",
+          info: "25.6 Tbps Dragonfly router limiting any node-to-node communication across 9,408 nodes to at most 3 optical hops.",
+          explode: [0, 0, -0.45],
+        },
+        cab,
+      );
 
       // Side Coolant Distribution Unit (CDU) + Console Monitor (Right)
       const cdu = kit.group([0.48, 0, -0.15], {
@@ -1251,14 +1433,21 @@ function makeMachineExascale() {
         statsUi.set("fp32", sim.fp32Residual.toExponential(2));
         statsUi.set("fp64", sim.hplResidual.toExponential(2));
         statsUi.set("route", sim.adaptiveRouting ? "UGAL Adaptive" : "Minimal (Hot)");
-        statsUi.set("temp", `${sim.inletTempC.toFixed(1)} -> ${sim.outletTempC.toFixed(1)} °C`);
+        statsUi.set(
+          "temp",
+          `${sim.inletTempC.toFixed(1)} -> ${sim.outletTempC.toFixed(1)} °C`,
+        );
         statsUi.set("eff", `${sim.gflopsPerWatt.toFixed(1)} GFLOPS/W`);
       };
 
-      const runBtn = Fe(running ? "⏸ Pause" : "▶ Run", () => {
-        running = !running;
-        runBtn.textContent = running ? "⏸ Pause" : "▶ Run";
-      }, "pri");
+      const runBtn = Fe(
+        running ? "⏸ Pause" : "▶ Run",
+        () => {
+          running = !running;
+          runBtn.textContent = running ? "⏸ Pause" : "▶ Run";
+        },
+        "pri",
+      );
 
       const ugalBtn = Fe(
         sim.adaptiveRouting ? "UGAL Adaptive: ON" : "UGAL Adaptive: OFF",
@@ -1487,60 +1676,120 @@ function makeMachineGb200() {
         name: "GB200 NVL72 120 kW Rack",
         info: "48U Open-Rack v3 liquid-cooled AI supercomputer acting as a single 72-GPU coherent memory domain with 1.44 ExaFLOPS of FP4 tensor compute.",
       });
-      kit.box(0.96, 2.28, 1.12, U.darkAnodized(0x111418), [0, 1.14, 0], {
-        shell: true,
-        name: "NVL72 Titanium-Black Rack Shell",
-        explode: [-0.46, 0.2, 0],
-      }, rack);
+      kit.box(
+        0.96,
+        2.28,
+        1.12,
+        U.darkAnodized(0x111418),
+        [0, 1.14, 0],
+        {
+          shell: true,
+          name: "NVL72 Titanium-Black Rack Shell",
+          explode: [-0.46, 0.2, 0],
+        },
+        rack,
+      );
 
       // Bottom 9 Compute Trays + Middle 9 NVLink Switch Trays + Top 9 Compute Trays!
       for (let i = 0; i < 9; i++) {
         // Bottom compute bank
         const by = 0.22 + i * 0.068;
-        kit.box(0.84, 0.052, 0.92, U.metal(0x232a34, 0.38), [0, by, 0.02], {
-          name: `GB200 Compute Tray B${i + 1} (2 Grace + 4 Blackwell)`,
-          info: "1U liquid-cooled tray carrying two 72-core Grace CPUs and four dual-reticle 208B-transistor Blackwell GPUs with 8 stacks of HBM3e each.",
-          explode: [0, 0, 0.42],
-        }, rack);
+        kit.box(
+          0.84,
+          0.052,
+          0.92,
+          U.metal(0x232a34, 0.38),
+          [0, by, 0.02],
+          {
+            name: `GB200 Compute Tray B${i + 1} (2 Grace + 4 Blackwell)`,
+            info: "1U liquid-cooled tray carrying two 72-core Grace CPUs and four dual-reticle 208B-transistor Blackwell GPUs with 8 stacks of HBM3e each.",
+            explode: [0, 0, 0.42],
+          },
+          rack,
+        );
         // Top compute bank
         const ty = 1.46 + i * 0.068;
-        kit.box(0.84, 0.052, 0.92, U.metal(0x232a34, 0.38), [0, ty, 0.02], {
-          name: `GB200 Compute Tray T${i + 1} (2 Grace + 4 Blackwell)`,
-          info: "1U liquid-cooled GB200 superchip tray blind-mated to the rear copper NVLink cartridge and coolant manifolds.",
-          explode: [0, 0, 0.42],
-        }, rack);
+        kit.box(
+          0.84,
+          0.052,
+          0.92,
+          U.metal(0x232a34, 0.38),
+          [0, ty, 0.02],
+          {
+            name: `GB200 Compute Tray T${i + 1} (2 Grace + 4 Blackwell)`,
+            info: "1U liquid-cooled GB200 superchip tray blind-mated to the rear copper NVLink cartridge and coolant manifolds.",
+            explode: [0, 0, 0.42],
+          },
+          rack,
+        );
       }
 
       // Central 9 NVLink5 Switch Trays (The green/gold glowing heart of the rack!)
       for (let s = 0; s < 9; s++) {
         const sy = 0.86 + s * 0.062;
-        const sw = kit.box(0.84, 0.048, 0.92, U.darkAnodized(0x1e2c18), [0, sy, 0.03], {
-          name: `NVLink-5 14.4 TB/s Switch Tray ${s + 1}`,
-          info: "Non-blocking NVLink crossbar ASIC with in-network SHARP FP8/FP4 reduction engines enabling 130 TB/s all-to-all MoE token dispatch.",
-          explode: [0, 0, 0.52],
-        }, rack);
-        const gBar = kit.box(0.76, 0.018, 0.02, U.glow(0x84cc16, 1.45), [0, 0, 0.465], {}, sw);
+        const sw = kit.box(
+          0.84,
+          0.048,
+          0.92,
+          U.darkAnodized(0x1e2c18),
+          [0, sy, 0.03],
+          {
+            name: `NVLink-5 14.4 TB/s Switch Tray ${s + 1}`,
+            info: "Non-blocking NVLink crossbar ASIC with in-network SHARP FP8/FP4 reduction engines enabling 130 TB/s all-to-all MoE token dispatch.",
+            explode: [0, 0, 0.52],
+          },
+          rack,
+        );
+        const gBar = kit.box(
+          0.76,
+          0.018,
+          0.02,
+          U.glow(0x84cc16, 1.45),
+          [0, 0, 0.465],
+          {},
+          sw,
+        );
         switchGlows.push(gBar);
       }
 
       // Iconic Rear 5,000-Coax Blind-Mate Copper NVLink Cartridge!
-      const spine = kit.group([0, 1.14, -0.48], {
-        name: "5,000-Cable Blind-Mate Copper NVLink Spine",
-        info: "Over 2 miles of ultra-low-loss twinax copper cables sealed inside rigid rear cartridges: carries 130 TB/s across 72 GPUs while saving ~20 kW per rack vs optical transceivers!",
-        explode: [0, 0, -0.52],
-      }, rack);
+      const spine = kit.group(
+        [0, 1.14, -0.48],
+        {
+          name: "5,000-Cable Blind-Mate Copper NVLink Spine",
+          info: "Over 2 miles of ultra-low-loss twinax copper cables sealed inside rigid rear cartridges: carries 130 TB/s across 72 GPUs while saving ~20 kW per rack vs optical transceivers!",
+          explode: [0, 0, -0.52],
+        },
+        rack,
+      );
       kit.box(0.78, 1.94, 0.12, U.copper(), [0, 0, 0], {}, spine);
       for (let c = 0; c < 12; c++) {
         kit.cyl(0.012, 0.012, 1.88, U.gold(), [-0.33 + c * 0.06, 0, 0.065], {}, spine);
       }
 
       // Chrome Liquid-Cooling Manifolds along front-sides
-      kit.cyl(0.028, 0.028, 2.08, U.steel(), [-0.42, 1.12, 0.48], {
-        name: "Direct-to-Chip Coolant Supply Manifold",
-      }, rack);
-      kit.cyl(0.028, 0.028, 2.08, U.copper(), [0.42, 1.12, 0.48], {
-        name: "Heated Coolant Return Manifold",
-      }, rack);
+      kit.cyl(
+        0.028,
+        0.028,
+        2.08,
+        U.steel(),
+        [-0.42, 1.12, 0.48],
+        {
+          name: "Direct-to-Chip Coolant Supply Manifold",
+        },
+        rack,
+      );
+      kit.cyl(
+        0.028,
+        0.028,
+        2.08,
+        U.copper(),
+        [0.42, 1.12, 0.48],
+        {
+          name: "Heated Coolant Return Manifold",
+        },
+        rack,
+      );
 
       // 2. AI MEGACLUSTER CONSOLE (Right)
       mon = buildMonitor3D(kit, [0.84, 0.64, 0.12], {
@@ -1561,28 +1810,41 @@ function makeMachineGb200() {
       const syncStats = () => {
         if (!statsUi) return;
         statsUi.set("loss", sim.loss.toFixed(5));
-        statsUi.set("prec", sim.precision === "FP4" ? "NVFP4 (1,440 PF)" : "MXFP8 (720 PF)");
+        statsUi.set(
+          "prec",
+          sim.precision === "FP4" ? "NVFP4 (1,440 PF)" : "MXFP8 (720 PF)",
+        );
         statsUi.set(
           "top2",
-          sim.lastTopExperts ? `E${sim.lastTopExperts[0]} + E${sim.lastTopExperts[1]}` : "E0 + E1",
+          sim.lastTopExperts
+            ? `E${sim.lastTopExperts[0]} + E${sim.lastTopExperts[1]}`
+            : "E0 + E1",
         );
         statsUi.set("nvl", "130.0 TB/s Cu");
         statsUi.set("hbm", "30 TB Unified");
         statsUi.set("pwr", "120 kW Liquid");
       };
 
-      const runBtn = Fe(running ? "⏸ Pause" : "▶ Run", () => {
-        running = !running;
-        runBtn.textContent = running ? "⏸ Pause" : "▶ Run";
-      }, "pri");
+      const runBtn = Fe(
+        running ? "⏸ Pause" : "▶ Run",
+        () => {
+          running = !running;
+          runBtn.textContent = running ? "⏸ Pause" : "▶ Run";
+        },
+        "pri",
+      );
 
-      const precBtn = Fe(`Precision: ${sim.precision}`, () => {
-        sim.precision = sim.precision === "FP8" ? "FP4" : "FP8";
-        precBtn.textContent = `Precision: ${sim.precision}`;
-        sim.step();
-        drawBlackwellMonitor();
-        syncStats();
-      }, "pri");
+      const precBtn = Fe(
+        `Precision: ${sim.precision}`,
+        () => {
+          sim.precision = sim.precision === "FP8" ? "FP4" : "FP8";
+          precBtn.textContent = `Precision: ${sim.precision}`;
+          sim.step();
+          drawBlackwellMonitor();
+          syncStats();
+        },
+        "pri",
+      );
 
       statsUi = Pt([
         ["loss", "MoE Train Loss"],
@@ -1653,6 +1915,849 @@ function makeMachineGb200() {
       const l0 = b.lossHistory[0];
       for (let i = 0; i < 60; i++) b.step();
       return { ok: b.loss < l0, loss: +b.loss.toFixed(4) };
+    },
+  };
+  return machine;
+}
+
+function makeMachineCdc6600() {
+  const sim = new Cdc6600Scoreboard();
+  let running = true;
+  let stepAcc = 0;
+  let mon = null;
+  let dd60Left = null;
+  let dd60Right = null;
+  let unitBars = [];
+  let statsUi = null;
+
+  function drawDd60RoundScopes() {
+    if (!dd60Left || !dd60Right) return;
+    for (const [surf, isRight] of [
+      [dd60Left, false],
+      [dd60Right, true],
+    ]) {
+      const c = surf.ctx;
+      c.fillStyle = "#03140b";
+      c.fillRect(0, 0, 256, 256);
+      c.strokeStyle = "#22c55e";
+      c.lineWidth = 4;
+      c.beginPath();
+      c.arc(128, 128, 118, 0, Math.PI * 2);
+      c.stroke();
+      c.fillStyle = "#4ade80";
+      c.font = '700 14px "JetBrains Mono", monospace';
+      if (!isRight) {
+        c.fillText("CDC DD60 · X-REGS", 44, 52);
+        ["X0", "X2", "X5", "X6", "X7"].forEach((rk, i) => {
+          c.fillText(`${rk} = ${Number(sim.regs[rk]).toFixed(2)}`, 52, 86 + i * 28);
+        });
+      } else {
+        c.fillText(`BARREL PP#${sim.ppSlot} · 100ns`, 38, 52);
+        c.fillText(`CLK   = ${sim.clock}`, 52, 92);
+        c.fillText(`RAW   = ${sim.rawStalls}`, 52, 122);
+        c.fillText(`WAR   = ${sim.warStalls}`, 52, 152);
+        c.fillText(`OoO   = ${sim.oooCompletions}`, 52, 182);
+      }
+      surf.tex.needsUpdate = true;
+    }
+  }
+
+  function drawCdcMonitor() {
+    if (!mon) return;
+    const c = mon.ctx;
+    const W = 1024,
+      H = 768;
+    c.fillStyle = "#060b12";
+    c.fillRect(0, 0, W, H);
+
+    c.fillStyle = "#14532d";
+    c.fillRect(16, 14, W - 32, 52);
+    c.fillStyle = "#f8fafc";
+    c.font = '700 20px "JetBrains Mono", monospace';
+    c.fillText(
+      `1964 CDC 6600 SUPERCOMPUTER · THORNTON SCOREBOARD · MINOR CYCLE #${sim.clock} (10 MHz / 3 MFLOPS)`,
+      26,
+      47,
+    );
+
+    // Top Table: Instruction Scoreboard Stages (Issue | ReadOps | ExecDone | WriteResult)
+    c.fillStyle = "#0b1422";
+    c.fillRect(20, 80, W - 40, 268);
+    c.strokeStyle = "#4ade80";
+    c.lineWidth = 2;
+    c.strokeRect(20, 80, W - 40, 268);
+    c.fillStyle = "#86efac";
+    c.font = '700 15px "JetBrains Mono", monospace';
+    c.fillText(
+      "INSTRUCTION STATUS      UNIT            ISSUE   READ_OPS   EXEC_DONE   WRITE_RES",
+      36,
+      108,
+    );
+
+    sim.instTable.forEach((row, idx) => {
+      const ry = 122 + idx * 35;
+      const inFlight = row.issue !== null && row.writeRes === null;
+      c.fillStyle = inFlight ? "rgba(74, 222, 128, 0.18)" : "#0f172a";
+      c.fillRect(32, ry, W - 64, 29);
+      c.fillStyle = row.writeRes !== null ? "#34d399" : inFlight ? "#fde047" : "#94a3b8";
+      c.font = '600 14px "JetBrains Mono", monospace';
+      const fmt = (v) => (v === null ? "  —" : String(v).padStart(3, " "));
+      c.fillText(
+        `${row.asm.padEnd(23)} ${(row.unitName || "—").padEnd(15)}  ${fmt(row.issue)}      ${fmt(row.readOps)}        ${fmt(row.execDone)}         ${fmt(row.writeRes)}`,
+        40,
+        ry + 20,
+      );
+    });
+
+    // Bottom-Left: 10 Parallel Functional Units Reservation Status (Fi, Fj, Fk, Qj, Qk, Rj, Rk)
+    c.fillStyle = "#0b1422";
+    c.fillRect(20, 364, 580, 380);
+    c.strokeStyle = "#38bdf8";
+    c.strokeRect(20, 364, 580, 380);
+    c.fillStyle = "#7dd3fc";
+    c.font = '700 15px "JetBrains Mono", monospace';
+    c.fillText("10 PARALLEL FUNCTIONAL UNITS (Busy | Fi <- Fj,Fk | Rj,Rk)", 36, 392);
+
+    sim.units.forEach((u, idx) => {
+      const uy = 406 + idx * 32;
+      c.fillStyle = u.busy ? "rgba(56, 189, 248, 0.22)" : "#0f172a";
+      c.fillRect(32, uy, 554, 26);
+      c.fillStyle = u.busy ? "#fde047" : "#64748b";
+      c.font = '600 13px "JetBrains Mono", monospace';
+      c.fillText(
+        `${u.name.padEnd(14)} ${u.busy ? `BUSY(${u.rem}c)` : "IDLE    "}  Fi=${(u.fi || "-").padEnd(3)} Fj=${(u.fj || "-").padEnd(3)} Fk=${(u.fk || "-").padEnd(3)} Rj=${u.rj ? "Y" : "N"} Rk=${u.rk ? "Y" : "N"}`,
+        40,
+        uy + 18,
+      );
+    });
+
+    // Bottom-Right: Hazard Telemetry & Barrel Peripheral Processors
+    c.fillStyle = "#0b1422";
+    c.fillRect(616, 364, 388, 380);
+    c.strokeStyle = "#fbbf24";
+    c.strokeRect(616, 364, 388, 380);
+    c.fillStyle = "#fde047";
+    c.font = '700 15px "JetBrains Mono", monospace';
+    c.fillText("DYNAMIC OoO HAZARD TELEMETRY", 632, 392);
+
+    c.fillStyle = "#e2e8f0";
+    c.font = '600 15px "JetBrains Mono", monospace';
+    c.fillText(`RAW Stalls (Qj/Qk wait):  ${sim.rawStalls}`, 632, 434);
+    c.fillStyle = "#f97316";
+    c.fillText(`WAR Stalls (Write hold):  ${sim.warStalls}`, 632, 468);
+    c.fillStyle = "#c08cff";
+    c.fillText(`WAW Stalls (Issue hold):  ${sim.wawStalls}`, 632, 502);
+    c.fillStyle = "#34d399";
+    c.fillText(`Out-of-Order Retirements: ${sim.oooCompletions}`, 632, 536);
+
+    c.fillStyle = "#94a3b8";
+    c.font = '600 13.5px "JetBrains Mono", monospace';
+    c.fillText("• Load/Store RISC-like ISA (12 yrs pre-RISC!)", 632, 588);
+    c.fillText("• Freon-12 cooled cordwood Si modules", 632, 616);
+    c.fillText("• 10 Barrel-Threaded I/O PPs (1st FGMT GPU", 632, 644);
+    c.fillText("  ancestor!) offload ALL OS & I/O from CPU.", 632, 670);
+    c.fillStyle = "#fde047";
+    c.fillText("• Prompted IBM CEO T.J. Watson Jr.'s famous", 632, 704);
+    c.fillText("  '34 people + janitor' memo!", 632, 728);
+
+    mon.tex.needsUpdate = true;
+  }
+
+  const machine = {
+    id: "cdc6600",
+    era: "1964",
+    short: "CDC 6600 Scoreboard",
+    name: "Control Data CDC 6600 Supercomputer (Thornton Scoreboard)",
+    group: "super",
+    view0: 0.42,
+    blurb:
+      "The first true supercomputer (Seymour Cray & James Thornton, 1964 — 3× faster than IBM Stretch): introduced a Freon-cooled '+'-shaped mainframe, Load/Store RISC-like 60-bit architecture, 10 parallel functional units dynamically scheduled out-of-order by Thornton's Hardware Scoreboard (RAW/WAR/WAW hazard tracking), and 10 barrel-threaded Peripheral Processors.",
+    diagram: {
+      nodes: [
+        { id: "cmem", label: "128K 60b Core Banks", x: 0.16, y: 0.26, color: "#f97316" },
+        {
+          id: "regs",
+          label: "X0–X7 / A0–A7 / B0–B7",
+          x: 0.48,
+          y: 0.26,
+          color: "#38bdf8",
+        },
+        { id: "scb", label: "Thornton Scoreboard", x: 0.52, y: 0.72, color: "#fde047" },
+        { id: "fu10", label: "10 Functional Units", x: 0.84, y: 0.32, color: "#4ade80" },
+        { id: "pp10", label: "10 Barrel I/O PPs", x: 0.18, y: 0.78, color: "#c08cff" },
+      ],
+      edges: [
+        ["cmem", "regs", "Stunt Box"],
+        ["regs", "fu10", "Rj & Rk"],
+        ["scb", "fu10", "Issue/WAR"],
+        ["pp10", "cmem", "DMA Slot"],
+      ],
+    },
+    build(kit) {
+      unitBars = [];
+      dd60Left = Bt(256, 256);
+      dd60Right = Bt(256, 256);
+
+      // 1. ICONIC PLUS-SHAPED (+) 4-WING WALNUT, BRUSHED-ALU & FREON MAINFRAME (Left)
+      const cross = kit.group([-0.62, 0, -0.04], {
+        name: "CDC 6600 Plus-Shaped (+) 4-Wing Mainframe",
+        info: "Seymour Cray folded four cabinets into a compact '+' cross with walnut end-panels to minimize backplane wire lengths for the 100 ns (10 MHz) clock.",
+      });
+      // Central spine + 4 orthogonal wings (0, 90, 180, 270 deg)
+      kit.cyl(
+        0.24,
+        0.24,
+        1.46,
+        U.darkAnodized(0x1b222c),
+        [0, 0.73, 0],
+        {
+          name: "Central Coaxial Backplane & Freon Compressor Column",
+        },
+        cross,
+      );
+
+      for (let w = 0; w < 4; w++) {
+        const ang = (w * Math.PI) / 2 + Math.PI / 4;
+        const wing = kit.group(
+          [Math.cos(ang) * 0.42, 0, Math.sin(ang) * 0.42],
+          {
+            rot: [0, -ang, 0],
+            name: `CDC 6600 Logic & Core Wing #${w + 1}`,
+            info:
+              w === 0
+                ? "Houses James Thornton's Hardware Scoreboard & Instruction Stack."
+                : w === 1
+                  ? "Houses the 10 parallel 60-bit Functional Units (2× FMUL, FADD, FDIV, Shift, Bool, Branch, LongAdd, 2× Inc)."
+                  : "Houses 32-bank interleaved 60-bit Ferrite Core Memory ('Stunt Box' bank conflict hopper) & 10 Barrel PPs.",
+            explode: [Math.cos(ang) * 0.28, 0, Math.sin(ang) * 0.28],
+          },
+          cross,
+        );
+        // Smoked glass & brushed aluminum outer doors (shell: true!) + American Walnut end panel!
+        kit.box(
+          0.56,
+          1.42,
+          0.26,
+          U.glass(0xdbeafe, 0.22),
+          [0, 0.71, 0],
+          {
+            shell: true,
+            name: `Smoked-Glass Hinged Wing Door ${w + 1}`,
+          },
+          wing,
+        );
+        kit.box(
+          0.05,
+          1.42,
+          0.28,
+          U.wood(),
+          [0.29, 0.71, 0],
+          {
+            name: "Mid-Century American Walnut End Panel",
+          },
+          wing,
+        );
+
+        // Internal Freon-12 Copper Coldplates + Cordwood Modules + Core Plane!
+        kit.cyl(
+          0.016,
+          0.016,
+          1.28,
+          U.copper(),
+          [-0.2, 0.71, 0.08],
+          {
+            name: "Freon-12 Refrigerant Cooling Manifold",
+          },
+          wing,
+        );
+        for (let m = 0; m < 5; m++) {
+          const my = 0.26 + m * 0.23;
+          kit.box(
+            0.44,
+            0.16,
+            0.18,
+            w >= 2 ? U.corePlane() : U.pcb(0x1f4e3d),
+            [0, my, 0],
+            {
+              name:
+                w < 2
+                  ? `Cordwood Silicon Transistor Functional Unit Bay ${w * 5 + m + 1}`
+                  : `60-Bit Interleaved Ferrite Core Memory Bank ${m + 1}`,
+            },
+            wing,
+          );
+          if (w < 2) {
+            const bar = kit.box(
+              0.38,
+              0.02,
+              0.02,
+              U.glow(0x4ade80, 1.2),
+              [0, my, 0.1],
+              {},
+              wing,
+            );
+            unitBars.push(bar);
+          }
+        }
+      }
+
+      // 2. ICONIC CDC DD60 TWIN-ROUND-CRT OPERATOR CONSOLE DESK (Center-Front)
+      const dd60 = kit.group([0.08, 0, 0.42], {
+        rot: [0, -0.25, 0],
+        name: "CDC DD60 Dual Circular Vector-CRT Operator Console",
+        info: "World-famous twin round vector-stroke cathode-ray tubes driven directly by one of the 10 Barrel Peripheral Processors.",
+        explode: [0, 0, 0.34],
+      });
+      kit.box(0.68, 0.42, 0.42, U.wood(), [0, 0.21, 0], {}, dd60);
+      for (const [dx, surf] of [
+        [-0.16, dd60Left],
+        [0.16, dd60Right],
+      ]) {
+        kit.cyl(
+          0.135,
+          0.135,
+          0.12,
+          U.alu(),
+          [dx, 0.56, -0.04],
+          {
+            rot: [Math.PI / 2 - 0.18, 0, 0],
+            name: "Circular Vector-Stroke Cathode-Ray Bezel",
+          },
+          dd60,
+        );
+        kit.mesh(
+          new mt(0.21, 0.21),
+          U.screen(surf.tex),
+          [dx, 0.56, 0.025],
+          {
+            rot: [-0.18, 0, 0],
+          },
+          dd60,
+        );
+      }
+      buildSculptedKeyboard(kit, [0, 0.435, 0.11], {
+        w: 0.36,
+        d: 0.13,
+        bodyColor: 0x262d36,
+        name: "DD60 Operator Keyboard",
+      });
+
+      // 3. RIGHT THORNTON SCOREBOARD CONSOLE (facing +Z!)
+      mon = buildMonitor3D(kit, [0.88, 0.64, 0.06], {
+        w: 0.96,
+        h: 0.64,
+        rot: [0, 0.04, 0],
+        name: "James Thornton Hardware Scoreboard & Hazard Monitor",
+        explode: [0.36, 0, 0],
+      });
+      kit.box(1.04, 0.64, 0.54, U.darkAnodized(0x111923), [0.88, 0.32, 0.06], {
+        rot: [0, 0.04, 0],
+      });
+
+      drawDd60RoundScopes();
+      drawCdcMonitor();
+    },
+
+    ui(el, ctx) {
+      const syncStats = () => {
+        if (!statsUi) return;
+        const busyCnt = sim.units.filter((u) => u.busy).length;
+        statsUi.set("clk", `Cycle #${sim.clock} (100 ns)`);
+        statsUi.set("fu", `${busyCnt} / 10 Active`);
+        statsUi.set("raw", `${sim.rawStalls} Cycles`);
+        statsUi.set("war", `${sim.warStalls} Cycles (X6 Hold)`);
+        statsUi.set("ooo", `${sim.oooCompletions} Out-of-Order`);
+        statsUi.set("pp", `PP#${sim.ppSlot} / 10 Barrel`);
+      };
+
+      const runBtn = Fe(
+        running ? "⏸ Pause" : "▶ Run",
+        () => {
+          running = !running;
+          runBtn.textContent = running ? "⏸ Pause" : "▶ Run";
+        },
+        "pri",
+      );
+
+      statsUi = Pt([
+        ["clk", "10 MHz Minor Clk"],
+        ["fu", "Functional Units"],
+        ["raw", "RAW Stalls (Qj/Qk)"],
+        ["war", "WAR Stalls (Write)"],
+        ["ooo", "OoO Completions"],
+        ["pp", "Peripheral Barrel"],
+      ]);
+
+      el.append(
+        Ie(
+          "James Thornton's Hardware Scoreboard (Cycle-Accurate OoO)",
+          q(
+            "div",
+            { class: "row" },
+            runBtn,
+            Fe(
+              "Step 1 Minor Cycle (100 ns)",
+              () => {
+                running = false;
+                runBtn.textContent = "▶ Run";
+                sim.step();
+                hi("tick", { f: 980, min: 0.03 });
+                if (ctx.diagram) ctx.diagram.pulse("scb", "fu10", "#fde047");
+                drawDd60RoundScopes();
+                drawCdcMonitor();
+                syncStats();
+              },
+              "pri",
+            ),
+            Fe("Reset Scoreboard Trace", () => {
+              sim.reset();
+              drawDd60RoundScopes();
+              drawCdcMonitor();
+              syncStats();
+            }),
+          ),
+          statsUi,
+        ),
+      );
+      machine._syncStats = syncStats;
+      syncStats();
+    },
+
+    update(dt, _t, ctx) {
+      if (running) {
+        stepAcc += dt * 3.2;
+        while (stepAcc >= 1) {
+          stepAcc -= 1;
+          sim.step();
+          if (ctx.diagram) {
+            ctx.diagram.pulse("cmem", "regs", "#f97316");
+            ctx.diagram.pulse("scb", "fu10", "#fde047");
+            ctx.diagram.pulse("pp10", "cmem", "#c08cff");
+          }
+          drawDd60RoundScopes();
+          drawCdcMonitor();
+          if (machine._syncStats) machine._syncStats();
+        }
+      }
+      unitBars.forEach((bar, idx) => {
+        const u = sim.units[idx];
+        bar.material.emissiveIntensity = u && u.busy ? 1.8 : 0.12;
+      });
+    },
+
+    isRunning: () => running,
+    sim,
+    test() {
+      const c = new Cdc6600Scoreboard();
+      for (let i = 0; i < 80 && !c.isComplete(); i++) c.step();
+      return {
+        ok: c.isComplete() && c.rawStalls > 0 && c.warStalls > 0 && c.regs.X6 === 12,
+        warStalls: c.warStalls,
+      };
+    },
+  };
+  return machine;
+}
+
+function makeMachineAsciRed97() {
+  const sim = new AsciRedWormholeMpp();
+  let running = true;
+  let stepAcc = 0;
+  let mon = null;
+  let flitOrbs = [];
+  let statsUi = null;
+
+  function drawAsciMonitor() {
+    if (!mon) return;
+    const c = mon.ctx;
+    const W = 1024,
+      H = 768;
+    c.fillStyle = "#08070c";
+    c.fillRect(0, 0, W, H);
+
+    c.fillStyle = "#7f1d1d";
+    c.fillRect(16, 14, W - 32, 52);
+    c.fillStyle = "#f8fafc";
+    c.font = '700 20px "JetBrains Mono", monospace';
+    c.fillText(
+      `1997 SANDIA/INTEL ASCI RED · 1st 1.34-TFLOPS SUPERCOMPUTER · 9,298 PENTIUM PROs · XY WORMHOLE`,
+      24,
+      47,
+    );
+
+    // Left: 6x6 2D Mesh Dimension-Order (XY) Wormhole Flit Router
+    c.fillStyle = "#0e121e";
+    c.fillRect(20, 82, 488, 412);
+    c.strokeStyle = "#ef4444";
+    c.lineWidth = 2;
+    c.strokeRect(20, 82, 488, 412);
+    c.fillStyle = "#fca5a5";
+    c.font = '700 15px "JetBrains Mono", monospace';
+    c.fillText("2D MESH XY WORMHOLE CUT-THROUGH FLIT ROUTER", 36, 110);
+
+    const ox = 64,
+      oy = 148,
+      sp = 72;
+    c.strokeStyle = "#334155";
+    c.lineWidth = 2;
+    for (let i = 0; i < 6; i++) {
+      c.beginPath();
+      c.moveTo(ox + i * sp, oy);
+      c.lineTo(ox + i * sp, oy + 5 * sp);
+      c.moveTo(ox, oy + i * sp);
+      c.lineTo(ox + 5 * sp, oy + i * sp);
+      c.stroke();
+    }
+
+    // Active snaking wormhole flit trains (Head->Body->Tail)!
+    for (const f of sim.flows) {
+      c.strokeStyle = f.stalled ? "#fde047" : f.color;
+      c.lineWidth = 6;
+      c.beginPath();
+      const start = Math.max(0, f.headIdx - f.length + 1);
+      for (let k = start; k <= f.headIdx; k++) {
+        const [nx, ny] = f.path[k];
+        const px = ox + nx * sp;
+        const py = oy + ny * sp;
+        if (k === start) c.moveTo(px, py);
+        else c.lineTo(px, py);
+      }
+      c.stroke();
+    }
+
+    for (let y = 0; y < 6; y++) {
+      for (let x = 0; x < 6; x++) {
+        c.fillStyle = "#1e293b";
+        c.beginPath();
+        c.arc(ox + x * sp, oy + y * sp, 10, 0, Math.PI * 2);
+        c.fill();
+        c.strokeStyle = "#94a3b8";
+        c.lineWidth = 1.5;
+        c.stroke();
+      }
+    }
+
+    // Right: Distributed MPI 2D Shock-Wave Hydrodynamics Field (CTH / Shock Physics!)
+    c.fillStyle = "#0e121e";
+    c.fillRect(524, 82, 480, 412);
+    c.strokeStyle = "#38bdf8";
+    c.strokeRect(524, 82, 480, 412);
+    c.fillStyle = "#7dd3fc";
+    c.font = '700 15px "JetBrains Mono", monospace';
+    c.fillText("MPI DOMAIN-DECOMPOSED SHOCK HYDRODYNAMICS", 540, 110);
+
+    const N = sim.gridN;
+    const cell = 352 / N;
+    for (let y = 0; y < N; y++) {
+      for (let x = 0; x < N; x++) {
+        const v = sim.uCur[y * N + x];
+        const r = Math.min(255, Math.max(14, Math.round(35 + Math.max(0, v) * 210)));
+        const b = Math.min(255, Math.max(24, Math.round(55 + Math.max(0, -v) * 210)));
+        const g = Math.min(220, Math.round(25 + Math.abs(v) * 95));
+        c.fillStyle = `rgb(${r},${g},${b})`;
+        c.fillRect(588 + x * cell, 126 + y * cell, Math.ceil(cell), Math.ceil(cell));
+      }
+    }
+    // Draw 6x6 MPI Subdomain Ghost-Boundary Grid!
+    c.strokeStyle = "rgba(255,255,255,0.22)";
+    c.lineWidth = 1;
+    for (let d = 1; d < 6; d++) {
+      const p = d * (352 / 6);
+      c.beginPath();
+      c.moveTo(588 + p, 126);
+      c.lineTo(588 + p, 478);
+      c.moveTo(588, 126 + p);
+      c.lineTo(940, 126 + p);
+      c.stroke();
+    }
+
+    // Bottom: Wormhole vs Store-and-Forward Math & "Attack of the Killer Micros"
+    const cmp = sim.compareLatencyCycles(10, sim.flitsPerPacket);
+    c.fillStyle = "#0e121e";
+    c.fillRect(20, 512, W - 40, 232);
+    c.strokeStyle = "#fbbf24";
+    c.strokeRect(20, 512, W - 40, 232);
+    c.fillStyle = "#fde047";
+    c.font = '700 16px "JetBrains Mono", monospace';
+    c.fillText(
+      `10-HOP LATENCY: WORMHOLE (D+L = ${cmp.wormholeCycles} cyc) vs STORE-&-FORWARD (D×L = ${cmp.storeForwardCycles} cyc) => ${cmp.speedup}× FASTER!`,
+      36,
+      544,
+    );
+    c.fillStyle = "#cbd5e1";
+    c.font = '600 15px "JetBrains Mono", monospace';
+    c.fillText(
+      "• Historic Rubicon (June 1997): 1st computer on Earth >1.0 TeraFLOPS (1.338 TFLOPS LINPACK; #1 TOP500 for 3.5 years).",
+      36,
+      584,
+    );
+    c.fillText(
+      "• 'Attack of the Killer Micros': 9,298 commodity off-the-shelf 200 MHz Intel Pentium Pro x86 CPUs dethroned custom vector ECL!",
+      36,
+      622,
+    );
+    c.fillText(
+      `• Lightweight OS 'Cougar' on compute nodes + 800 MB/s bidirectional XY wormhole routers · Halo Exchanges: ${sim.mpiHaloExchanges}`,
+      36,
+      660,
+    );
+    mon.tex.needsUpdate = true;
+  }
+
+  const machine = {
+    id: "ascired97",
+    era: "1997",
+    short: "ASCI Red 1.3 TFLOPS",
+    name: "Sandia / Intel ASCI Red 1.3-TeraFLOPS Wormhole MPP",
+    group: "super",
+    view0: 0.36,
+    blurb:
+      "First supercomputer in history to break the 1.0 TeraFLOPS barrier (1.338 TFLOPS HPL, Sandia National Labs, 1997): proved the 'Attack of the Killer Micros' by uniting 9,298 commodity Intel Pentium Pro x86 processors across a 38×32×2 Dimension-Order Wormhole-Routed Mesh running distributed MPI shock-wave physics.",
+    diagram: {
+      nodes: [
+        { id: "ppro", label: "9,298 Pentium Pros", x: 0.18, y: 0.26, color: "#ef4444" },
+        { id: "mrc", label: "XY Wormhole Router", x: 0.52, y: 0.28, color: "#fbbf24" },
+        { id: "flit", label: "Head/Body/Tail Flits", x: 0.84, y: 0.28, color: "#38bdf8" },
+        { id: "coug", label: "Cougar Light-OS", x: 0.22, y: 0.78, color: "#34d399" },
+        { id: "mpi", label: "MPI Halo Shock PDE", x: 0.78, y: 0.78, color: "#f97316" },
+      ],
+      edges: [
+        ["ppro", "mrc", "800 MB/s"],
+        ["mrc", "flit", "Cut-Through"],
+        ["coug", "mpi", "Zero-Jitter"],
+        ["flit", "mpi", "Ghost Cells"],
+      ],
+    },
+    build(kit) {
+      flitOrbs = [];
+      // 1. MULTI-CABINET CRIMSON & OBSIDIAN ASCI RED ROW (Left)
+      const row = kit.group([-0.54, 0, 0], {
+        name: "ASCI Red Compute & Wormhole Mesh Cabinet Row",
+        info: "Scale section of ASCI Red's 104 crimson-and-black cabinets housing dual-Pentium-Pro compute blades and the 800 MB/s Mesh Routing Chip (MRC) backplane.",
+      });
+
+      for (let cabIdx = 0; cabIdx < 4; cabIdx++) {
+        const cx = -0.48 + cabIdx * 0.32;
+        const cab = kit.group(
+          [cx, 0, 0],
+          {
+            name: `ASCI Red Cabinet #${cabIdx + 1} (${cabIdx < 3 ? "Compute K-Node" : "Disk/Service Node"})`,
+            explode: [(cabIdx - 1.5) * 0.16, 0, 0],
+          },
+          row,
+        );
+
+        kit.box(
+          0.3,
+          1.72,
+          0.78,
+          U.darkAnodized(0x14171f),
+          [0, 0.86, 0],
+          {
+            shell: true,
+            name: `ASCI Red Obsidian Rack Frame ${cabIdx + 1}`,
+          },
+          cab,
+        );
+
+        // Signature Sandia Crimson Perforated Honeycomb Door!
+        kit.box(
+          0.28,
+          1.62,
+          0.03,
+          U.perfMesh(0x881b1b),
+          [0, 0.86, 0.39],
+          {
+            shell: true,
+            name: `Crimson Perforated Airflow Grille Door ${cabIdx + 1}`,
+            explode: [0, 0, 0.42],
+          },
+          cab,
+        );
+
+        // Internal Dual-Pentium-Pro Compute Blades (Gold ceramic PGA sockets!)
+        for (let bl = 0; bl < 6; bl++) {
+          const by = 0.24 + bl * 0.24;
+          const blade = kit.box(
+            0.23,
+            0.16,
+            0.62,
+            U.pcb(0x1b5e3a),
+            [0, by, 0],
+            {
+              name: `Dual 200 MHz Intel Pentium Pro Compute Blade ${cabIdx * 6 + bl + 1}`,
+              info: "Carries two Pentium Pro processors (each integrating CPU + 256 KB L2 cache in one dual-cavity ceramic MCP) plus Intel Mesh Routing Chip (MRC) interface.",
+            },
+            cab,
+          );
+          kit.box(0.06, 0.02, 0.08, U.gold(), [-0.05, 0.09, 0.14], {}, blade);
+          kit.box(0.06, 0.02, 0.08, U.gold(), [0.05, 0.09, 0.14], {}, blade);
+        }
+      }
+
+      // Rear 2D XY Wormhole Mesh Backplane Grid + Racing Flit Pulses!
+      const meshPlane = kit.group(
+        [0, 0.92, -0.42],
+        {
+          name: "Dimension-Order (XY) Wormhole Interconnect Backplane",
+          info: "Deadlock-free X-then-Y cut-through flit routing fabric delivering 51.2 GB/s cross-section bisection bandwidth.",
+          explode: [0, 0, -0.38],
+        },
+        row,
+      );
+      for (let gx = 0; gx < 4; gx++) {
+        kit.cyl(0.008, 0.008, 1.32, U.copper(), [-0.48 + gx * 0.32, 0, 0], {}, meshPlane);
+      }
+      for (let gy = 0; gy < 4; gy++) {
+        kit.cyl(
+          0.008,
+          0.008,
+          1.02,
+          U.gold(),
+          [0, -0.45 + gy * 0.3, 0],
+          {
+            rot: [0, 0, Math.PI / 2],
+          },
+          meshPlane,
+        );
+      }
+      for (let f = 0; f < 6; f++) {
+        const orb = kit.sphere(
+          0.022,
+          U.glow(f % 2 ? 0x38bdf8 : 0xf97316, 2.0),
+          [0, 0, -0.02],
+          {
+            name: `Wormhole Packet Flit #${f + 1}`,
+          },
+          meshPlane,
+        );
+        flitOrbs.push(orb);
+      }
+
+      // 2. RIGHT TERAFLOPS MPI & WORMHOLE CONSOLE (facing +Z!)
+      mon = buildMonitor3D(kit, [0.84, 0.64, 0.1], {
+        w: 0.96,
+        h: 0.64,
+        rot: [0, 0.04, 0],
+        name: "ASCI Red XY Wormhole Flit & MPI Shock Console",
+        explode: [0.36, 0, 0],
+      });
+      kit.box(1.04, 0.64, 0.54, U.darkAnodized(0x181218), [0.84, 0.32, 0.1], {
+        rot: [0, 0.04, 0],
+      });
+
+      drawAsciMonitor();
+    },
+
+    ui(el, ctx) {
+      const syncStats = () => {
+        if (!statsUi) return;
+        const cmp = sim.compareLatencyCycles(10, sim.flitsPerPacket);
+        statsUi.set("hpl", "1.338 TeraFLOPS #1");
+        statsUi.set("cpus", "9,298 Pentium Pro");
+        statsUi.set("lat", `${cmp.wormholeCycles} cyc vs ${cmp.storeForwardCycles} S&F`);
+        statsUi.set("deliv", `${sim.packetsDelivered} Wormholes`);
+        statsUi.set("stall", `${sim.contentionStalls} Link Holds`);
+        statsUi.set("halo", `${sim.mpiHaloExchanges.toLocaleString()} MPI`);
+      };
+
+      const runBtn = Fe(
+        running ? "⏸ Pause" : "▶ Run",
+        () => {
+          running = !running;
+          runBtn.textContent = running ? "⏸ Pause" : "▶ Run";
+        },
+        "pri",
+      );
+
+      statsUi = Pt([
+        ["hpl", "LINPACK Record"],
+        ["cpus", "Killer Micros"],
+        ["lat", "10-Hop Cut-Thru"],
+        ["deliv", "Packets Routed"],
+        ["stall", "Backpressure"],
+        ["halo", "Ghost-Cell Sync"],
+      ]);
+
+      el.append(
+        Ie(
+          "XY Dimension-Order Wormhole Flit Router & MPI Shock Physics",
+          q(
+            "div",
+            { class: "row" },
+            runBtn,
+            Fe(
+              "Inject Corner-to-Corner Wormhole",
+              () => {
+                sim.injectFlow(0, 0, 5, 5);
+                sim.injectFlow(0, 0, 5, 3); // shared X-row contention!
+                if (ctx.diagram) ctx.diagram.pulse("mrc", "flit", "#38bdf8");
+                hi("tick", { f: 1450, min: 0.04 });
+                drawAsciMonitor();
+                syncStats();
+              },
+              "pri",
+            ),
+            Fe("Detonate Shock Impulse", () => {
+              sim.triggerShockPulse(9, 9);
+              if (ctx.diagram) ctx.diagram.pulse("flit", "mpi", "#f97316");
+              hi("clack", { min: 0.05 });
+              drawAsciMonitor();
+              syncStats();
+            }),
+          ),
+          We(
+            "Packet Length L (Flits per Wormhole)",
+            4,
+            16,
+            2,
+            sim.flitsPerPacket,
+            (v) => {
+              sim.flitsPerPacket = v;
+              drawAsciMonitor();
+              syncStats();
+            },
+            (v) => `${v} flits`,
+          ),
+          statsUi,
+        ),
+      );
+      machine._syncStats = syncStats;
+      syncStats();
+    },
+
+    update(dt, t, ctx) {
+      if (running) {
+        stepAcc += dt * 4.5;
+        while (stepAcc >= 1) {
+          stepAcc -= 1;
+          sim.step();
+          if (ctx.diagram) {
+            ctx.diagram.pulse("ppro", "mrc", "#ef4444");
+            ctx.diagram.pulse("mrc", "flit", "#38bdf8");
+            ctx.diagram.pulse("flit", "mpi", "#f97316");
+          }
+          drawAsciMonitor();
+          if (machine._syncStats) machine._syncStats();
+        }
+      }
+      flitOrbs.forEach((orb, idx) => {
+        const u = ((t * 1.4 + idx * 0.17) % 1) * 2;
+        if (u < 1) {
+          orb.position.set(-0.48 + u * 0.96, -0.45 + (idx % 4) * 0.3, -0.02);
+        } else {
+          orb.position.set(0.48, -0.45 + (u - 1) * 0.9, -0.02);
+        }
+      });
+    },
+
+    isRunning: () => running,
+    sim,
+    test() {
+      const a = new AsciRedWormholeMpp();
+      const c = a.compareLatencyCycles(8, 8);
+      for (let i = 0; i < 12; i++) a.step();
+      return { ok: c.wormholeCycles < c.storeForwardCycles && a.packetsDelivered > 0 };
     },
   };
   return machine;

@@ -86,37 +86,45 @@
   const fx = new Qu(renderer, scene, camera, keyLight);
   const slicer = new CrossSectionSlicer(renderer, scene);
 
-  // ---- 2. Instantiate All 32 Functional Machines Across 4 Grand Circles ----
+  // ---- 2. Instantiate All 40 Functional Machines Across 4 Grand Circles ----
   const factories = [
     zm,
     qm,
     Wm,
     Xm,
     Zm,
+    makeMachineAgc66,
+    makeMachineAlto73,
     Km,
     Jm,
     o1,
     l1,
+    makeMachineArm07,
     c1,
     d1,
     p1,
     M1,
-    y1,
     g1,
     S1,
     A1,
     makeMachineS360,
     makeMachineUnix70,
+    makeMachineVax78,
     makeMachineSun90,
     makeMachineCloud10,
     makeMachineZmain20,
+    makeMachineCdc6600,
     makeMachineCray1,
     makeMachineCm2,
+    makeMachineAsciRed97,
     makeMachineBgene,
     makeMachineExascale,
     makeMachineGb200,
-    makeMachineQtransmon,
+    makeMachineQion,
+    y1,
+    makeMachineQanneal,
     makeMachineQatom,
+    makeMachineQtransmon,
     makeMachineQphotonic,
     makeMachineQtopo,
     makeMachineQomega,
@@ -216,51 +224,51 @@
   const PLAZAS = {
     c1: {
       cx: 0,
-      cz: -6.5,
-      innerR: 4.15,
-      outerR: 8.8,
+      cz: -7.0,
+      innerR: 4.2,
+      outerR: 9.5,
       hex: 0xffb347,
       css: "#ffb347",
-      title: "CIRCLE I · PERSONAL, LOGIC & BIO/OPTICAL",
+      title: "CIRCLE I · PERSONAL, WORKSTATION & BIO/OPTICAL",
       sub: "★ Capital Centerpiece: 1975 MOS 6502 ($25 Microprocessor)",
-      camPos: [0, 17.5, 10.5],
-      camTarget: [0, 0, -6.5],
+      camPos: [0, 18.2, 11.2],
+      camTarget: [0, 0, -7.0],
     },
     c2: {
-      cx: -17.5,
-      cz: 5.5,
+      cx: -18.2,
+      cz: 5.8,
       innerR: 0,
-      outerR: 5.0,
+      outerR: 5.3,
       hex: 0x38bdf8,
       css: "#38bdf8",
       title: "CIRCLE II · MAINFRAMES & ENTERPRISE SERVERS",
       sub: "★ Capital Centerpiece: 1964 IBM System/360 (8-Bit Byte & Channels)",
-      camPos: [-17.5, 12.2, 17.5],
-      camTarget: [-17.5, 0, 5.5],
+      camPos: [-18.2, 12.6, 18.4],
+      camTarget: [-18.2, 0, 5.8],
     },
     c3: {
-      cx: 17.5,
-      cz: 5.5,
+      cx: 18.2,
+      cz: 5.8,
       innerR: 0,
-      outerR: 5.0,
+      outerR: 5.5,
       hex: 0xf97316,
       css: "#f97316",
-      title: "CIRCLE III · SUPERCOMPUTERS (VECTOR → EXASCALE → AI)",
+      title: "CIRCLE III · SUPERCOMPUTERS (SCOREBOARD → EXASCALE → AI)",
       sub: "★ Capital Centerpiece: 1976 Cray-1 Vector (80 MHz Chaining)",
-      camPos: [17.5, 12.2, 17.5],
-      camTarget: [17.5, 0, 5.5],
+      camPos: [18.2, 12.8, 18.6],
+      camTarget: [18.2, 0, 5.8],
     },
     c4: {
       cx: 0,
-      cz: 14.8,
+      cz: 15.8,
       innerR: 0,
-      outerR: 5.4,
+      outerR: 5.8,
       hex: 0xc084fc,
       css: "#c084fc",
       title: "CIRCLE IV · THE AGE OF QUANTUM COMPUTERS",
       sub: "★ Capital Centerpiece: 2045+ OMEGA-Q Fault-Tolerant Horizon",
-      camPos: [0, 12.6, 27.5],
-      camTarget: [0, 0, 14.8],
+      camPos: [0, 13.0, 29.0],
+      camTarget: [0, 0, 15.8],
     },
   };
 
@@ -442,7 +450,14 @@
   let selectedPart = null;
   let hoveredObj = null;
 
-  function placeCircleRing(ringList, cx, cz, radius, scaleSize = 2.15, phaseOffset = -Math.PI / 2) {
+  function placeCircleRing(
+    ringList,
+    cx,
+    cz,
+    radius,
+    scaleSize = 2.15,
+    phaseOffset = -Math.PI / 2,
+  ) {
     ringList.forEach((m, idx) => {
       const ang = (idx / Math.max(1, ringList.length)) * Math.PI * 2 + phaseOffset;
       const sc = scaleSize / Math.max(m.size.x, m.size.y, m.size.z);
@@ -586,7 +601,7 @@
       }
       return;
     }
-    controls.minDistance = 0.22; // Allow deep 10× macro zoom inspection!
+    controls.minDistance = 0.16; // Allow deep 15× macro zoom inspection right onto silicon dies!
     controls.maxDistance = 42;
     const pose = computeMachineHomePose(activeMachine, preset);
     flyCamera(pose.pos, pose.target, instant ? 0 : 0.75);
@@ -698,12 +713,15 @@
       controls.minDistance = 1.4;
       controls.maxDistance = 98;
       flyToPlaza("all", 0);
-      $("#p-era").textContent = "4-Circle Campus · 33 Live 3D Scenes";
+      $("#p-era").textContent = "4-Circle Campus · 41 Live 3D Scenes";
       $("#p-title").textContent = "Computer Evolution Lab";
       (($("#p-blurb").textContent =
-        `${machines.length} operational computers across 4 Grand Circles + this campus = ${machines.length + 1} live 3D scenes. Circle I surrounds the ★ 1975 MOS 6502 with 1936–2020s personal/general machines plus living DishBrain neurons, nanophotonics & DNA logic. Circle II surrounds the ★ 1964 IBM System/360 with UNIX PDP-11/70, SPARC MESI/RAID-5 SMP, Warehouse Raft Cloud & Telum Zero-Downtime Mainframes. Circle III surrounds the ★ 1976 Cray-1 Vector supercomputer with the 65,536-PE CM-2, Blue Gene 3D Torus, Frontier Exascale & Blackwell NVL72 AI Rack. Circle IV surrounds the ★ OMEGA-Q Fault-Tolerant Horizon QPU with NMR, Neutral-Atom Tweezers, 15 mK Surface-Code Transmons, Fusion Photonics & Majorana Braiding.`),
+        `${machines.length} operational computers across 4 Grand Circles + this campus = ${machines.length + 1} live 3D scenes. Circle I surrounds the ★ 1975 MOS 6502 with 1936–2020s machines (including Apollo AGC/DSKY, Xerox PARC Alto & Mobile ARM SoC) plus DishBrain neurons, nanophotonics & DNA logic. Circle II surrounds the ★ 1964 IBM System/360 with UNIX PDP-11/70, VAX-11/780 32-bit Virtual Memory, SPARC MESI/RAID-5 SMP, Warehouse Raft Cloud & Telum Zero-Downtime Mainframes. Circle III surrounds the ★ 1976 Cray-1 Vector supercomputer with CDC 6600 Scoreboard, 65,536-PE CM-2, ASCI Red TeraFLOPS Mesh, Blue Gene 3D Torus, Frontier Exascale & Blackwell NVL72 AI Rack. Circle IV surrounds the ★ OMEGA-Q Fault-Tolerant Horizon QPU with Trapped-Ion Paul QCCD, NMR, Flux-Qubit Annealing, Neutral-Atom Tweezers, 15 mK Surface-Code Transmons, Fusion Photonics & Majorana Braiding.`),
         buildHubDiagram());
       muiEl.append(buildHubCards());
+      if (sharedCtx.diagram && diagCanvas) {
+        sharedCtx.diagram.draw(yt(diagCanvas), diagCanvas.width, diagCanvas.height, 0);
+      }
       rebuildLabels();
       history.replaceState(null, "", location.search + "#hub");
       return;
@@ -763,6 +781,18 @@
     if (m._layers) layersEl.append(m._layers.el);
     muiEl.append(m._ui);
     if (m.enter) m.enter(sharedCtx);
+
+    if (Lm[m.id] && m.diag) {
+      try {
+        const vals = Lm[m.id](m);
+        for (const [nodeId, text] of Object.entries(vals)) {
+          if (m.diag.nodes[nodeId]) m.diag.nodes[nodeId].val = text;
+        }
+      } catch {}
+    }
+    if (m.diag && diagCanvas) {
+      m.diag.draw(yt(diagCanvas), diagCanvas.width, diagCanvas.height, 0);
+    }
 
     cutawayOn = false;
     explodeTarget = 0;
@@ -827,15 +857,87 @@
   let hubDiagram;
   function buildHubDiagram() {
     const nodes = [
-      { id: "m6502", label: "★ MOS 6502\nCircle I", x: 0.5, y: 0.18, w: 0.24, h: 0.22, color: "#ffb347" },
-      { id: "pc20", label: "RISC-V PC\n+ Bio/Opt", x: 0.82, y: 0.18, w: 0.22, h: 0.2, color: "#5fe08a" },
-      { id: "turing", label: "1936–70s\nFoundations", x: 0.18, y: 0.18, w: 0.22, h: 0.2, color: "#e8d9a8" },
-      { id: "s360", label: "★ IBM S/360\nCircle II", x: 0.2, y: 0.52, w: 0.24, h: 0.22, color: "#38bdf8" },
-      { id: "zmain20", label: "UNIX · Raft\n· Telum z16", x: 0.2, y: 0.84, w: 0.24, h: 0.2, color: "#60a5fa" },
-      { id: "cray1", label: "★ Cray-1\nCircle III", x: 0.8, y: 0.52, w: 0.24, h: 0.22, color: "#f97316" },
-      { id: "gb200", label: "CM-2 · Exa\n· NVL72 AI", x: 0.8, y: 0.84, w: 0.24, h: 0.2, color: "#fb923c" },
-      { id: "qomega", label: "★ OMEGA-Q\nCircle IV", x: 0.5, y: 0.56, w: 0.24, h: 0.22, color: "#fde047" },
-      { id: "qtransmon", label: "NMR · Atom\nCryo · Topo", x: 0.5, y: 0.86, w: 0.26, h: 0.2, color: "#c084fc" },
+      {
+        id: "m6502",
+        label: "★ MOS 6502\nCircle I",
+        x: 0.5,
+        y: 0.18,
+        w: 0.24,
+        h: 0.22,
+        color: "#ffb347",
+      },
+      {
+        id: "pc20",
+        label: "RISC-V PC\n+ Bio/Opt",
+        x: 0.82,
+        y: 0.18,
+        w: 0.22,
+        h: 0.2,
+        color: "#5fe08a",
+      },
+      {
+        id: "turing",
+        label: "1936–70s\nFoundations",
+        x: 0.18,
+        y: 0.18,
+        w: 0.22,
+        h: 0.2,
+        color: "#e8d9a8",
+      },
+      {
+        id: "s360",
+        label: "★ IBM S/360\nCircle II",
+        x: 0.2,
+        y: 0.52,
+        w: 0.24,
+        h: 0.22,
+        color: "#38bdf8",
+      },
+      {
+        id: "zmain20",
+        label: "UNIX · Raft\n· Telum z16",
+        x: 0.2,
+        y: 0.84,
+        w: 0.24,
+        h: 0.2,
+        color: "#60a5fa",
+      },
+      {
+        id: "cray1",
+        label: "★ Cray-1\nCircle III",
+        x: 0.8,
+        y: 0.52,
+        w: 0.24,
+        h: 0.22,
+        color: "#f97316",
+      },
+      {
+        id: "gb200",
+        label: "CM-2 · Exa\n· NVL72 AI",
+        x: 0.8,
+        y: 0.84,
+        w: 0.24,
+        h: 0.2,
+        color: "#fb923c",
+      },
+      {
+        id: "qomega",
+        label: "★ OMEGA-Q\nCircle IV",
+        x: 0.5,
+        y: 0.56,
+        w: 0.24,
+        h: 0.22,
+        color: "#fde047",
+      },
+      {
+        id: "qtransmon",
+        label: "NMR · Atom\nCryo · Topo",
+        x: 0.5,
+        y: 0.86,
+        w: 0.26,
+        h: 0.2,
+        color: "#c084fc",
+      },
     ];
     const edges = [
       ["turing", "m6502"],
@@ -1751,7 +1853,7 @@
     ["[ / ]", "Step abstraction layer down / up"],
     ["\\", "Switch Hardware ↔ Software layer stack"],
     ["← / →", "Previous / next era machine"],
-    ["H", "Return to the 33-scene 4-Circle Hub Campus"],
+    ["H", "Return to the 41-scene 4-Circle Hub Campus"],
     ["Esc", "Close part card / modal / tour"],
   ];
 

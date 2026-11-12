@@ -1,4 +1,4 @@
-// 3-Tab MIT / Stanford / Caltech CS Engineering Atlas & Quantitative Era Comparator
+// 4-Tab MIT / Stanford / Caltech CS Engineering Atlas & Quantitative Era Comparator
 function Dc(selectMachine) {
   const overlay = q("div", {
     class: "overlay",
@@ -8,11 +8,11 @@ function Dc(selectMachine) {
   });
 
   const WING_META = {
-    all: { label: "All 32 Machines", color: "#58c4ff" },
-    personal: { label: "Circle I · Personal & Bio/Optical (16)", color: "#ffb347" },
-    servers: { label: "Circle II · Mainframes & Servers (5)", color: "#38bdf8" },
-    super: { label: "Circle III · Supercomputers (5)", color: "#f97316" },
-    quantum: { label: "Circle IV · Quantum Age (6)", color: "#c084fc" },
+    all: { label: "All 40 Machines", color: "#58c4ff" },
+    personal: { label: "Circle I · Personal & Bio/Optical (19)", color: "#ffb347" },
+    servers: { label: "Circle II · Mainframes & Servers (6)", color: "#38bdf8" },
+    super: { label: "Circle III · Supercomputers (7)", color: "#f97316" },
+    quantum: { label: "Circle IV · Quantum Age (8)", color: "#c084fc" },
   };
   const CAPITALS = new Set(["m6502", "s360", "cray1", "qomega"]);
 
@@ -100,7 +100,12 @@ function Dc(selectMachine) {
       if (rows.length <= 18 || idx % 2 === 0 || isCap) {
         ctx.fillStyle = isCap ? "#fde047" : "#eef4fb";
         ctx.font = "9.5px ui-monospace, monospace";
-        ctx.fillText(Wy(metric, val), bx + 1, Math.max(11, y - 4), Math.max(26, colW + 8));
+        ctx.fillText(
+          Wy(metric, val),
+          bx + 1,
+          Math.max(11, y - 4),
+          Math.max(26, colW + 8),
+        );
       }
     });
   };
@@ -204,7 +209,13 @@ function Dc(selectMachine) {
       { class: "small" },
       "Documented figures for the real historical/reference machine each 3D simulator models (log scale). “—” strictly marks not-applicable or undocumented figures — never fabricated or guessed. ★ denotes each Circle's central Capital Breakthrough monument. Click any row to jump directly into that 3D computer.",
     ),
-    q("div", { class: "row" }, ...wingBtns, q("span", { style: { marginLeft: "auto" } }, "Metric "), metricSelect),
+    q(
+      "div",
+      { class: "row" },
+      ...wingBtns,
+      q("span", { style: { marginLeft: "auto" } }, "Metric "),
+      metricSelect,
+    ),
     plotCanvas,
     tableWrap,
   );
@@ -223,7 +234,8 @@ function Dc(selectMachine) {
       years: "1945–1949",
       kind: "drop",
       badge: "🔥 BIG DROP CLUSTER",
-      title: "Von Neumann Stored-Program Architecture, Op-Amps & The Point-Contact Transistor",
+      title:
+        "Von Neumann Stored-Program Architecture, Op-Amps & The Point-Contact Transistor",
       body: "1945: EDVAC First Draft formalizes stored-program execution. 1947: Bell Labs (Bardeen, Brattain, Shockley) demonstrates the germanium transistor AND Ragazzini/Reeves pioneer electronic operational-amplifier analog computers. 1949: Cambridge EDSAC runs the first practical stored-program subroutine library in mercury delay lines.",
       ids: ["analog", "tube"],
     },
@@ -236,36 +248,39 @@ function Dc(selectMachine) {
       ids: ["tube"],
     },
     {
-      years: "1964–1965",
+      years: "1964–1966",
       kind: "drop",
       badge: "🔥 SINGLE-YEAR MEGA-DROP",
-      title: "1964: IBM System/360 Architecture + CDC 6600 Supercomputer + PDP-8 Minicomputer",
-      body: "1964 is arguably the densest architectural year in history: (1) IBM bets $5B on System/360 — standardizing the 8-bit byte, 32-bit words, microcode ISA compatibility across models, and autonomous CCW I/O channels; (2) Seymour Cray ships CDC 6600, the first superscalar RISC-like supercomputer (10 functional units + scoreboard); (3) DEC ships the $18,500 12-bit PDP-8 (1965), creating the minicomputer.",
-      ids: ["s360", "pdp8"],
+      title:
+        "1964: IBM System/360 + CDC 6600 Scoreboard + PDP-8 Mini + MIT Apollo Guidance IC Computer",
+      body: "1964–66 is arguably the densest architectural burst in history: (1) IBM bets $5B on System/360 — standardizing the 8-bit byte, microcode compatibility, and CCW I/O channels; (2) Seymour Cray & James Thornton ship CDC 6600, the first supercomputer (10 functional units + out-of-order Scoreboard + 10 Barrel PPs); (3) DEC ships the $18,500 PDP-8 minicomputer (1965); (4) MIT Instrumentation Lab builds the Block II Apollo Guidance Computer (1966) out of 5,600 monolithic RTL NOR ICs, driving silicon chip prices down >95%.",
+      ids: ["s360", "cdc6600", "pdp8", "agc66"],
     },
     {
-      years: "1966–1970",
+      years: "1967–1970",
       kind: "quiet",
       badge: "🧊 SOFTWARE CRISIS",
-      title: "The NATO Software Engineering Crisis (Hardware Outruns Human Code)",
-      body: "Hardware throughput exploded faster than humans could write reliable assembly: OS/360 slipped years and consumed ~5,000 person-years (inspiring Fred Brooks's The Mythical Man-Month, 1975). Out of the Multics pullout at Bell Labs in 1969, Ken Thompson & Dennis Ritchie stripped an OS down to pure essentials: UNIX, while BBN lit up the first 4 ARPANET IMPs.",
-      ids: ["s360", "unix70"],
+      title:
+        "The NATO Software Engineering Crisis & Apollo 11's Priority Executive Rescue (1969)",
+      body: "Hardware throughput exploded faster than humans could write reliable assembly: OS/360 slipped years (~5,000 person-years, inspiring Fred Brooks's The Mythical Man-Month). In July 1969, Margaret Hamilton & Hal Laning's priority-preemptive Executive saved the Apollo 11 Lunar Landing during 1202/1201 radar overloads — coining 'Software Engineering' — while Thompson & Ritchie created UNIX at Bell Labs.",
+      ids: ["agc66", "s360", "unix70"],
     },
     {
       years: "1973",
       kind: "drop",
       badge: "🔥 1973 SYSTEM DROP",
-      title: "UNIX Rewritten in Portable C + Xerox Alto GUI + Ethernet + TCP/IP Design",
-      body: "1973 forged modern systems CS in 12 months: Ritchie & Thompson rewrote the UNIX kernel in C on the PDP-11 (breaking hardware lock-in forever), Xerox PARC booted the Alto bitmapped GUI workstation, Bob Metcalfe sketched Ethernet, and Vint Cerf & Bob Kahn drafted TCP internetworking.",
-      ids: ["unix70"],
+      title: "Xerox PARC Alto GUI + BitBLT + 3 Mbps Ethernet + Portable C UNIX Kernel",
+      body: "1973 forged modern interactive & networked computing in 12 months: Xerox PARC booted the Alto personal workstation (606×808 portrait bitmapped GUI, 3-button mouse, Dan Ingalls's BitBLT rasterops, Smalltalk OOP, and Bob Metcalfe's CSMA/CD Ethernet), while Ritchie & Thompson rewrote UNIX in portable C on the PDP-11.",
+      ids: ["alto73", "unix70"],
     },
     {
-      years: "1975–1977",
+      years: "1975–1978",
       kind: "drop",
       badge: "🔥 THE 36-MONTH EXPLOSION",
-      title: "Altair 8800 · $25 MOS 6502 · Cray-1 Vector Supercomputer · Apple II & RSA",
-      body: "Three revolutions detonated back-to-back: Jan 1975 MITS Altair 8800 launches personal computing; Sept 1975 Chuck Peddle's team ships the 3,510-transistor MOS 6502 for $25 (vs $179 Intel 8080); 1976 Seymour Cray delivers Cray-1 #1 to Los Alamos (80 MHz, Freon C-bench, vector registers V0–V7 & chaining); 1977 brings the Apple II/PET/TRS-80 Trinity and Rivest–Shamir–Adleman (RSA) cryptography.",
-      ids: ["altair", "m6502", "cray1"],
+      title:
+        "Altair 8800 · $25 MOS 6502 · Cray-1 Vector Supercomputer · DEC VAX-11/780 32-Bit Virtual Memory",
+      body: "Four revolutions detonated back-to-back: Jan 1975 MITS Altair 8800 launches personal kits; Sept 1975 Chuck Peddle's team ships the 3,510-transistor MOS 6502 for $25; 1976 Seymour Cray delivers Cray-1 #1 (80 MHz, vector registers V0–V7 & chaining); Oct 1977/78 DEC ships VAX-11/780, expanding virtual memory from 16-bit to 32-bit (4 GB) and hosting Berkeley 4.2BSD UNIX + TCP/IP.",
+      ids: ["altair", "m6502", "cray1", "vax78"],
     },
     {
       years: "1982–1987",
@@ -280,38 +295,41 @@ function Dc(selectMachine) {
       kind: "quiet",
       badge: "🧊 2ND AI WINTER",
       title: "The Second AI Winter & Collapse of Specialized Symbolic / Vector Hardware",
-      body: "Expert systems & Lisp machines collapsed as commodity CMOS RISC microprocessors ('Attack of the Killer Micros', Brooks & Hennessy/Patterson) doubled performance every 18 months. Specialized vector/SIMD vendors went bankrupt or consolidated, paving the way for shared-memory RISC SMP servers and MPI clusters.",
-      ids: ["cm2", "sun90"],
+      body: "Expert systems & Lisp machines collapsed as commodity CMOS RISC/x86 microprocessors ('Attack of the Killer Micros', Brooks & Hennessy/Patterson) doubled performance every 18 months. Specialized vector/SIMD vendors went bankrupt or consolidated, paving the way for shared-memory RISC SMP servers and wormhole-routed MPI clusters.",
+      ids: ["cm2", "sun90", "ascired97"],
     },
     {
-      years: "1993–1995",
+      years: "1993–1998",
       kind: "drop",
-      badge: "🔥 THE WEB & SMP SERVER DROP",
-      title: "Mosaic Web Browser + SPARC RISC SMP + MESI Snooping + RAID-5 + Pentium Multimedia",
-      body: "1993 combined NCSA Mosaic / HTTP with symmetric multiprocessor enterprise UNIX servers (Sun SPARCcenter snooping MESI caches + hot-swap SCSI RAID-5 XOR arrays) and superscalar 32-bit desktop PCs with PCI, CD-ROMs, and dial-up modems.",
-      ids: ["sun90", "pc90"],
+      badge: "🔥 WEB, TERAFLOPS & QUANTUM GATES",
+      title:
+        "SPARC SMP + RAID-5 (1993) · Cirac–Zoller Ion Trap (1995) · ASCI Red 1st TeraFLOPS (1997) · NMR QPU (1998)",
+      body: "The 1990s detonated three frontiers simultaneously: enterprise web SMP servers (Sun SPARCcenter MESI snooping + RAID-5), Sandia/Intel ASCI Red smashing 1.338 TeraFLOPS across 9,298 Pentium Pros on an XY wormhole mesh (1997), and the first physical quantum logic gates in trapped atomic ions (Cirac–Zoller / Monroe–Wineland, 1995) and liquid-state NMR (1998).",
+      ids: ["sun90", "pc90", "qion", "ascired97", "quantum"],
     },
     {
       years: "2002–2005",
       kind: "quiet",
       badge: "🧊 PHYSICS WALL",
       title: "Breakdown of Dennard Scaling & The 4 GHz Pentium 4 Thermal Wall",
-      body: "For 30 years Dennard scaling (1974) kept power density constant as transistors shrank. Around 90 nm (2003–2004), subthreshold & gate-oxide quantum tunneling leakage exploded; deeply pipelined single-core clock races hit ~3.8 GHz thermal walls (cancelling 10 GHz plans) and forced the entire industry into Multicore CPUs (pc10) and low-wattage many-core Petascale tori (Blue Gene).",
-      ids: ["pc00", "pc10", "bgene"],
+      body: "For 30 years Dennard scaling (1974) kept power density constant as transistors shrank. Around 90 nm (2003–2004), subthreshold & gate-oxide quantum tunneling leakage exploded; deeply pipelined single-core clock races hit ~3.8 GHz thermal walls (cancelling 10 GHz plans) and forced the industry into Multicore CPUs, Mobile ARM DVFS, and low-wattage Petascale tori (Blue Gene).",
+      ids: ["pc00", "pc10", "arm07", "bgene"],
     },
     {
-      years: "2006–2008",
+      years: "2006–2011",
       kind: "drop",
-      badge: "🔥 CLOUD, CUDA & PETASCALE",
-      title: "AWS Cloud + NVIDIA CUDA (2006/07) + DNA Strand Logic (2006) + Petascale HPC (2008)",
-      body: "2006–2008 birthed programmable GPGPU computing (CUDA), elastic cloud infrastructure, enzyme-free DNA strand-displacement circuits (Seelig & Winfree), and million-core deterministic MPI supercomputers (IBM Blue Gene/P & Roadrunner crossing 10^15 FLOPS).",
-      ids: ["alife", "bgene"],
+      badge: "🔥 MOBILE ARM, CLOUD, PETASCALE & ANNEALING",
+      title:
+        "Mobile ARM Multi-Touch SoC (2007) · DNA Logic (2006) · Petascale Blue Gene (2008) · Quantum Annealing (2011)",
+      body: "Computing simultaneously shrank into every pocket and scaled to millions of cores: Apple/ARM shipped capacitive multi-touch pocket computers with DVFS & TBDR GPUs (2007, >250B ARM chips since); Seelig & Winfree demonstrated DNA strand logic (2006); Blue Gene/Roadrunner crossed Petascale (2008); and 15 mK superconducting RF-SQUID quantum annealers debuted commercially (2011).",
+      ids: ["arm07", "alife", "bgene", "qanneal"],
     },
     {
       years: "2012–2017",
       kind: "drop",
       badge: "🔥 DEEP LEARNING & WSC DROP",
-      title: "AlexNet (2012) · Raft & Kubernetes Warehouse Cloud (2014) · Transformers & Photonics (2017)",
+      title:
+        "AlexNet (2012) · Raft & Kubernetes Warehouse Cloud (2014) · Transformers & Photonics (2017)",
       body: "GPUs ignited deep learning (2012); warehouse-scale datacenters standardized Clos Leaf-Spine optics, 48V busbars, and Raft/Paxos quorum state machines (2014); 2017 delivered both Vaswani's Transformer attention architecture and MIT's Shen et al. coherent nanophotonic MZI matrix processor.",
       ids: ["pc10", "cloud10", "photonic"],
     },
@@ -327,9 +345,20 @@ function Dc(selectMachine) {
       years: "2022–2025",
       kind: "drop",
       badge: "🔥 EXASCALE, AI RACKS & QEC RUBICON",
-      title: "Frontier 1.194 ExaFLOPS · Telum z16 · DishBrain · Below-Threshold QEC · Blackwell NVL72",
+      title:
+        "Frontier 1.194 ExaFLOPS · Telum z16 · DishBrain · Below-Threshold QEC · Blackwell NVL72",
       body: "A historic multi-domain surge: ORNL Frontier breaks Exascale (2022); IBM z16 embeds 1 ms AI fraud scoring on zero-downtime RAIM mainframes (2022); DishBrain biological neurons learn Pong (2022); Harvard/QuEra shuttle 48 logical neutral-atom qubits (2023/24); Google's 15 mK superconducting surface code demonstrates exponential below-threshold error suppression (2024); Microsoft/academic labs probe Majorana tetrons & fusion photonics (2025); NVIDIA GB200 NVL72 fuses 72 GPUs over a 130 TB/s copper NVLink spine (2025).",
-      ids: ["pc20", "zmain20", "bci", "exascale", "qatom", "qtransmon", "qphotonic", "qtopo", "gb200"],
+      ids: [
+        "pc20",
+        "zmain20",
+        "bci",
+        "exascale",
+        "qatom",
+        "qtransmon",
+        "qphotonic",
+        "qtopo",
+        "gb200",
+      ],
     },
     {
       years: "2035–2045+",
@@ -364,7 +393,11 @@ function Dc(selectMachine) {
           ),
           q("b", {}, item.title),
         ),
-        q("div", { class: "small", style: { margin: "5px 0 7px", color: "#d5e0ec" } }, item.body),
+        q(
+          "div",
+          { class: "small", style: { margin: "5px 0 7px", color: "#d5e0ec" } },
+          item.body,
+        ),
         q(
           "div",
           { class: "row" },
@@ -432,11 +465,11 @@ function Dc(selectMachine) {
     ],
     [
       "Live 3D Machines in Lab",
-      "m6502 · altair · home80 · pc90 · pc00 · pc10 · pc20 · aibox",
+      "agc66 · alto73 · ★ m6502 · altair · home80 · pc90 · pc00 · arm07 · pc10 · pc20 · aibox",
       "★ s360 · zmain20",
-      "unix70 · sun90 · cloud10",
-      "★ cray1 · cm2 · bgene · exascale · gb200",
-      "quantum · qatom · qtransmon · qphotonic · qtopo · ★ qomega",
+      "unix70 · vax78 · sun90 · cloud10",
+      "cdc6600 · ★ cray1 · cm2 · ascired97 · bgene · exascale · gb200",
+      "qion · quantum · qanneal · qatom · qtransmon · qphotonic · qtopo · ★ qomega",
     ],
   ];
 
@@ -495,16 +528,144 @@ function Dc(selectMachine) {
     ),
   );
 
+  // ---- TAB 4: All 8 Quantum Eras & Physical Modalities Compared (Circle IV Deep Dive) ----
+  const QMOD_ROWS = [
+    [
+      "qion",
+      "1995 / 2024",
+      "Trapped Atomic Ions (¹⁷¹Yb⁺ Linear Paul / QCCD)",
+      "Room-temp / 4 K UHV (10⁻¹¹ Torr)",
+      "All-to-All Coulomb phonon bus; Mølmer–Sørensen XX(θ)",
+      "T₂ > 10–60 s; >99.8% 2Q fidelity; slower µs–ms shuttling/gates",
+      "Universal Gate-Model QEC (Steane / Color / Surface codes)",
+    ],
+    [
+      "quantum",
+      "1998",
+      "Liquid-State Ensemble NMR (¹³C/¹H Chloroform)",
+      "300 K Room Temp (High-field Tesla magnet)",
+      "J-coupling scalar spin-spin evolution + RF pulses",
+      "T₂ ~ seconds; pseudo-pure thermal ensemble vanishes as N/2^N > ~12 qubits",
+      "Historical 1st Deutsch–Jozsa, Grover & 7-qubit Shor (N=15) demos",
+    ],
+    [
+      "qanneal",
+      "2011 / 2023",
+      "Adiabatic Superconducting RF-SQUID Flux Annealer",
+      "15 mK Dilution Cryostat (Mu-metal shielded)",
+      "Pegasus / Zephyr coupler graph; H(s) = -A(s)∑X + B(s)H_Ising",
+      "5,000+ physical flux spins; non-universal (Ising / QUBO optimization only)",
+      "Quantum cotunneling across tall, thin NP-hard spin-glass barriers",
+    ],
+    [
+      "qatom",
+      "2023 / 2024",
+      "Neutral-Atom ⁸⁷Rb Optical Tweezers (AOD/SLM)",
+      "Room-temp UHV Chamber + µK Laser Cooling",
+      "Dynamic 2D AOD shuttling + Van der Waals C₆/R⁶ Rydberg CZ blockade",
+      "T₂ > 1 s; parallel transversal gates across 48+ logical qubits",
+      "Zoned Storage ↔ Entangle ↔ Readout reconfigurable QEC",
+    ],
+    [
+      "qtransmon",
+      "2024",
+      "Superconducting Transmon Surface-Code QPU (Willow-class)",
+      "15 mK ³He/⁴He Dilution Refrigerator",
+      "2D nearest-neighbor tunable couplers; fast ~20–40 ns CZ/iSWAP gates",
+      "T₁/T₂ ~ 70–100 µs; ultra-fast MHz stabilizer cycle rate!",
+      "1st Below-Threshold Rotated Surface Code (d=3->5->7 halves ε_L by Λ=2.14)",
+    ],
+    [
+      "qphotonic",
+      "2025",
+      "Measurement-Based Fusion Photonic QPU (MBQC)",
+      "300 K Si₃N₄/BaTiO₃ Waveguides + 4 K SNSPDs",
+      "Type-II Bell fusion + optical fiber delay loops (no stationary qubits)",
+      "Zero thermal decoherence in flight; photon loss is primary erasure channel",
+      "3D Raussendorf fault-tolerant cluster lattice + ns Pauli feedforward",
+    ],
+    [
+      "qtopo",
+      "2025",
+      "Topological InAs/Al Majorana Nanowire Tetron",
+      "~20 mK + ~1.5 T Axial Magnetic Field",
+      "Non-local fermion parity iγ₁γ₂ (|μ| < 2t Kitaev phase) + QD interferometry",
+      "Intrinsic hardware protection against local charge/phase noise",
+      "Non-Abelian Ising anyon braiding (σ₁σ₂ ≠ σ₂σ₁) + measurement-only Floquet QEC",
+    ],
+    [
+      "qomega",
+      "2045+ ★",
+      "OMEGA-Q Fault-Tolerant Horizon Super-QPU (Speculative)",
+      "1.8 K Superfluid He-II + Room-Temp Optical Links",
+      "Modular high-rate qLDPC vaults + photonic Bell routers + 15-to-1 |T⟩ factories",
+      "Logical error ε_L < 10⁻³⁰ over millions of logical Clifford+T cycles",
+      "Exact Utility-Scale BQP: Shor RSA/ECC, Grover, FeMoCo / H₂ Full-CI Chemistry",
+    ],
+  ];
+
+  const qmodPane = q(
+    "div",
+    { class: "atlas-scroll" },
+    q(
+      "p",
+      { class: "small" },
+      "There is NO single 'Quantum Computer' — just as early classical computing competed across relays, mercury delay lines, vacuum tubes, and silicon ICs, Circle IV models all 8 historic, contemporary, and horizon quantum computing modalities side-by-side.",
+    ),
+    q(
+      "div",
+      { class: "ctable" },
+      q(
+        "table",
+        {},
+        q(
+          "tr",
+          {},
+          q("th", {}, "3D Lab"),
+          q("th", {}, "Era"),
+          q("th", { style: { color: "#c084fc" } }, "Physical Modality"),
+          q("th", {}, "Environment"),
+          q("th", {}, "Connectivity & Native Gate"),
+          q("th", {}, "Coherence / Scaling Tradeoff"),
+          q("th", {}, "Error / Algorithmic Regime"),
+        ),
+        ...QMOD_ROWS.map(([id, era, mod, env, gate, trade, reg]) =>
+          q(
+            "tr",
+            { onclick: () => openAndClose(id), title: `Open ${id} in 3D` },
+            q(
+              "td",
+              {},
+              q(
+                "button",
+                { class: "chip", onclick: () => openAndClose(id) },
+                (CAPITALS.has(id) ? "★ " : "↗ ") + id,
+              ),
+            ),
+            q("td", { style: { whiteSpace: "nowrap" } }, era),
+            q("td", {}, q("b", {}, mod)),
+            q("td", { class: "small" }, env),
+            q("td", { class: "small" }, gate),
+            q("td", { class: "small" }, trade),
+            q("td", { class: "small" }, reg),
+          ),
+        ),
+      ),
+    ),
+  );
+
   // ---- Tab Switcher ----
   const panes = {
     quant: quantPane,
     timeline: timelinePane,
     matrix: matrixPane,
+    qmod: qmodPane,
   };
   const tabDefs = [
-    ["quant", "📊 Quantitative Plot & Specs (32)"],
+    ["quant", "📊 Quantitative Plot & Specs (40)"],
     ["timeline", "⚡ Big-Drop Years vs. Quiet / Winter Years"],
     ["matrix", "🏛️ Mainframe vs. Server vs. Supercomputer vs. Quantum"],
+    ["qmod", "⚛️ 8 Quantum Eras & Modalities"],
   ];
   const tabBody = q("div", {}, quantPane);
   const tabButtons = tabDefs.map(([k, label]) =>
@@ -533,7 +694,11 @@ function Dc(selectMachine) {
       "div",
       { class: "modal wide" },
       q("button", { class: "mx", onclick: () => overlay.remove() }, "×"),
-      q("h2", {}, "Computer Science & Engineering Atlas — 4 Circles · 32 Operational Machines"),
+      q(
+        "h2",
+        {},
+        "Computer Science & Engineering Atlas — 4 Circles · 40 Operational Machines",
+      ),
       q("div", { class: "row", style: { marginBottom: "8px" } }, ...tabButtons),
       tabBody,
     ),

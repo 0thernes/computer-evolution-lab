@@ -158,7 +158,7 @@ async function runRiscvUnitChecks() {
 
 async function runHeadlessBrowserSuite() {
   console.log(
-    "\n[3/4] Headless Chrome WebGL2 Full 32-Machine + 288-Layer + Audio Verification",
+    "\n[3/4] Headless Chrome WebGL2 Full 40-Machine + 360-Layer + Audio Verification",
   );
 
   const bin = findBrowserBinary();
@@ -196,8 +196,8 @@ async function runHeadlessBrowserSuite() {
 
     assert(bootInfo.webgl2, "WebGL2 context was not active");
     assert(
-      bootInfo.machines.length === 32,
-      `Expected 32 machines, got ${bootInfo.machines.length}`,
+      bootInfo.machines.length === 40,
+      `Expected 40 machines, got ${bootInfo.machines.length}`,
     );
     assert(
       session.pageExceptions.length === 0,
@@ -209,10 +209,10 @@ async function runHeadlessBrowserSuite() {
     );
     ok(
       "HTTP WebGL2 boot & StudioFX composer",
-      `32 machines, maxTex=${bootInfo.maxTex}, exposure=${bootInfo.exposure}`,
+      `40 machines, maxTex=${bootInfo.maxTex}, exposure=${bootInfo.exposure}`,
     );
 
-    // Verify all 32 machines: select, step frames, m.test(), and 9-layer selfCheck()
+    // Verify all 40 machines: select, step frames, m.test(), and 9-layer selfCheck()
     let totalLayersChecked = 0;
     const stepFrames = isSoftwareCI ? 2 : 6;
     for (const id of bootInfo.machines) {
@@ -262,8 +262,8 @@ async function runHeadlessBrowserSuite() {
       );
     }
     ok(
-      "All 288 Hardware/Software layer canvases verified",
-      `${totalLayersChecked}/288 live, non-blank & part-matched`,
+      "All 360 Hardware/Software layer canvases verified",
+      `${totalLayersChecked}/360 live, non-blank & part-matched`,
     );
 
     // Deep Modern Mini PC (pc20) interactive checks
@@ -320,7 +320,7 @@ async function runHeadlessBrowserSuite() {
       LAB.select("pc20");
       LAB.audio.start();
       const themesTested = [];
-      for (const t of ["zimmer", "horner", "malick", "stone", "vangelis", "auto"]) {
+      for (const t of ["zimmer", "horner", "nolan", "malick", "stone", "vangelis", "auto"]) {
         LAB.audio.set("scoreOverride", t);
         for (let i = 0; i < 6; i++) LAB.audio.tick(0.12, 0.55);
         themesTested.push({ theme: t, chord: LAB.audio.nowPlaying.chord, bpm: LAB.audio.nowPlaying.bpm });
@@ -368,26 +368,17 @@ async function runHeadlessBrowserSuite() {
     await session.waitForLabBoot(60000);
 
     const fileCheck = await session.evalValue(`(async () => {
-      LAB.select("pc20");
-      const pcRes = await LAB.active.test();
-      LAB.select("m6502");
-      const mosRes = await LAB.active.test();
-      LAB.select("alife");
-      const alifeRes = await LAB.active.test();
-      LAB.select("s360");
-      const s360Res = await LAB.active.test();
-      LAB.select("cray1");
-      const crayRes = await LAB.active.test();
-      LAB.select("qomega");
-      const qomegaRes = await LAB.active.test();
+      const ids = ["pc20", "agc66", "alto73", "arm07", "m6502", "alife", "s360", "vax78", "cdc6600", "cray1", "ascired97", "qion", "qanneal", "qomega"];
+      const failedIds = [];
+      for (const id of ids) {
+        LAB.select(id);
+        const r = await LAB.active.test();
+        if (!r || !r.ok) failedIds.push(id + ":" + (r && (r.detail || r.msg)));
+      }
       return {
         protocol: location.protocol,
-        pcOk: pcRes.ok,
-        mosOk: mosRes.ok,
-        alifeOk: alifeRes.ok,
-        s360Ok: s360Res.ok,
-        crayOk: crayRes.ok,
-        qomegaOk: qomegaRes.ok
+        tested: ids.length,
+        failedIds
       };
     })()`);
 
@@ -396,13 +387,8 @@ async function runHeadlessBrowserSuite() {
       `Expected file: protocol, got ${fileCheck.protocol}`,
     );
     assert(
-      fileCheck.pcOk &&
-        fileCheck.mosOk &&
-        fileCheck.alifeOk &&
-        fileCheck.s360Ok &&
-        fileCheck.crayOk &&
-        fileCheck.qomegaOk,
-      "Machine tests failed under file://",
+      fileCheck.failedIds.length === 0,
+      `Machine tests failed under file:// -> ${fileCheck.failedIds.join(", ")}`,
     );
     assert(
       session.pageExceptions.length === 0,
@@ -414,7 +400,7 @@ async function runHeadlessBrowserSuite() {
     );
     ok(
       "Direct file:// double-click execution",
-      "Zero CORS errors; pc20, m6502, alife, s360, cray1 & qomega tests passed",
+      `Zero CORS errors; ${fileCheck.tested} flagship machines across all 4 Circles passed`,
     );
   } finally {
     await session.close();

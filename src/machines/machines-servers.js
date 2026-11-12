@@ -75,7 +75,11 @@ function makeMachineS360() {
     c.strokeRect(20, 286, 610, 206);
     c.fillStyle = "#63b3ed";
     c.font = '700 15px "JetBrains Mono", monospace';
-    c.fillText("32-BIT GENERAL REGISTERS (GPR R0–R7) & PACKED-DECIMAL ACCUMULATOR", 34, 312);
+    c.fillText(
+      "32-BIT GENERAL REGISTERS (GPR R0–R7) & PACKED-DECIMAL ACCUMULATOR",
+      34,
+      312,
+    );
     c.font = '600 15px "JetBrains Mono", monospace';
     for (let r = 0; r < 8; r++) {
       const col = r % 2;
@@ -110,11 +114,7 @@ function makeMachineS360() {
       const cy = 346 + idx * 46;
       c.fillStyle = ch.busy > 0 ? "#34d399" : "#94a3b8";
       c.font = '700 14px "JetBrains Mono", monospace';
-      c.fillText(
-        `${title}: ${ch.busy > 0 ? "ACTIVE CCW" : "READY     "}`,
-        662,
-        cy,
-      );
+      c.fillText(`${title}: ${ch.busy > 0 ? "ACTIVE CCW" : "READY     "}`, 662, cy);
       c.fillStyle = "#cbd5e1";
       c.font = '500 13px "JetBrains Mono", monospace';
       c.fillText(`Recs=${ch.records} · Bytes=${ch.bytes}`, 662, cy + 19);
@@ -190,18 +190,34 @@ function makeMachineS360() {
         info: "Central Processing Unit housing Solid Logic Technology (SLT) hybrid ceramic modules, 2,816-word Capacitor Read-Only Storage (ROS), and magnetic core memory.",
       });
       // Outer scarlet/horizon-blue/charcoal doors (shell: true for cutaway!)
-      kit.box(1.92, 1.68, 0.78, U.metal(0x252a34, 0.42), [0, 0.84, 0], {
-        name: "System/360 Outer Enclosure",
-        info: " Eliot Noyes industrial-design steel frame in charcoal and scarlet red; cutaway reveals the SLT logic gates, ROS microcode planes, and magnetic core stack.",
-        shell: true,
-        explode: [0, 0.35, -0.55],
-      }, cpuGrp);
-      kit.box(0.56, 1.54, 0.8, U.plastic(0xb8292f, 0.38), [-0.64, 0.84, 0], {
-        name: "Scarlet System Accent Panel",
-        info: "Signature IBM System/360 scarlet industrial-design door panel.",
-        shell: true,
-        explode: [-0.45, 0.2, 0.45],
-      }, cpuGrp);
+      kit.box(
+        1.92,
+        1.68,
+        0.78,
+        U.metal(0x252a34, 0.42),
+        [0, 0.84, 0],
+        {
+          name: "System/360 Outer Enclosure",
+          info: " Eliot Noyes industrial-design steel frame in charcoal and scarlet red; cutaway reveals the SLT logic gates, ROS microcode planes, and magnetic core stack.",
+          shell: true,
+          explode: [0, 0.35, -0.55],
+        },
+        cpuGrp,
+      );
+      kit.box(
+        0.56,
+        1.54,
+        0.8,
+        U.plastic(0xb8292f, 0.38),
+        [-0.64, 0.84, 0],
+        {
+          name: "Scarlet System Accent Panel",
+          info: "Signature IBM System/360 scarlet industrial-design door panel.",
+          shell: true,
+          explode: [-0.45, 0.2, 0.45],
+        },
+        cpuGrp,
+      );
 
       // Internal SLT Swing-Out Gate Backplanes + Capacitor ROS + Core Memory Stack
       for (let g = 0; g < 3; g++) {
@@ -232,18 +248,34 @@ function makeMachineS360() {
           }
         }
       }
-      kit.box(0.78, 0.44, 0.28, U.copper(), [0.38, 0.42, 0.14], {
-        name: "Capacitor ROS Microcode Store",
-        info: "2,816-word × 90-bit Read-Only Storage (ROS): etched Mylar capacitor planes store microinstructions so Models 30 through 75 share one identical S/360 ISA.",
-        live: () => `ROS 0x${bt(sim.rosAddr, 3)} · ${sim.rosPhase}`,
-        explode: [0.4, -0.1, 0.35],
-      }, cpuGrp);
-      kit.box(0.72, 0.46, 0.32, U.darkAnodized(0x19212c), [-0.42, 0.42, 0.14], {
-        name: "Magnetic Core Storage & Keys",
-        info: "256 KB ferrite core storage with 2.0 µs cycle time and 4-bit hardware Storage Protection Keys per 2 KB block for multiprogramming isolation.",
-        live: () => `Key=${sim.psw.key} · Net=$${sim.mem[132]}`,
-        explode: [-0.4, -0.1, 0.35],
-      }, cpuGrp);
+      kit.box(
+        0.78,
+        0.44,
+        0.28,
+        U.copper(),
+        [0.38, 0.42, 0.14],
+        {
+          name: "Capacitor ROS Microcode Store",
+          info: "2,816-word × 90-bit Read-Only Storage (ROS): etched Mylar capacitor planes store microinstructions so Models 30 through 75 share one identical S/360 ISA.",
+          live: () => `ROS 0x${bt(sim.rosAddr, 3)} · ${sim.rosPhase}`,
+          explode: [0.4, -0.1, 0.35],
+        },
+        cpuGrp,
+      );
+      kit.box(
+        0.72,
+        0.46,
+        0.32,
+        U.darkAnodized(0x19212c),
+        [-0.42, 0.42, 0.14],
+        {
+          name: "Magnetic Core Storage & Keys",
+          info: "256 KB ferrite core storage with 2.0 µs cycle time and 4-bit hardware Storage Protection Keys per 2 KB block for multiprogramming isolation.",
+          live: () => `Key=${sim.psw.key} · Net=$${sim.mem[132]}`,
+          explode: [-0.4, -0.1, 0.35],
+        },
+        cpuGrp,
+      );
 
       // Sloped Operator Console + Lamp Matrix + 4 Hex Rotary Dials + 1052 Console Keyboard
       panelSurf = zi(
@@ -274,17 +306,33 @@ function makeMachineS360() {
         dials.push(knob);
       }
       // Emergency Pull Switch
-      kit.cyl(0.026, 0.022, 0.055, U.plastic(0xd92626, 0.3), [0.76, 0.78, 0.42], {
-        rot: [Math.PI / 2, 0, 0],
-        name: "Emergency Pull Switch",
-        info: "Iconic scarlet Emergency Pull knob on every System/360 operator panel.",
-      }, cpuGrp);
+      kit.cyl(
+        0.026,
+        0.022,
+        0.055,
+        U.plastic(0xd92626, 0.3),
+        [0.76, 0.78, 0.42],
+        {
+          rot: [Math.PI / 2, 0, 0],
+          name: "Emergency Pull Switch",
+          info: "Iconic scarlet Emergency Pull knob on every System/360 operator panel.",
+        },
+        cpuGrp,
+      );
 
       // Desk shelf + IBM 1052 Console Printer-Keyboard
-      kit.box(1.18, 0.045, 0.52, U.plastic(0xdad4c6, 0.45), [0.18, 0.66, 0.68], {
-        name: "Operator Console Desk",
-        info: "Laminated operator console table supporting the IBM 1052 Selectric console typewriter.",
-      }, cpuGrp);
+      kit.box(
+        1.18,
+        0.045,
+        0.52,
+        U.plastic(0xdad4c6, 0.45),
+        [0.18, 0.66, 0.68],
+        {
+          name: "Operator Console Desk",
+          info: "Laminated operator console table supporting the IBM 1052 Selectric console typewriter.",
+        },
+        cpuGrp,
+      );
       buildSculptedKeyboard(
         kit,
         [0.18, 0.685, 0.72],
@@ -305,19 +353,36 @@ function makeMachineS360() {
         const tGrp = kit.group([tx, 0.09, -0.08], {
           name: `IBM 2401 9-Track Tape Drive ${tIdx + 1}`,
           info: "800 BPI 9-track magnetic tape unit (8 bits + 1 parity = 1 S/360 byte per frame!) with pneumatic vacuum columns decoupling high-inertia reels from fast start/stop capstans.",
-          live: () => `CH 0x180 · Recs=${sim.channels[0x180].records} · Bytes=${sim.channels[0x180].bytes}`,
+          live: () =>
+            `CH 0x180 · Recs=${sim.channels[0x180].records} · Bytes=${sim.channels[0x180].bytes}`,
           explode: [-0.45, 0, 0],
         });
-        kit.box(0.5, 1.62, 0.64, U.plastic(0x2b6cb0, 0.42), [0, 0.81, 0], {
-          shell: true,
-          name: "2401 Horizon-Blue Tape Cabinet",
-          info: "Steel 2401 tape cabinet finished in IBM Horizon Blue.",
-        }, tGrp);
-        kit.box(0.44, 0.62, 0.02, U.glass(0xdaf0ff, 0.26), [0, 1.22, 0.33], {
-          shell: true,
-          name: "Tape Transport Glass Window",
-          info: "Dust-sealed viewing window over the supply and take-up 10.5-inch magnetic tape reels.",
-        }, tGrp);
+        kit.box(
+          0.5,
+          1.62,
+          0.64,
+          U.plastic(0x2b6cb0, 0.42),
+          [0, 0.81, 0],
+          {
+            shell: true,
+            name: "2401 Horizon-Blue Tape Cabinet",
+            info: "Steel 2401 tape cabinet finished in IBM Horizon Blue.",
+          },
+          tGrp,
+        );
+        kit.box(
+          0.44,
+          0.62,
+          0.02,
+          U.glass(0xdaf0ff, 0.26),
+          [0, 1.22, 0.33],
+          {
+            shell: true,
+            name: "Tape Transport Glass Window",
+            info: "Dust-sealed viewing window over the supply and take-up 10.5-inch magnetic tape reels.",
+          },
+          tGrp,
+        );
         // Supply & Take-up reels
         for (const rx of [-0.11, 0.11]) {
           const reel = kit.cyl(
@@ -337,10 +402,18 @@ function makeMachineS360() {
         }
         // Dual vertical vacuum columns
         for (const vx of [-0.12, 0.12]) {
-          kit.box(0.085, 0.58, 0.04, U.glass(0x90cdf4, 0.32), [vx, 0.56, 0.31], {
-            name: "Pneumatic Vacuum Column",
-            info: "Low-pressure vacuum column buffers a slack loop of magnetic tape so capstans accelerate tape in milliseconds without snapping it.",
-          }, tGrp);
+          kit.box(
+            0.085,
+            0.58,
+            0.04,
+            U.glass(0x90cdf4, 0.32),
+            [vx, 0.56, 0.31],
+            {
+              name: "Pneumatic Vacuum Column",
+              info: "Low-pressure vacuum column buffers a slack loop of magnetic tape so capstans accelerate tape in milliseconds without snapping it.",
+            },
+            tGrp,
+          );
         }
       }
 
@@ -348,23 +421,48 @@ function makeMachineS360() {
       const diskGrp = kit.group([1.36, 0.09, -0.05], {
         name: "IBM 2311 Disk Storage Drive",
         info: "Removable IBM 1316 Disk Pack (6 platters, 10 recording surfaces, 7.25 MB capacity) with hydraulic comb-type voice-coil head actuator.",
-        live: () => `CH 0x190 · Cyl=${sim.channels[0x190].cyl} · Recs=${sim.channels[0x190].records}`,
+        live: () =>
+          `CH 0x190 · Cyl=${sim.channels[0x190].cyl} · Recs=${sim.channels[0x190].records}`,
         explode: [0.42, 0, -0.15],
       });
       kit.box(0.62, 0.96, 0.66, U.plastic(0xd8d2c5, 0.45), [0, 0.48, 0], {}, diskGrp);
-      diskPlatters = kit.cyl(0.19, 0.19, 0.14, U.copper(), [0, 1.05, 0], {
-        name: "IBM 1316 Removable Disk Pack",
-        info: "Six 14-inch iron-oxide coated aluminum platters spinning at 2,400 RPM.",
-      }, diskGrp);
-      diskArm = kit.box(0.18, 0.028, 0.04, U.steel(), [0.14, 1.06, 0.08], {
-        name: "Comb Access Actuator Arm",
-        info: "Moves all 10 read/write heads simultaneously across 200 concentric cylinders.",
-      }, diskGrp);
-      kit.cyl(0.24, 0.25, 0.22, U.glass(0xdff3ff, 0.28), [0, 1.07, 0], {
-        shell: true,
-        name: "1316 Acrylic Dust Cover",
-        info: "Clear protective cover locking onto the top-loading 1316 disk spindle.",
-      }, diskGrp);
+      diskPlatters = kit.cyl(
+        0.19,
+        0.19,
+        0.14,
+        U.copper(),
+        [0, 1.05, 0],
+        {
+          name: "IBM 1316 Removable Disk Pack",
+          info: "Six 14-inch iron-oxide coated aluminum platters spinning at 2,400 RPM.",
+        },
+        diskGrp,
+      );
+      diskArm = kit.box(
+        0.18,
+        0.028,
+        0.04,
+        U.steel(),
+        [0.14, 1.06, 0.08],
+        {
+          name: "Comb Access Actuator Arm",
+          info: "Moves all 10 read/write heads simultaneously across 200 concentric cylinders.",
+        },
+        diskGrp,
+      );
+      kit.cyl(
+        0.24,
+        0.25,
+        0.22,
+        U.glass(0xdff3ff, 0.28),
+        [0, 1.07, 0],
+        {
+          shell: true,
+          name: "1316 Acrylic Dust Cover",
+          info: "Clear protective cover locking onto the top-loading 1316 disk spindle.",
+        },
+        diskGrp,
+      );
 
       // IBM 1403 Chain Line Printer
       const prnGrp = kit.group([1.56, 0.09, 0.72], {
@@ -433,10 +531,14 @@ function makeMachineS360() {
         );
       };
 
-      const runBtn = Fe(running ? "⏸ Pause" : "▶ Run", () => {
-        running = !running;
-        runBtn.textContent = running ? "⏸ Pause" : "▶ Run";
-      }, "pri");
+      const runBtn = Fe(
+        running ? "⏸ Pause" : "▶ Run",
+        () => {
+          running = !running;
+          runBtn.textContent = running ? "⏸ Pause" : "▶ Run";
+        },
+        "pri",
+      );
 
       statsUi = Pt([
         ["pc", "PSW Addr / CC"],
@@ -522,7 +624,8 @@ function makeMachineS360() {
           const ev = sim.step();
           if (ev && ctx.diagram) {
             ctx.diagram.pulse("ros", "cpu", "#ffb347");
-            if (ev.op === "L" || ev.op === "ST") ctx.diagram.pulse("cpu", "core", "#58c4ff");
+            if (ev.op === "L" || ev.op === "ST")
+              ctx.diagram.pulse("cpu", "core", "#58c4ff");
             if (ev.op === "SIO") ctx.diagram.pulse("cpu", "chan", "#5fe08a");
           }
           if (sim.channels[0x180].busy > 0 && ctx.diagram) {
@@ -667,12 +770,20 @@ function makeMachineUnix70() {
         name: "DEC PDP-11/70 H960 Cabinet",
         info: "Top-of-the-line 16-bit PDP-11 server featuring 2 KB bipolar parity cache, 22-bit physical addressing (up to 4 MB), UNIBUS, and high-speed 32-bit MASSBUS.",
       });
-      kit.box(0.96, 1.82, 0.84, U.metal(0x232730, 0.44), [0, 0.91, 0], {
-        shell: true,
-        name: "H960 Steel Rack Enclosure",
-        info: "19-inch DEC rack enclosure; cutaway exposes the KB11-C CPU hex boards, UNIBUS backplane, and core memory modules.",
-        explode: [0, 0.35, -0.5],
-      }, cab);
+      kit.box(
+        0.96,
+        1.82,
+        0.84,
+        U.metal(0x232730, 0.44),
+        [0, 0.91, 0],
+        {
+          shell: true,
+          name: "H960 Steel Rack Enclosure",
+          info: "19-inch DEC rack enclosure; cutaway exposes the KB11-C CPU hex boards, UNIBUS backplane, and core memory modules.",
+          explode: [0, 0.35, -0.5],
+        },
+        cab,
+      );
 
       // Internal KB11-C Hex PCB Modules + UNIBUS Backplane
       for (let b = 0; b < 6; b++) {
@@ -683,7 +794,10 @@ function makeMachineUnix70() {
           [0, 0.48 + b * 0.16, -0.06],
           {
             pcb: b < 3 ? 0x1b5e3a : 0x234e70,
-            name: b < 3 ? `KB11-C CPU & MMU Hex Board ${b + 1}` : `UNIBUS / MASSBUS Controller ${b - 2}`,
+            name:
+              b < 3
+                ? `KB11-C CPU & MMU Hex Board ${b + 1}`
+                : `UNIBUS / MASSBUS Controller ${b - 2}`,
             info:
               b < 3
                 ? "Schottky TTL hex-height module implementing the 8 general registers (R0–R7), PSW, and 16 Kernel/User Active Page Registers (APRs)."
@@ -695,11 +809,15 @@ function makeMachineUnix70() {
       }
 
       // Iconic Burgundy/Plum & Cream PDP-11/70 Front Console Bezel
-      const bezel = kit.group([0, 1.32, 0.43], {
-        name: "PDP-11/70 Programmer Console",
-        info: "Iconic plum/magenta and lavender-grey octal blinkenlight console displaying 22-bit physical addresses, 16-bit data/register contents, and Kernel/Super/User MMU state.",
-        explode: [0, 0.1, 0.42],
-      }, cab);
+      const bezel = kit.group(
+        [0, 1.32, 0.43],
+        {
+          name: "PDP-11/70 Programmer Console",
+          info: "Iconic plum/magenta and lavender-grey octal blinkenlight console displaying 22-bit physical addresses, 16-bit data/register contents, and Kernel/Super/User MMU state.",
+          explode: [0, 0.1, 0.42],
+        },
+        cab,
+      );
       kit.box(0.88, 0.42, 0.06, U.plastic(0xd8d2c5, 0.42), [0, 0, 0], {}, bezel);
       kit.box(0.84, 0.16, 0.065, U.plastic(0x7c1d46, 0.36), [0, 0.09, 0.004], {}, bezel);
       Nt(
@@ -756,7 +874,12 @@ function makeMachineUnix70() {
         );
         toggles.push(sw);
       }
-      Om(kit, [0.34, 0.02, 0.04], { r: 0.032, name: "Register Display Selector Knob" }, bezel);
+      Om(
+        kit,
+        [0.34, 0.02, 0.04],
+        { r: 0.032, name: "Register Display Selector Knob" },
+        bezel,
+      );
 
       // 2. DEC RP04 MOVING-HEAD DISK PACK DRIVE (Far Left)
       const rpGrp = kit.group([-1.52, 0.08, 0.05], {
@@ -766,24 +889,48 @@ function makeMachineUnix70() {
         explode: [-0.45, 0, 0.15],
       });
       kit.box(0.58, 0.94, 0.64, U.plastic(0xd8d2c5, 0.46), [0, 0.47, 0], {}, rpGrp);
-      rpPlatter = kit.cyl(0.18, 0.18, 0.11, U.copper(), [0, 1.0, 0], {
-        name: "RP04 Oxide Disk Pack",
-        info: "3,600 RPM disk pack storing 512-byte UNIX blocks indexed by 13-pointer inode structures.",
-      }, rpGrp);
-      kit.cyl(0.22, 0.23, 0.16, U.glass(0xdaf0ff, 0.28), [0, 1.02, 0], {
-        shell: true,
-        name: "RP04 Top Window Shroud",
-      }, rpGrp);
+      rpPlatter = kit.cyl(
+        0.18,
+        0.18,
+        0.11,
+        U.copper(),
+        [0, 1.0, 0],
+        {
+          name: "RP04 Oxide Disk Pack",
+          info: "3,600 RPM disk pack storing 512-byte UNIX blocks indexed by 13-pointer inode structures.",
+        },
+        rpGrp,
+      );
+      kit.cyl(
+        0.22,
+        0.23,
+        0.16,
+        U.glass(0xdaf0ff, 0.28),
+        [0, 1.02, 0],
+        {
+          shell: true,
+          name: "RP04 Top Window Shroud",
+        },
+        rpGrp,
+      );
 
       // 3. VT100 VIDEO TERMINAL DESK + BBN ARPANET IMP INTERFACE (Right)
       const desk = kit.group([0.68, 0.08, 0.1], {
         name: "Operator Terminal & ARPANET Station",
         info: "Interactive RS-232 serial UNIX shell terminal plus BBN Interface Message Processor (IMP) host trunk.",
       });
-      kit.box(1.52, 0.68, 0.86, U.wood(), [0, 0.34, 0], {
-        name: "Bell Labs Terminal Desk",
-        info: "Oak laboratory bench holding the DEC VT100 CRT terminal and detached keyboard.",
-      }, desk);
+      kit.box(
+        1.52,
+        0.68,
+        0.86,
+        U.wood(),
+        [0, 0.34, 0],
+        {
+          name: "Bell Labs Terminal Desk",
+          info: "Oak laboratory bench holding the DEC VT100 CRT terminal and detached keyboard.",
+        },
+        desk,
+      );
       vtMon = buildMonitor3D(
         kit,
         [-0.12, 0.68, -0.06],
@@ -814,12 +961,20 @@ function makeMachineUnix70() {
         desk,
       );
       // ARPANET Host-IMP Modem Box
-      kit.box(0.38, 0.44, 0.48, U.metal(0x2b3a4a, 0.42), [0.52, 0.9, -0.08], {
-        name: "ARPANET Host-IMP Interface",
-        info: "1822 Host-to-IMP full-duplex packet interface connecting UNIX daemons (ncpd / early TCP-IP) to the 50 kbps ARPANET backbone.",
-        live: () => `ARPANET pkts=${sim.arpanetPkts}`,
-        explode: [0.35, 0.2, 0],
-      }, desk);
+      kit.box(
+        0.38,
+        0.44,
+        0.48,
+        U.metal(0x2b3a4a, 0.42),
+        [0.52, 0.9, -0.08],
+        {
+          name: "ARPANET Host-IMP Interface",
+          info: "1822 Host-to-IMP full-duplex packet interface connecting UNIX daemons (ncpd / early TCP-IP) to the 50 kbps ARPANET backbone.",
+          live: () => `ARPANET pkts=${sim.arpanetPkts}`,
+          explode: [0.35, 0.2, 0],
+        },
+        desk,
+      );
 
       drawVt100();
     },
@@ -829,16 +984,23 @@ function makeMachineUnix70() {
         if (!statsUi) return;
         statsUi.set("mode", `${sim.psw.mode} · PC=0${Kn(sim.regs[7], 6)}`);
         statsUi.set("phys", `0${Kn(sim.addrLights, 8)}`);
-        statsUi.set("proc", `PID ${sim.procs[sim.curIdx].pid} ${sim.procs[sim.curIdx].name}`);
+        statsUi.set(
+          "proc",
+          `PID ${sim.procs[sim.curIdx].pid} ${sim.procs[sim.curIdx].name}`,
+        );
         statsUi.set("sys", `${sim.syscalls} traps / ${sim.ctxSwitches} swtch`);
         statsUi.set("pipe", `${sim.pipeBytes} B`);
         statsUi.set("arpa", `${sim.arpanetPkts} pkts`);
       };
 
-      const runBtn = Fe(running ? "⏸ Pause" : "▶ Run", () => {
-        running = !running;
-        runBtn.textContent = running ? "⏸ Pause" : "▶ Run";
-      }, "pri");
+      const runBtn = Fe(
+        running ? "⏸ Pause" : "▶ Run",
+        () => {
+          running = !running;
+          runBtn.textContent = running ? "⏸ Pause" : "▶ Run";
+        },
+        "pri",
+      );
 
       statsUi = Pt([
         ["mode", "MMU Mode / PC"],
@@ -1042,11 +1204,7 @@ function makeMachineSun90() {
       c.font = '600 13px "JetBrains Mono", monospace';
       for (let s = 0; s < 6; s++) {
         const isParity = s % 5 === d;
-        c.fillStyle = disk.failed
-          ? "#f87171"
-          : isParity
-            ? "#fbbf24"
-            : "#cbd5e1";
+        c.fillStyle = disk.failed ? "#f87171" : isParity ? "#fbbf24" : "#cbd5e1";
         c.fillText(
           `S${s}: 0x${bt(disk.data[s], 2)} ${isParity ? "(P)" : "   "}`,
           dx + 14,
@@ -1094,12 +1252,20 @@ function makeMachineSun90() {
         name: "Sun SPARCcenter 2000 Enterprise Cabinet",
         info: "Symmetric Multiprocessor (SMP) RISC server cabinet finished in Sun Microsystems iris-purple and dark slate.",
       });
-      kit.box(1.16, 1.66, 0.98, U.plastic(0x3f395e, 0.44), [0, 0.83, 0], {
-        shell: true,
-        name: "Sun Iris-Purple Chassis Shell",
-        info: "Cutaway reveals the central packet-switched XDBus backplane, 4 SuperSPARC CPU/cache boards, and 5 hot-swap SCSI RAID-5 bays.",
-        explode: [-0.45, 0.25, 0],
-      }, srv);
+      kit.box(
+        1.16,
+        1.66,
+        0.98,
+        U.plastic(0x3f395e, 0.44),
+        [0, 0.83, 0],
+        {
+          shell: true,
+          name: "Sun Iris-Purple Chassis Shell",
+          info: "Cutaway reveals the central packet-switched XDBus backplane, 4 SuperSPARC CPU/cache boards, and 5 hot-swap SCSI RAID-5 bays.",
+          explode: [-0.45, 0.25, 0],
+        },
+        srv,
+      );
       Nt(
         kit,
         "Sun · SPARCcenter SMP",
@@ -1111,10 +1277,18 @@ function makeMachineSun90() {
       );
 
       // Centerplane PCB + 4 SuperSPARC MBus/XDBus CPU Boards + Gold Heatspreaders + MESI LEDs
-      kit.box(0.03, 1.32, 0.78, U.pcb(0x164e35), [-0.34, 0.88, 0], {
-        name: "Packet-Switched XDBus Snooping Backplane",
-        info: "High-bandwidth split-transaction snooping bus broadcasting BusRd, BusRdX, and BusUpgr coherence transactions across all SMP caches.",
-      }, srv);
+      kit.box(
+        0.03,
+        1.32,
+        0.78,
+        U.pcb(0x164e35),
+        [-0.34, 0.88, 0],
+        {
+          name: "Packet-Switched XDBus Snooping Backplane",
+          info: "High-bandwidth split-transaction snooping bus broadcasting BusRd, BusRdX, and BusUpgr coherence transactions across all SMP caches.",
+        },
+        srv,
+      );
 
       for (let cpu = 0; cpu < 4; cpu++) {
         const y = 0.82 + cpu * 0.19;
@@ -1147,29 +1321,58 @@ function makeMachineSun90() {
           },
           board,
         );
-        ps(kit, [-0.14, 0.04, 0.03], { len: 0.24, h: 0.07, name: "ECC SIMM Bank" }, board);
-        const led = kit.sphere(0.018, U.glow(0x34d399, 1.3), [0.32, y + 0.06, 0.44], {
-          name: `CPU #${cpu} MESI Coherence Lamp`,
-          info: "Glows crimson (Modified), amber (Exclusive), emerald (Shared), or dim slate (Invalid).",
-        }, srv);
+        ps(
+          kit,
+          [-0.14, 0.04, 0.03],
+          { len: 0.24, h: 0.07, name: "ECC SIMM Bank" },
+          board,
+        );
+        const led = kit.sphere(
+          0.018,
+          U.glow(0x34d399, 1.3),
+          [0.32, y + 0.06, 0.44],
+          {
+            name: `CPU #${cpu} MESI Coherence Lamp`,
+            info: "Glows crimson (Modified), amber (Exclusive), emerald (Shared), or dim slate (Invalid).",
+          },
+          srv,
+        );
         cpuLeds.push(led);
       }
 
       // 5 Hot-Swap Fast/Wide SCSI RAID-5 Drive Caddies across lower front
       for (let d = 0; d < 5; d++) {
         const dx = -0.4 + d * 0.2;
-        const caddy = kit.group([dx, 0.34, 0.34], {
-          name: `Hot-Swap SCSI RAID-5 Drive ${d}`,
-          info: "7,200 RPM Fast/Wide Differential SCSI hard drive storing striped data blocks and rotated XOR parity (D0 ⊕ D1 ⊕ D2 ⊕ D3 = P).",
-          live: () =>
-            `Disk ${d}: ${sim.disks[d].failed ? "FAILED (XOR degraded)" : "ONLINE"} · IOPS=${sim.disks[d].iops}`,
-          explode: [0, -0.1, 0.42],
-        }, srv);
+        const caddy = kit.group(
+          [dx, 0.34, 0.34],
+          {
+            name: `Hot-Swap SCSI RAID-5 Drive ${d}`,
+            info: "7,200 RPM Fast/Wide Differential SCSI hard drive storing striped data blocks and rotated XOR parity (D0 ⊕ D1 ⊕ D2 ⊕ D3 = P).",
+            live: () =>
+              `Disk ${d}: ${sim.disks[d].failed ? "FAILED (XOR degraded)" : "ONLINE"} · IOPS=${sim.disks[d].iops}`,
+            explode: [0, -0.1, 0.42],
+          },
+          srv,
+        );
         kit.box(0.17, 0.34, 0.28, U.darkAnodized(0x222733), [0, 0, 0], {}, caddy);
-        kit.cyl(0.065, 0.065, 0.02, U.alu(), [0, 0.03, -0.02], { rot: [0, 0, Math.PI / 2] }, caddy);
-        const dLed = kit.sphere(0.014, U.glow(0x34d399, 1.4), [0, 0.13, 0.148], {
-          name: `RAID Drive ${d} Status LED`,
-        }, caddy);
+        kit.cyl(
+          0.065,
+          0.065,
+          0.02,
+          U.alu(),
+          [0, 0.03, -0.02],
+          { rot: [0, 0, Math.PI / 2] },
+          caddy,
+        );
+        const dLed = kit.sphere(
+          0.014,
+          U.glow(0x34d399, 1.4),
+          [0, 0.13, 0.148],
+          {
+            name: `RAID Drive ${d} Status LED`,
+          },
+          caddy,
+        );
         diskLeds.push(dLed);
       }
 
@@ -1195,8 +1398,18 @@ function makeMachineSun90() {
         },
         desk,
       );
-      buildSculptedKeyboard(kit, [-0.08, 0.67, 0.26], { w: 0.48, d: 0.18, name: "Sun Type-5 Keyboard" }, desk);
-      buildMouse3D(kit, [0.34, 0.67, 0.26], { retro: true, name: "Sun Optical 3-Button Mouse" }, desk);
+      buildSculptedKeyboard(
+        kit,
+        [-0.08, 0.67, 0.26],
+        { w: 0.48, d: 0.18, name: "Sun Type-5 Keyboard" },
+        desk,
+      );
+      buildMouse3D(
+        kit,
+        [0.34, 0.67, 0.26],
+        { retro: true, name: "Sun Optical 3-Button Mouse" },
+        desk,
+      );
 
       drawSunConsole();
     },
@@ -1207,7 +1420,10 @@ function makeMachineSun90() {
         const total = sim.stats.hits + sim.stats.misses || 1;
         statsUi.set("bus", sim.lastBus);
         statsUi.set("hit", `${((sim.stats.hits / total) * 100).toFixed(1)}%`);
-        statsUi.set("snoop", `${sim.stats.snoops} snoops / ${sim.stats.invalidations} inv`);
+        statsUi.set(
+          "snoop",
+          `${sim.stats.snoops} snoops / ${sim.stats.invalidations} inv`,
+        );
         const failedIdx = sim.disks.findIndex((d) => d.failed);
         statsUi.set(
           "raid",
@@ -1217,10 +1433,14 @@ function makeMachineSun90() {
         statsUi.set("http", `${sim.stats.httpReqs} reqs`);
       };
 
-      const runBtn = Fe(running ? "⏸ Pause" : "▶ Run", () => {
-        running = !running;
-        runBtn.textContent = running ? "⏸ Pause" : "▶ Run";
-      }, "pri");
+      const runBtn = Fe(
+        running ? "⏸ Pause" : "▶ Run",
+        () => {
+          running = !running;
+          runBtn.textContent = running ? "⏸ Pause" : "▶ Run";
+        },
+        "pri",
+      );
 
       statsUi = Pt([
         ["bus", "Last XDBus Op"],
@@ -1385,18 +1605,10 @@ function makeMachineCloud10() {
       const [nx, ny] = pts[i];
       c.beginPath();
       c.arc(nx, ny, 44, 0, Math.PI * 2);
-      c.fillStyle = !n.alive
-        ? "#450a0a"
-        : n.role === "LEADER"
-          ? "#78350f"
-          : "#0f172a";
+      c.fillStyle = !n.alive ? "#450a0a" : n.role === "LEADER" ? "#78350f" : "#0f172a";
       c.fill();
       c.lineWidth = 4;
-      c.strokeStyle = !n.alive
-        ? "#ef4444"
-        : n.role === "LEADER"
-          ? "#fbbf24"
-          : "#38bdf8";
+      c.strokeStyle = !n.alive ? "#ef4444" : n.role === "LEADER" ? "#fbbf24" : "#38bdf8";
       c.stroke();
       c.fillStyle = "#ffffff";
       c.font = '700 16px "JetBrains Mono", monospace';
@@ -1439,11 +1651,7 @@ function makeMachineCloud10() {
       c.fillStyle = n.alive ? "#38bdf8" : "#ef4444";
       c.fillRect(bx, 598, 166 * (n.alive ? n.cpuUtil : 1), 26);
       c.fillStyle = "#e2e8f0";
-      c.fillText(
-        n.alive ? `CPU ${(n.cpuUtil * 100).toFixed(0)}%` : "OFFLINE",
-        bx,
-        652,
-      );
+      c.fillText(n.alive ? `CPU ${(n.cpuUtil * 100).toFixed(0)}%` : "OFFLINE", bx, 652);
     });
     mon.tex.needsUpdate = true;
   }
@@ -1483,12 +1691,20 @@ function makeMachineCloud10() {
         info: "21-inch Open Rack standard chassis with front cold-aisle serviceability, blind-mate 48V DC rear busbar, and top-of-rack optical Clos switching.",
       });
       // Outer perforated side shrouds (shell: true for cutaway!)
-      kit.box(0.98, 2.18, 1.04, U.darkAnodized(0x161b24), [0, 1.09, 0], {
-        shell: true,
-        name: "Perforated Rack Containment Panels",
-        info: "Cold-aisle / hot-aisle steel rack panels; cutaway exposes the 8 server sleds, QSFP-DD fiber harnesses, and rear 48V copper busbar.",
-        explode: [-0.45, 0.2, 0],
-      }, rack);
+      kit.box(
+        0.98,
+        2.18,
+        1.04,
+        U.darkAnodized(0x161b24),
+        [0, 1.09, 0],
+        {
+          shell: true,
+          name: "Perforated Rack Containment Panels",
+          info: "Cold-aisle / hot-aisle steel rack panels; cutaway exposes the 8 server sleds, QSFP-DD fiber harnesses, and rear 48V copper busbar.",
+          explode: [-0.45, 0.2, 0],
+        },
+        rack,
+      );
       // 4 structural corner posts
       for (const [px, pz] of [
         [-0.44, -0.46],
@@ -1499,11 +1715,19 @@ function makeMachineCloud10() {
         kit.box(0.05, 2.16, 0.05, U.steel(), [px, 1.08, pz], {}, rack);
       }
       // Rear 48V DC Solid Copper Busbar
-      kit.box(0.08, 2.02, 0.035, U.copper(), [0, 1.05, -0.46], {
-        name: "48V DC Blind-Mate Copper Busbar",
-        info: "Delivers 98%-efficient rectified 48V DC power directly to every compute sled without per-server AC cords.",
-        explode: [0, 0, -0.45],
-      }, rack);
+      kit.box(
+        0.08,
+        2.02,
+        0.035,
+        U.copper(),
+        [0, 1.05, -0.46],
+        {
+          name: "48V DC Blind-Mate Copper Busbar",
+          info: "Delivers 98%-efficient rectified 48V DC power directly to every compute sled without per-server AC cords.",
+          explode: [0, 0, -0.45],
+        },
+        rack,
+      );
 
       // 2x Top-of-Rack Leaf & Spine Optical Switches at top of rack
       for (let sw = 0; sw < 2; sw++) {
@@ -1515,38 +1739,77 @@ function makeMachineCloud10() {
           U.metal(0x1f3a52, 0.35),
           [0, sy, 0],
           {
-            name: sw === 1 ? "400GbE Clos Spine Optical Switch" : "Top-of-Rack (ToR) QSFP-DD Leaf Switch",
+            name:
+              sw === 1
+                ? "400GbE Clos Spine Optical Switch"
+                : "Top-of-Rack (ToR) QSFP-DD Leaf Switch",
             info: "25.6 Tbps merchant-silicon packet switch with 32× 400GbE QSFP-DD optical transceivers providing non-blocking Equal-Cost Multi-Path (ECMP) fabric.",
             explode: [0, 0.32 + sw * 0.12, 0],
           },
           rack,
         );
         for (let p = 0; p < 8; p++) {
-          kit.box(0.06, 0.03, 0.04, U.glow(0x38bdf8, 1.2), [-0.32 + p * 0.09, 0, 0.43], {}, swBox);
+          kit.box(
+            0.06,
+            0.03,
+            0.04,
+            U.glow(0x38bdf8, 1.2),
+            [-0.32 + p * 0.09, 0, 0.43],
+            {},
+            swBox,
+          );
         }
       }
 
       // 8 Compute Sleds (Bottom 5 = Raft Nodes 0..4, Top 3 = Stateless Worker Pods)
       for (let s = 0; s < 8; s++) {
         const sy = 0.24 + s * 0.19;
-        const sled = kit.group([0, sy, 0], {
-          name: s < 5 ? `Raft Consensus Compute Sled N${s}` : `Container Worker Sled W${s - 5}`,
-          info:
-            s < 5
-              ? `Dual-socket Xeon blade storing replicated etcd/Raft consensus state on NVMe; currently ${sim.nodes[s].role}.`
-              : "Stateless microservice container blade scheduled via Borg/Kubernetes bin-packing.",
-          live:
-            s < 5
-              ? () =>
-                  `Node N${s}: ${sim.nodes[s].alive ? sim.nodes[s].role : "PARTITIONED"} · Term=${sim.nodes[s].term} · Commit=${sim.nodes[s].commitIndex}`
-              : () => "Stateless Pod Pool · 400GbE RoCEv2",
-          explode: [0, 0, 0.42],
-        }, rack);
+        const sled = kit.group(
+          [0, sy, 0],
+          {
+            name:
+              s < 5
+                ? `Raft Consensus Compute Sled N${s}`
+                : `Container Worker Sled W${s - 5}`,
+            info:
+              s < 5
+                ? `Dual-socket Xeon blade storing replicated etcd/Raft consensus state on NVMe; currently ${sim.nodes[s].role}.`
+                : "Stateless microservice container blade scheduled via Borg/Kubernetes bin-packing.",
+            live:
+              s < 5
+                ? () =>
+                    `Node N${s}: ${sim.nodes[s].alive ? sim.nodes[s].role : "PARTITIONED"} · Term=${sim.nodes[s].term} · Commit=${sim.nodes[s].commitIndex}`
+                : () => "Stateless Pod Pool · 400GbE RoCEv2",
+            explode: [0, 0, 0.42],
+          },
+          rack,
+        );
         kit.box(0.84, 0.13, 0.88, U.metal(0x28303d, 0.44), [0, 0, 0], {}, sled);
         kit.box(0.76, 0.014, 0.72, U.pcb(0x174e36), [0, 0.02, -0.02], {}, sled);
-        vn(kit, 0.18, 0.18, 0.06, [-0.18, 0.03, -0.04], { name: "Socket-0 Xeon Heatsink" }, sled);
-        vn(kit, 0.18, 0.18, 0.06, [0.18, 0.03, -0.04], { name: "Socket-1 Xeon Heatsink" }, sled);
-        ps(kit, [0, 0.03, -0.04], { len: 0.14, h: 0.055, name: "DDR4 ECC DIMM Channel" }, sled);
+        vn(
+          kit,
+          0.18,
+          0.18,
+          0.06,
+          [-0.18, 0.03, -0.04],
+          { name: "Socket-0 Xeon Heatsink" },
+          sled,
+        );
+        vn(
+          kit,
+          0.18,
+          0.18,
+          0.06,
+          [0.18, 0.03, -0.04],
+          { name: "Socket-1 Xeon Heatsink" },
+          sled,
+        );
+        ps(
+          kit,
+          [0, 0.03, -0.04],
+          { len: 0.14, h: 0.055, name: "DDR4 ECC DIMM Channel" },
+          sled,
+        );
         ni(kit, 0.045, [-0.24, 0.02, 0.34], {}, sled);
         ni(kit, 0.045, [0.24, 0.02, 0.34], {}, sled);
 
@@ -1606,10 +1869,14 @@ function makeMachineCloud10() {
         statsUi.set("fabric", "25.6 Tbps Clos");
       };
 
-      const runBtn = Fe(running ? "⏸ Pause" : "▶ Run", () => {
-        running = !running;
-        runBtn.textContent = running ? "⏸ Pause" : "▶ Run";
-      }, "pri");
+      const runBtn = Fe(
+        running ? "⏸ Pause" : "▶ Run",
+        () => {
+          running = !running;
+          runBtn.textContent = running ? "⏸ Pause" : "▶ Run";
+        },
+        "pri",
+      );
 
       statsUi = Pt([
         ["lead", "Raft Leader"],
@@ -1686,11 +1953,7 @@ function makeMachineCloud10() {
       }
       sledBars.forEach((bar, i) => {
         const n = sim.nodes[i];
-        const col = !n.alive
-          ? 0xff3b3b
-          : n.role === "LEADER"
-            ? 0xfbbf24
-            : 0x38bdf8;
+        const col = !n.alive ? 0xff3b3b : n.role === "LEADER" ? 0xfbbf24 : 0x38bdf8;
         bar.material.color.setHex(col);
         bar.material.emissive.setHex(col);
       });
@@ -1848,76 +2111,137 @@ function makeMachineZmain20() {
         name: "Dual-Frame Enterprise Mainframe Monolith",
         info: "19-inch dual-frame seismic-rated enterprise cabinet with obsidian lattice doors, sapphire status blades, N+N bulk power, and closed-loop cooling.",
       });
-      kit.box(1.26, 2.16, 1.06, U.darkAnodized(0x11151d), [0, 1.08, 0], {
-        shell: true,
-        name: "Obsidian Lattice Acoustic Doors",
-        info: "Precision-machined matte-black triangular-lattice doors; cutaway reveals the 4 Telum CPC drawers, Virtual-L4 interconnect ring, RAIM memory, and FICON/Crypto I/O.",
-        explode: [-0.48, 0.2, 0.35],
-      }, frame);
+      kit.box(
+        1.26,
+        2.16,
+        1.06,
+        U.darkAnodized(0x11151d),
+        [0, 1.08, 0],
+        {
+          shell: true,
+          name: "Obsidian Lattice Acoustic Doors",
+          info: "Precision-machined matte-black triangular-lattice doors; cutaway reveals the 4 Telum CPC drawers, Virtual-L4 interconnect ring, RAIM memory, and FICON/Crypto I/O.",
+          explode: [-0.48, 0.2, 0.35],
+        },
+        frame,
+      );
 
       // Iconic glowing sapphire vertical geometric light bars on front doors
       for (const lx of [-0.56, 0.0, 0.56]) {
-        kit.box(0.022, 1.96, 0.025, U.glow(0x2563eb, 1.45), [lx, 1.08, 0.54], {
-          shell: true,
-          name: "Sapphire System Health Light Blade",
-        }, frame);
+        kit.box(
+          0.022,
+          1.96,
+          0.025,
+          U.glow(0x2563eb, 1.45),
+          [lx, 1.08, 0.54],
+          {
+            shell: true,
+            name: "Sapphire System Health Light Blade",
+          },
+          frame,
+        );
       }
 
       // 4 Central Processor Complex (CPC) Drawers + Copper Coldplates + Virtual L4 Ring
       for (let d = 0; d < 4; d++) {
         const dy = 0.86 + d * 0.22;
-        const drw = kit.group([0, dy, 0], {
-          name: `Telum CPC Processor Drawer ${d}`,
-          info: "Contains 4 dual-chip Telum modules (32 5.2 GHz cores + dedicated on-chip matrix AI accelerator + 1 GB unified L2/Virtual-L3/L4 cache per drawer).",
-          live: () =>
-            `Drawer ${d}: ${sim.drawers[d].clockGhz} GHz · vL4 Hits=${sim.drawers[d].l4VirtualHits}`,
-          explode: [0.42, (d - 1.5) * 0.08, 0],
-        }, frame);
+        const drw = kit.group(
+          [0, dy, 0],
+          {
+            name: `Telum CPC Processor Drawer ${d}`,
+            info: "Contains 4 dual-chip Telum modules (32 5.2 GHz cores + dedicated on-chip matrix AI accelerator + 1 GB unified L2/Virtual-L3/L4 cache per drawer).",
+            live: () =>
+              `Drawer ${d}: ${sim.drawers[d].clockGhz} GHz · vL4 Hits=${sim.drawers[d].l4VirtualHits}`,
+            explode: [0.42, (d - 1.5) * 0.08, 0],
+          },
+          frame,
+        );
         kit.box(1.08, 0.16, 0.88, U.metal(0x242c3a, 0.4), [0, 0, 0], {}, drw);
         kit.box(0.96, 0.016, 0.76, U.pcb(0x143d59), [0, -0.02, 0], {}, drw);
         for (const cx of [-0.26, 0.26]) {
-          vn(kit, 0.26, 0.24, 0.075, [cx, 0.01, 0], {
-            base: U.copper(),
-            mat: U.copper(),
-            name: "Telum Dual-Chip Brazed Copper Coldplate",
-            info: "High-mass copper heatsink cooling the 7nm 22.5-billion-transistor Telum dual-chip package.",
-          }, drw);
+          vn(
+            kit,
+            0.26,
+            0.24,
+            0.075,
+            [cx, 0.01, 0],
+            {
+              base: U.copper(),
+              mat: U.copper(),
+              name: "Telum Dual-Chip Brazed Copper Coldplate",
+              info: "High-mass copper heatsink cooling the 7nm 22.5-billion-transistor Telum dual-chip package.",
+            },
+            drw,
+          );
         }
       }
 
       // Luminous Virtual L4 Ring Interconnect linking all 4 CPC drawers
-      ringMesh = kit.torus(0.32, 0.018, U.glow(0x38bdf8, 1.4), [0, 1.19, 0.36], {
-        name: "2 GB Virtual L3/L4 Coherent Ring Bus",
-        info: "320 GB/s bidirectional ring pooling victim lines across idle L2 caches on every chip into a massive 2 GB virtual L4 cache.",
-        explode: [0, 0, 0.45],
-      }, frame);
+      ringMesh = kit.torus(
+        0.32,
+        0.018,
+        U.glow(0x38bdf8, 1.4),
+        [0, 1.19, 0.36],
+        {
+          name: "2 GB Virtual L3/L4 Coherent Ring Bus",
+          info: "320 GB/s bidirectional ring pooling victim lines across idle L2 caches on every chip into a massive 2 GB virtual L4 cache.",
+          explode: [0, 0, 0.45],
+        },
+        frame,
+      );
 
       // 5-Channel RAIM Memory Drawer below CPC drawers
-      const raimGrp = kit.group([0, 0.56, 0], {
-        name: "5-Channel RAIM Fault-Tolerant Memory Drawer",
-        info: "Redundant Array of Independent Memory (RAIM): stripes cache lines across 4 independent DDR5 channels + 1 dedicated XOR parity channel to survive entire DIMM or memory-controller failures.",
-        live: () => `RAIM Repairs=${sim.raimRepairs} · Zero Dropped TX`,
-        explode: [-0.42, -0.1, 0.25],
-      }, frame);
+      const raimGrp = kit.group(
+        [0, 0.56, 0],
+        {
+          name: "5-Channel RAIM Fault-Tolerant Memory Drawer",
+          info: "Redundant Array of Independent Memory (RAIM): stripes cache lines across 4 independent DDR5 channels + 1 dedicated XOR parity channel to survive entire DIMM or memory-controller failures.",
+          live: () => `RAIM Repairs=${sim.raimRepairs} · Zero Dropped TX`,
+          explode: [-0.42, -0.1, 0.25],
+        },
+        frame,
+      );
       kit.box(1.08, 0.2, 0.86, U.darkAnodized(0x1c2330), [0, 0, 0], {}, raimGrp);
       for (let ch = 0; ch < 5; ch++) {
         const rx = -0.36 + ch * 0.18;
-        ps(kit, [rx, -0.02, 0.05], { len: 0.14, h: 0.1, spreader: 0x3b82f6, name: `RAIM Channel ${ch} DIMMs` }, raimGrp);
-        const led = kit.sphere(0.016, U.glow(0x34d399, 1.4), [rx, 0.06, 0.44], {
-          name: `RAIM Channel ${ch} Health LED`,
-        }, raimGrp);
+        ps(
+          kit,
+          [rx, -0.02, 0.05],
+          { len: 0.14, h: 0.1, spreader: 0x3b82f6, name: `RAIM Channel ${ch} DIMMs` },
+          raimGrp,
+        );
+        const led = kit.sphere(
+          0.016,
+          U.glow(0x34d399, 1.4),
+          [rx, 0.06, 0.44],
+          {
+            name: `RAIM Channel ${ch} Health LED`,
+          },
+          raimGrp,
+        );
         raimLeds.push(led);
       }
 
       // PCIe Gen4 FICON Storage & Crypto Express8S Tamper-Responding HSM Drawer at bottom
-      const ioGrp = kit.group([0, 0.26, 0], {
-        name: "PCIe FICON & Crypto Express HSM I/O Drawer",
-        info: "FIPS 140-3 Level 4 tamper-responding Hardware Security Modules (quantum-safe CRYSTALS-Kyber/Dilithium + AES) and 32 Gbps FICON SAN channels.",
-        explode: [0, -0.22, 0.35],
-      }, frame);
+      const ioGrp = kit.group(
+        [0, 0.26, 0],
+        {
+          name: "PCIe FICON & Crypto Express HSM I/O Drawer",
+          info: "FIPS 140-3 Level 4 tamper-responding Hardware Security Modules (quantum-safe CRYSTALS-Kyber/Dilithium + AES) and 32 Gbps FICON SAN channels.",
+          explode: [0, -0.22, 0.35],
+        },
+        frame,
+      );
       kit.box(1.08, 0.28, 0.88, U.metal(0x202734, 0.45), [0, 0, 0], {}, ioGrp);
       for (let c = 0; c < 6; c++) {
-        Gs(kit, 0.12, 0.18, [-0.38 + c * 0.15, -0.08, 0.1], { pcb: 0x1d4d38, name: "Crypto Express8S / FICON Card" }, ioGrp);
+        Gs(
+          kit,
+          0.12,
+          0.18,
+          [-0.38 + c * 0.15, -0.08, 0.1],
+          { pcb: 0x1d4d38, name: "Crypto Express8S / FICON Card" },
+          ioGrp,
+        );
       }
 
       // 2. ENTERPRISE HMC OPERATIONS CONSOLE (Right)
@@ -1947,16 +2271,25 @@ function makeMachineZmain20() {
         const badIdx = sim.raimChannels.findIndex((ok) => !ok);
         statsUi.set(
           "raim",
-          badIdx >= 0 ? `CH${badIdx} FAULT -> REPAIRED (${sim.raimRepairs})` : "5/5 OPTIMAL",
+          badIdx >= 0
+            ? `CH${badIdx} FAULT -> REPAIRED (${sim.raimRepairs})`
+            : "5/5 OPTIMAL",
         );
-        statsUi.set("vl4", `${sim.drawers.reduce((s, d) => s + d.l4VirtualHits, 0)} hits`);
+        statsUi.set(
+          "vl4",
+          `${sim.drawers.reduce((s, d) => s + d.l4VirtualHits, 0)} hits`,
+        );
         statsUi.set("ras", "99.99999% (7 Nines)");
       };
 
-      const runBtn = Fe(running ? "⏸ Pause" : "▶ Run", () => {
-        running = !running;
-        runBtn.textContent = running ? "⏸ Pause" : "▶ Run";
-      }, "pri");
+      const runBtn = Fe(
+        running ? "⏸ Pause" : "▶ Run",
+        () => {
+          running = !running;
+          runBtn.textContent = running ? "⏸ Pause" : "▶ Run";
+        },
+        "pri",
+      );
 
       statsUi = Pt([
         ["tx", "ACID Transactions"],
@@ -2040,6 +2373,479 @@ function makeMachineZmain20() {
         ok: z.droppedTx === 0 && z.raimRepairs > 0 && z.ledgerBalance === 100000000,
         repairs: z.raimRepairs,
       };
+    },
+  };
+  return machine;
+}
+
+function makeMachineVax78() {
+  const sim = new VaxVirtualMemorySystem();
+  let running = true;
+  let stepAcc = 0;
+  let mon = null;
+  let rpDiskMesh = null;
+  let sbiLeds = [];
+  let statsUi = null;
+
+  function drawVaxConsole() {
+    if (!mon) return;
+    const c = mon.ctx;
+    const W = 1024,
+      H = 768;
+    c.fillStyle = "#060b14";
+    c.fillRect(0, 0, W, H);
+
+    c.fillStyle = "#0c4a6e";
+    c.fillRect(16, 14, W - 32, 52);
+    c.fillStyle = "#f8fafc";
+    c.font = '700 20px "JetBrains Mono", monospace';
+    const la = sim.lastAccess || {
+      vaddr: 0x000002a4,
+      vpn: 1,
+      pfn: 0,
+      tlbHit: false,
+      pageFault: true,
+    };
+    c.fillText(
+      `DEC VAX-11/780 (1.0 MIPS) + 4.2BSD UNIX · POLICY=${sim.policy} (${sim.numFrames} FRAMES) · FAULTS=${sim.pageFaults}`,
+      26,
+      47,
+    );
+
+    // Left: 32-Bit P0/P1/S0 Virtual Memory, Associative TB (TLB) & Belady's Anomaly!
+    c.fillStyle = "#0b1422";
+    c.fillRect(20, 82, 512, 410);
+    c.strokeStyle = "#38bdf8";
+    c.lineWidth = 2;
+    c.strokeRect(20, 82, 512, 410);
+    c.fillStyle = "#7dd3fc";
+    c.font = '700 16px "JetBrains Mono", monospace';
+    c.fillText("VAX 32-BIT DEMAND PAGING & ASSOCIATIVE TLB", 36, 112);
+
+    c.fillStyle = "#e2e8f0";
+    c.font = '600 14px "JetBrains Mono", monospace';
+    c.fillText(
+      `VA 0x${la.vaddr.toString(16).toUpperCase().padStart(8, "0")} -> VPN ${la.vpn} -> PFN ${la.pfn} [${la.tlbHit ? "TLB HIT ✓" : la.pageFault ? "PAGE FAULT!" : "PT WALK"}]`,
+      36,
+      144,
+    );
+
+    // Physical Page Frames Table
+    for (let f = 0; f < 4; f++) {
+      const activeSlot = f < sim.numFrames;
+      const fr = sim.frames[f];
+      const fy = 166 + f * 48;
+      c.fillStyle = !activeSlot
+        ? "#090d14"
+        : fr && fr.vpn === la.vpn
+          ? "rgba(56, 189, 248, 0.28)"
+          : "#111c2d";
+      c.fillRect(36, fy, 478, 40);
+      c.strokeStyle = activeSlot ? "#38bdf8" : "#1e293b";
+      c.strokeRect(36, fy, 478, 40);
+      c.fillStyle = activeSlot ? "#f8fafc" : "#475569";
+      c.font = '600 14px "JetBrains Mono", monospace';
+      c.fillText(
+        !activeSlot
+          ? `PFN ${f}: <DISABLED IN 3-FRAME BELADY MODE>`
+          : fr
+            ? `PFN ${f}: VPN=${fr.vpn}  UseBit=${fr.useBit}  LastRef=#${fr.lastUsed}`
+            : `PFN ${f}: <FREE PHYSICAL FRAME>`,
+        48,
+        fy + 25,
+      );
+    }
+
+    // Live Belady's Anomaly Proof Box!
+    c.fillStyle = "#172554";
+    c.fillRect(36, 374, 478, 102);
+    c.strokeStyle = "#fbbf24";
+    c.strokeRect(36, 374, 478, 102);
+    c.fillStyle = "#fde047";
+    c.font = '700 14px "JetBrains Mono", monospace';
+    c.fillText("BELADY'S ANOMALY BENCHMARK [1,2,3,4,1,2,5,1,2,3,4,5]:", 48, 398);
+    c.fillStyle = "#e2e8f0";
+    c.font = '600 14px "JetBrains Mono", monospace';
+    c.fillText(
+      "• FIFO: 3 Frames = 9 Faults  vs  4 Frames = 10 Faults! (WORSE!)",
+      48,
+      426,
+    );
+    c.fillStyle = "#34d399";
+    c.fillText(
+      "• LRU : 3 Frames = 10 Faults vs  4 Frames = 8 Faults  (Monotonic)",
+      48,
+      454,
+    );
+
+    // Right: 4.2BSD UNIX TCP/IP Sliding-Window AIMD Congestion Sawtooth!
+    c.fillStyle = "#0b1422";
+    c.fillRect(548, 82, 456, 410);
+    c.strokeStyle = "#34d399";
+    c.strokeRect(548, 82, 456, 410);
+    c.fillStyle = "#6ee7b7";
+    c.font = '700 16px "JetBrains Mono", monospace';
+    c.fillText("4.2BSD TCP/IP SOCKETS & AIMD SAWTOOTH", 564, 112);
+
+    c.fillStyle = "#cbd5e1";
+    c.font = '600 14px "JetBrains Mono", monospace';
+    c.fillText(
+      `cwnd = ${sim.cwnd} MSS · ssthresh = ${sim.ssthresh} · Seq = ${sim.tcpSeq}`,
+      564,
+      144,
+    );
+
+    // Plot cwnd sawtooth history
+    c.fillStyle = "#08101c";
+    c.fillRect(564, 166, 422, 230);
+    c.strokeStyle = "rgba(251, 191, 36, 0.55)";
+    c.setLineDash([5, 5]);
+    const thY = 386 - (sim.ssthresh / 32) * 200;
+    c.beginPath();
+    c.moveTo(564, thY);
+    c.lineTo(986, thY);
+    c.stroke();
+    c.setLineDash([]);
+
+    c.strokeStyle = "#34d399";
+    c.lineWidth = 3;
+    c.beginPath();
+    sim.cwndHistory.forEach((wVal, idx) => {
+      const px = 574 + (idx / Math.max(1, sim.cwndHistory.length - 1)) * 402;
+      const py = 386 - (wVal / 32) * 200;
+      if (idx === 0) c.moveTo(px, py);
+      else c.lineTo(px, py);
+    });
+    c.stroke();
+
+    c.fillStyle = "#fde047";
+    c.font = '600 13px "JetBrains Mono", monospace';
+    c.fillText("Dashed = ssthresh · Green = TCP cwnd (Slow Start + AIMD)", 564, 424);
+    c.fillStyle = "#94a3b8";
+    c.fillText(`3-Way SYN/SYN-ACK/ACK · Losses: ${sim.tcpLosses}`, 564, 454);
+
+    // Bottom Historical Impact
+    c.fillStyle = "#0b1422";
+    c.fillRect(20, 510, W - 40, 232);
+    c.strokeStyle = "#fbbf24";
+    c.strokeRect(20, 510, W - 40, 232);
+    c.fillStyle = "#fde047";
+    c.font = '700 16px "JetBrains Mono", monospace';
+    c.fillText(
+      "THE CANONICAL 1.0 MIPS BENCHMARK, TEXTBOOK VIRTUAL MEMORY & BIRTHPLACE OF BSD INTERNET",
+      36,
+      542,
+    );
+    c.fillStyle = "#cbd5e1";
+    c.font = '600 15px "JetBrains Mono", monospace';
+    c.fillText(
+      "• Extended PDP-11 from 16-bit (64 KB) to 32-bit (4 GB Virtual Address Space: P0 user, P1 stack, S0 kernel).",
+      36,
+      582,
+    );
+    c.fillText(
+      "• UC Berkeley's Bill Joy built 3BSD/4.2BSD UNIX on the VAX-11/780: virtual memory paging, sockets(), & DARPA TCP/IP!",
+      36,
+      620,
+    );
+    c.fillText(
+      "• Orthogonal 304-instruction CISC ISA + 6.1 KB Writable Control Store inspired the Stanford/Berkeley RISC debate.",
+      36,
+      658,
+    );
+    mon.tex.needsUpdate = true;
+  }
+
+  const machine = {
+    id: "vax78",
+    era: "1978",
+    short: "DEC VAX-11/780",
+    name: "DEC VAX-11/780 Virtual-Memory & 4.2BSD TCP/IP Server",
+    group: "servers",
+    view0: 0.38,
+    blurb:
+      "The canonical 1.0-MIPS 32-bit superminicomputer and birthplace of the modern Internet stack (4.2BSD UNIX sockets & TCP/IP): introduced a 4 GB P0/P1/S0 virtual address space, hardware 2-level page tables with associative Translation Buffer (TLB), Demand Paging (demonstrating Belady's Anomaly live!), and Synchronous Backplane Interconnect (SBI).",
+    diagram: {
+      nodes: [
+        { id: "cpu", label: "74S TTL VAX CPU", x: 0.18, y: 0.26, color: "#38bdf8" },
+        { id: "tlb", label: "TB / 2-Lvl Page Tbl", x: 0.52, y: 0.26, color: "#fbbf24" },
+        { id: "sbi", label: "13.3 MB/s Sync SBI", x: 0.52, y: 0.62, color: "#60a5fa" },
+        { id: "rp06", label: "RP06 Swap Disk Pack", x: 0.18, y: 0.8, color: "#f97316" },
+        { id: "tcp", label: "4.2BSD TCP/IP AIMD", x: 0.86, y: 0.62, color: "#34d399" },
+      ],
+      edges: [
+        ["cpu", "tlb", "32b VA->PFN"],
+        ["tlb", "sbi", "MS780 ECC"],
+        ["sbi", "rp06", "Demand Page"],
+        ["sbi", "tcp", "BSD Sockets"],
+      ],
+    },
+    build(kit) {
+      sbiLeds = [];
+      // 1. DEC VAX-11/780 CREAM & CORNFLOWER-BLUE MAIN CABINET (Left)
+      const cab = kit.group([-0.62, 0, 0], {
+        name: "DEC VAX-11/780 CPU & SBI Cabinet",
+        info: "5-MHz Schottky TTL 32-bit superminicomputer cabinet housing the 29-slot Synchronous Backplane Interconnect (SBI) card cage, FP780 accelerator, and LSI-11 console.",
+      });
+      kit.box(
+        0.92,
+        1.56,
+        0.78,
+        U.plastic(0xdad4c6, 0.45),
+        [0, 0.78, 0],
+        {
+          shell: true,
+          name: "VAX-11/780 Cream Sheet-Metal Enclosure",
+          explode: [-0.36, 0, 0],
+        },
+        cab,
+      );
+
+      // Cornflower-blue DEC accent fascia + Perforated Airflow Plenum Door!
+      kit.box(
+        0.88,
+        0.22,
+        0.04,
+        U.plastic(0x2563eb, 0.42),
+        [0, 1.4, 0.39],
+        {
+          name: "Digital VAX-11/780 Cornflower-Blue Nameplate Fascia",
+        },
+        cab,
+      );
+      kit.box(
+        0.86,
+        1.18,
+        0.03,
+        U.perfMesh(0x2b3442),
+        [0, 0.66, 0.39],
+        {
+          shell: true,
+          name: "Perforated Honeycomb Blower Intake Door",
+          explode: [0, 0, 0.42],
+        },
+        cab,
+      );
+
+      // Internal 29-Slot SBI Card Cage (Schottky TTL CPU, Associative TB/TLB, FP780, MS780 ECC RAM!)
+      const cage = kit.group(
+        [0, 0.84, 0],
+        {
+          name: "29-Slot Synchronous Backplane Interconnect (SBI) Card Cage",
+          info: "32-bit synchronous pended bus transferring 13.3 MB/s between the KA780 CPU, Translation Buffer, FP780 floating-point accelerator, and MS780 ECC MOS memory.",
+          live: () => `Faults=${sim.pageFaults} · TLB Hits=${sim.tlbHits}`,
+          explode: [0, 0.22, 0.28],
+        },
+        cab,
+      );
+      for (let b = 0; b < 12; b++) {
+        const bx = -0.36 + b * 0.065;
+        kit.box(
+          0.022,
+          0.56,
+          0.54,
+          U.pcb(b < 4 ? 0x1e5638 : 0x1c3d5a),
+          [bx, 0, 0],
+          {
+            name:
+              b === 0
+                ? "KA780 Microcoded 32-Bit CISC CPU & WCS Board"
+                : b === 1
+                  ? "Hardware Associative Translation Buffer (TLB) Card"
+                  : b < 5
+                    ? `FP780 Floating-Point Accelerator Board ${b - 1}`
+                    : `MS780 64K-MOS ECC Main Memory Array ${b - 4}`,
+          },
+          cage,
+        );
+        const led = kit.sphere(0.01, U.led(0xfbbf24), [bx, 0.29, 0.275], {}, cage);
+        sbiLeds.push(led);
+      }
+
+      // Adjacent DEC RP06 Top-Loading Swap Disk Pack Drive!
+      const rp06 = kit.group([0.1, 0, -0.04], {
+        name: "DEC RP06 176 MB MASSBUS Swap & Filesystem Disk Drive",
+        info: "Stores 4.2BSD UNIX root/usr partitions and services demand-paged virtual memory page faults via MASSBUS DMA.",
+        explode: [0.18, 0, -0.32],
+      });
+      kit.box(
+        0.46,
+        0.96,
+        0.62,
+        U.plastic(0xd8d1c3, 0.46),
+        [0, 0.48, 0],
+        {
+          shell: true,
+          name: "RP06 Washing-Machine Disk Cabinet",
+        },
+        rp06,
+      );
+      kit.cyl(
+        0.18,
+        0.18,
+        0.08,
+        U.glass(0x93c5fd, 0.28),
+        [0, 0.99, 0],
+        {
+          shell: true,
+          name: "RP06 Top-Load Smoked Acrylic Cover",
+        },
+        rp06,
+      );
+      rpDiskMesh = kit.cyl(
+        0.16,
+        0.16,
+        0.05,
+        U.copper(),
+        [0, 0.96, 0],
+        {
+          name: "3,600 RPM Multi-Platter Oxide Disk Pack",
+        },
+        rp06,
+      );
+
+      // 2. RIGHT CONSOLE MONITOR (facing +Z!)
+      mon = buildMonitor3D(kit, [0.86, 0.64, 0.12], {
+        w: 0.94,
+        h: 0.64,
+        rot: [0, 0.04, 0],
+        name: "VAX Virtual Memory, Belady's Anomaly & 4.2BSD TCP Console",
+        explode: [0.36, 0, 0],
+      });
+      kit.box(1.02, 0.64, 0.54, U.darkAnodized(0x111a26), [0.86, 0.32, 0.12], {
+        rot: [0, 0.04, 0],
+      });
+
+      drawVaxConsole();
+    },
+
+    ui(el, ctx) {
+      const syncStats = () => {
+        if (!statsUi) return;
+        const hitPct = sim.accessCount
+          ? ((sim.tlbHits / sim.accessCount) * 100).toFixed(1)
+          : "0.0";
+        statsUi.set("pol", `${sim.policy} (${sim.numFrames} Frames)`);
+        statsUi.set("flt", `${sim.pageFaults} / ${sim.accessCount} Refs`);
+        statsUi.set("tlb", `${hitPct}% Hit Rate`);
+        statsUi.set("bel", "FIFO: 9 (3f) -> 10 (4f)!");
+        statsUi.set("cwnd", `${sim.cwnd} MSS (th=${sim.ssthresh})`);
+        statsUi.set("mips", "1.00 VAX MIPS Ref");
+      };
+
+      const runBtn = Fe(
+        running ? "⏸ Pause" : "▶ Run",
+        () => {
+          running = !running;
+          runBtn.textContent = running ? "⏸ Pause" : "▶ Run";
+        },
+        "pri",
+      );
+
+      const frameBtn = Fe(
+        `Frames: ${sim.numFrames} Physical`,
+        () => {
+          sim.numFrames = sim.numFrames === 3 ? 4 : 3;
+          frameBtn.textContent = `Frames: ${sim.numFrames} Physical`;
+          sim.resetVm();
+          for (const vpn of sim.beladyTrace) sim.accessVirtualPage(vpn, 0);
+          if (ctx.diagram) ctx.diagram.pulse("sbi", "rp06", "#f97316");
+          drawVaxConsole();
+          syncStats();
+        },
+        "pri",
+      );
+
+      statsUi = Pt([
+        ["pol", "Page Policy"],
+        ["flt", "Demand Faults"],
+        ["tlb", "Assoc. TB/TLB"],
+        ["bel", "Belady Anomaly"],
+        ["cwnd", "BSD TCP cwnd"],
+        ["mips", "ISA Speed Ref"],
+      ]);
+
+      el.append(
+        Ie(
+          "32-Bit Demand Paging, Belady's Anomaly & 4.2BSD TCP/IP AIMD",
+          q(
+            "div",
+            { class: "row" },
+            runBtn,
+            frameBtn,
+            Fe("Run Full Belady Trace", () => {
+              running = false;
+              runBtn.textContent = "▶ Run";
+              sim.resetVm();
+              for (const vpn of sim.beladyTrace) sim.accessVirtualPage(vpn, 0);
+              hi("seek", { d: 0.6, min: 0.04 });
+              drawVaxConsole();
+              syncStats();
+            }),
+            Fe("Inject TCP Loss", () => {
+              sim.stepTcpRtt(true);
+              if (ctx.diagram) ctx.diagram.pulse("sbi", "tcp", "#ef4444");
+              drawVaxConsole();
+              syncStats();
+            }),
+          ),
+          q(
+            "div",
+            { class: "row" },
+            st(
+              [
+                ["CLOCK", "Replacement: VAX/BSD Second-Chance CLOCK"],
+                ["FIFO", "Replacement: FIFO Queue (Exhibits Belady's Anomaly!)"],
+                ["LRU", "Replacement: True Stack LRU (Anomaly-Free)"],
+              ],
+              sim.policy,
+              (val) => {
+                sim.policy = val;
+                sim.resetVm();
+                for (const vpn of sim.beladyTrace) sim.accessVirtualPage(vpn, 0);
+                drawVaxConsole();
+                syncStats();
+              },
+            ),
+          ),
+          statsUi,
+        ),
+      );
+      machine._syncStats = syncStats;
+      syncStats();
+    },
+
+    update(dt, t, ctx) {
+      if (rpDiskMesh) rpDiskMesh.rotation.y += dt * 22;
+      if (running) {
+        stepAcc += dt * 2.4;
+        while (stepAcc >= 1) {
+          stepAcc -= 1;
+          const res = sim.step();
+          if (ctx.diagram) {
+            ctx.diagram.pulse("cpu", "tlb", "#38bdf8");
+            if (res.vm.pageFault) ctx.diagram.pulse("sbi", "rp06", "#f97316");
+            ctx.diagram.pulse("sbi", "tcp", "#34d399");
+          }
+          drawVaxConsole();
+          if (machine._syncStats) machine._syncStats();
+        }
+      }
+      sbiLeds.forEach((led, idx) => {
+        led.material.emissiveIntensity =
+          ((sim.accessCount + idx) % 4 === 0 ? 1.4 : 0.12) + 0.2 * Math.sin(t * 6 + idx);
+      });
+    },
+
+    isRunning: () => running,
+    sim,
+    test() {
+      const v = new VaxVirtualMemorySystem();
+      const f3 = v.runBeladyBenchmark("FIFO", 3);
+      const f4 = v.runBeladyBenchmark("FIFO", 4);
+      const l3 = v.runBeladyBenchmark("LRU", 3);
+      const l4 = v.runBeladyBenchmark("LRU", 4);
+      return { ok: f4 > f3 && l4 < l3, fifo3: f3, fifo4: f4 };
     },
   };
   return machine;

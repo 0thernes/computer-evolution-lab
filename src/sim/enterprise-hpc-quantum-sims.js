@@ -443,11 +443,17 @@ DONE  ST    R2,NETOUT
       let out = "";
       if (cmd === "ps") {
         out = this.procs
-          .map((p) => `PID ${String(p.pid).padStart(2)}  ${p.state.padEnd(4)}  TIME ${p.cpu}  ${p.name}`)
+          .map(
+            (p) =>
+              `PID ${String(p.pid).padStart(2)}  ${p.state.padEnd(4)}  TIME ${p.cpu}  ${p.name}`,
+          )
           .join("\n");
       } else if (cmd.startsWith("ls")) {
         out = this.inodes
-          .map((n) => `${String(n.ino).padStart(3)} ${n.mode} ${String(n.size).padStart(6)} ${n.path}`)
+          .map(
+            (n) =>
+              `${String(n.ino).padStart(3)} ${n.mode} ${String(n.size).padStart(6)} ${n.path}`,
+          )
           .join("\n");
       } else if (cmd === "fork") {
         const nextPid = 30 + this.procs.length * 3;
@@ -823,7 +829,7 @@ DONE  ST    R2,NETOUT
       this.ledgerBalance = this.ledgerBalance - delta + delta;
 
       // Virtual L4 ring coherency probes across the 4 processor drawers
-      const srcDrawer = (this.totalTx / batch) % 4 | 0;
+      const srcDrawer = ((this.totalTx / batch) % 4) | 0;
       this.drawers[(srcDrawer + 1) % 4].l4VirtualHits += 7;
 
       if (this.raimChannels.some((ok) => !ok)) {
@@ -978,12 +984,18 @@ DONE  ST    R2,NETOUT
               const nIdx = ny * 16 + nx;
               if (this.grid[nIdx]) {
                 nbrs++;
-                if ((dx & 1) && (x & 3) === 0) this.routeHypercube(nIdx, idx);
+                if (dx & 1 && (x & 3) === 0) this.routeHypercube(nIdx, idx);
               }
             }
           }
           const alive = this.grid[idx];
-          this.nextGrid[idx] = alive ? (nbrs === 2 || nbrs === 3 ? 1 : 0) : nbrs === 3 ? 1 : 0;
+          this.nextGrid[idx] = alive
+            ? nbrs === 2 || nbrs === 3
+              ? 1
+              : 0
+            : nbrs === 3
+              ? 1
+              : 0;
         }
       }
       // Re-inject glider pulse if population gets too sparse
@@ -1161,7 +1173,9 @@ DONE  ST    R2,NETOUT
       for (let g = 0; g < 8; g++) {
         const rawLoad = 0.45 + 0.48 * Math.abs(Math.sin(this.luSteps * 0.35 + g * 0.9));
         // UGAL adaptive routing spreads hot optical-link spikes via 2-hop indirect Valiant paths!
-        this.groupLoads[g] = this.adaptiveRouting ? 0.52 + (rawLoad - 0.52) * 0.38 : rawLoad;
+        this.groupLoads[g] = this.adaptiveRouting
+          ? 0.52 + (rawLoad - 0.52) * 0.38
+          : rawLoad;
       }
       this.outletTempC = this.inletTempC + 8.6 + (this.adaptiveRouting ? 0.8 : 1.9);
       this.gflopsPerWatt = (this.exaflops * 1e9) / (this.powerMW * 1e6);
@@ -1516,7 +1530,11 @@ DONE  ST    R2,NETOUT
     step(dt = 0.016) {
       this.shuttlePhase = (this.shuttlePhase + dt * 0.85) % 3;
       this.zone =
-        this.shuttlePhase < 1 ? "STORAGE" : this.shuttlePhase < 2 ? "ENTANGLE" : "READOUT";
+        this.shuttlePhase < 1
+          ? "STORAGE"
+          : this.shuttlePhase < 2
+            ? "ENTANGLE"
+            : "READOUT";
       this.timeUs = 0.12 + 0.45 * Math.abs(Math.sin(this.shuttlePhase * Math.PI));
       return this.evolveRydbergPulse(this.timeUs);
     }
@@ -1556,9 +1574,7 @@ DONE  ST    R2,NETOUT
       for (let k = 0; k < 3; k++) {
         const sign = k === 0 ? 1 : s[k - 1] ? -1 : 1;
         const phi = sign * this.angles[k];
-        const m = forcedOutcomes
-          ? forcedOutcomes[k] & 1
-          : (this.shots + k) & 1; // deterministic cycle over all 8 byproduct branches!
+        const m = forcedOutcomes ? forcedOutcomes[k] & 1 : (this.shots + k) & 1; // deterministic cycle over all 8 byproduct branches!
         s[k] = m;
 
         // Project qubit k onto <m_phi| = (<0| + (-1)^m e^{-i phi} <1|) / sqrt(2)
@@ -1935,8 +1951,7 @@ DONE  ST    R2,NETOUT
         const Jab =
           (1 / r) *
           (1 -
-            Math.exp(-2 * r) *
-              (1 + (11 / 8) * r + 0.75 * r * r + (1 / 6) * r * r * r));
+            Math.exp(-2 * r) * (1 + (11 / 8) * r + 0.75 * r * r + (1 / 6) * r * r * r));
         // Mulliken-corrected two-electron MO integrals (exact at both united-atom and R->inf limits!)
         const hgg = -0.5 - (Vaa + Vab) / (1 + S);
         const huu = -0.5 - (Vaa - Vab) / Math.max(1e-4, 1 - S);
@@ -1961,7 +1976,54 @@ DONE  ST    R2,NETOUT
       this.h2Curve = points;
       this.h2MinEnergyHa = minE;
       this.h2EqAngstrom = eqR;
+      if (this.h2SelectedR === undefined) this.h2SelectedR = eqR;
+      this.evalH2At(this.h2SelectedR);
       return points;
+    }
+
+    evalH2At(R = 0.75) {
+      const clampedR = Math.max(0.35, Math.min(2.55, +R));
+      this.h2SelectedR = +clampedR.toFixed(2);
+      const r = this.h2SelectedR / 0.52917721;
+      const S = Math.exp(-r) * (1 + r + (r * r) / 3);
+      const Vaa = (1 / r) * (1 - (1 + r) * Math.exp(-2 * r));
+      const Vab = Math.exp(-r) * (1 + r);
+      const Jaa = 0.625;
+      const Jab =
+        (1 / r) *
+        (1 - Math.exp(-2 * r) * (1 + (11 / 8) * r + 0.75 * r * r + (1 / 6) * r * r * r));
+      const hgg = -0.5 - (Vaa + Vab) / (1 + S);
+      const huu = -0.5 - (Vaa - Vab) / Math.max(1e-4, 1 - S);
+      const Jgg = (Jaa + Jab) / (2 * (1 + S * S * 0.18));
+      const Juu = (Jaa + Jab) / 2;
+      const Kgu = (Jaa - Jab) / 2;
+      const eNuc = 1 / r;
+      const H00 = 2 * hgg + Jgg + eNuc;
+      const H11 = 2 * huu + Juu + eNuc;
+      const avg = 0.5 * (H00 + H11);
+      const halfGap = 0.5 * (H11 - H00);
+      const split = Math.sqrt(halfGap * halfGap + Kgu * Kgu);
+      const eGround = avg - split;
+      const eExcited = avg + split;
+      const corrHa = eGround - H00;
+      const thetaUcc = -0.5 * Math.atan2(Kgu, halfGap);
+      this.h2Probe = {
+        R: this.h2SelectedR,
+        eGround,
+        eHF: H00,
+        eExcited,
+        corrHa,
+        thetaUcc,
+      };
+      return this.h2Probe;
+    }
+
+    setGroverTarget(target = 173, runOptimal = false) {
+      this.resetGrover(target & 255);
+      if (runOptimal) {
+        for (let i = 0; i < 12; i++) this.stepGrover();
+      }
+      return this.groverTarget;
     }
 
     logicalErrorRate() {
@@ -1972,6 +2034,1580 @@ DONE  ST    R2,NETOUT
 
     step() {
       return this.stepGrover();
+    }
+  }
+
+  // ============================================================================
+  // 16. MIT APOLLO GUIDANCE COMPUTER BLOCK II & DSKY (1966)
+  //     15-bit 1's-Complement RTL NOR CPU + Core Rope ROM + 1202 Executive Recovery
+  // ============================================================================
+  class ApolloAgcDsky {
+    constructor() {
+      // 15-bit 1's-complement registers: A (accumulator), L (lower), Q (return), Z (PC)
+      this.A = 0;
+      this.L = 0;
+      this.Q = 0o4012;
+      this.Z = 0o4000;
+      this.erasable = new Uint16Array(2048);
+      this.fixedBank = new Uint16Array(1024);
+      this.prog = 64; // Major Mode P64 (Lunar Module Approach Phase)
+      this.verb = 16; // Monitor decimal
+      this.noun = 68; // Landing radar range / time / velocity
+      this.r1 = "+01420"; // Slant range (0.01 NM) / Altitude ft
+      this.r2 = "-00046"; // Altitude rate (-46.0 fps)
+      this.r3 = "+00118"; // Forward velocity (118.0 fps)
+      this.compActy = true;
+      this.progAlarm = false;
+      this.keyRel = false;
+      this.oprErr = false;
+      this.tempLit = false;
+      this.alarmCode = 0;
+      this.alarmCount = 0;
+      this.bailoutRecoveries = 0;
+      this.radarBuzz = false; // Rendezvous radar SLEW cycle-steal flood!
+      this.altitudeFt = 2450;
+      this.vertVelFps = -44.0;
+      this.horizVelFps = 68.0;
+      this.throttlePct = 56;
+      this.cycle = 0;
+      // Margaret Hamilton's 8-slot Priority-Scheduled Core Set Executive Queue
+      this.coreSet = [
+        { name: "SERVICER (IMU+Accel)", prio: 30, bank: 0o32 },
+        { name: "P64 GUIDANCE+THROTTLE", prio: 28, bank: 0o33 },
+        { name: "DAPRCS ATTITUDE JET", prio: 26, bank: 0o24 },
+        { name: "DSKYN68 DISPLAY MON", prio: 14, bank: 0o15 },
+      ];
+      this._initRopeRom();
+      this._refreshDskyRegisters();
+    }
+
+    _onesAdd15(x, y) {
+      const a = x & 0x7fff;
+      const b = y & 0x7fff;
+      let s = a + b;
+      if (s > 0x7fff) s = (s & 0x7fff) + 1; // 1's-complement end-around carry!
+      return s & 0x7fff;
+    }
+
+    _fmtSigned5(val) {
+      const v = Math.round(val);
+      const sign = v < 0 ? "-" : "+";
+      const mag = Math.min(99999, Math.abs(v));
+      return sign + String(mag).padStart(5, "0");
+    }
+
+    _initRopeRom() {
+      // Populate fixed-memory core-rope words (3-bit opcode + 12-bit address)
+      // 3=CA (Clear & Add), 6=AD (1's-complement Add), 5=TS (Transfer to Storage), 0=TC (Transfer Control)
+      const progWords = [
+        (3 << 12) | 0o010, // CA E010 (altitude)
+        (6 << 12) | 0o011, // AD E011 (delta-h)
+        (5 << 12) | 0o010, // TS E010
+        (3 << 12) | 0o012, // CA E012 (throttle cmd)
+        (6 << 12) | 0o013, // AD E013 (PID trim)
+        (5 << 12) | 0o012, // TS E012
+        (0 << 12) | 0o000, // TC 4000 (loop)
+      ];
+      for (let i = 0; i < progWords.length; i++) this.fixedBank[i] = progWords[i];
+      this.erasable[0o010] = 2450;
+      this.erasable[0o011] = 0x7fff ^ 3; // -3 in 15-bit 1's complement!
+      this.erasable[0o012] = 560;
+      this.erasable[0o013] = 2;
+    }
+
+    triggerRadarOverload(enable = true) {
+      this.radarBuzz = !!enable;
+      if (this.radarBuzz) {
+        // Flood Core Set with low-priority Rendezvous Radar jobs until 8/8 overflow!
+        while (this.coreSet.length < 8) {
+          this.coreSet.push({
+            name: `RR SLEW DUPLICATE #${this.coreSet.length}`,
+            prio: 9,
+            bank: 0o21,
+          });
+        }
+        this._handleExecutiveJobRequest({ name: "RR LGC SLEW IRQ", prio: 9, bank: 0o21 });
+      } else {
+        this.progAlarm = false;
+        this.coreSet = this.coreSet.filter((j) => j.prio >= 12);
+      }
+      this._refreshDskyRegisters();
+    }
+
+    _handleExecutiveJobRequest(job) {
+      if (this.coreSet.length >= 8) {
+        // Famous 1202 Executive Overflow! Bailout sheds low-priority tasks & preserves P64 guidance!
+        this.progAlarm = true;
+        this.alarmCode = 0o1202; // octal 1202!
+        this.alarmCount++;
+        this.bailoutRecoveries++;
+        this.coreSet = this.coreSet
+          .filter((j) => j.prio >= 20)
+          .sort((a, b) => b.prio - a.prio);
+        this.coreSet.push({ name: "DSKYN68 DISPLAY MON", prio: 14, bank: 0o15 });
+        return { alarm: 0o1202, shedLowPrio: true };
+      }
+      this.coreSet.push(job);
+      this.coreSet.sort((a, b) => b.prio - a.prio);
+      return { alarm: 0, shedLowPrio: false };
+    }
+
+    clearAlarm() {
+      this.progAlarm = false;
+      this.oprErr = false;
+      this.keyRel = false;
+      this._refreshDskyRegisters();
+    }
+
+    enterVerbNoun(verb, noun) {
+      const v = Number(verb);
+      const n = Number(noun);
+      if (isNaN(v) || isNaN(n) || v < 0 || v > 99 || n < 0 || n > 99) {
+        this.oprErr = true;
+        return false;
+      }
+      this.oprErr = false;
+      if (v === 37) {
+        // V37E xxE = Major Mode change (P63 Braking, P64 Approach, P66 Manual ROD, P00 Idle)
+        if ([0, 63, 64, 66].includes(n)) {
+          this.prog = n;
+          if (n === 63 && this.altitudeFt < 800) {
+            this.altitudeFt = 6400;
+            this.vertVelFps = -92;
+            this.horizVelFps = 185;
+          } else if (n === 64 && this.altitudeFt < 120) {
+            this.altitudeFt = 2200;
+            this.vertVelFps = -42;
+            this.horizVelFps = 64;
+          }
+          this.verb = 16;
+          this.noun = 68;
+        } else {
+          this.oprErr = true;
+        }
+      } else {
+        this.verb = v;
+        this.noun = n;
+      }
+      this._refreshDskyRegisters();
+      return !this.oprErr;
+    }
+
+    _refreshDskyRegisters() {
+      if (this.verb === 35) {
+        // V35E Lamp Test!
+        this.r1 = "+88888";
+        this.r2 = "+88888";
+        this.r3 = "+88888";
+        return;
+      }
+      if (this.verb === 9 || (this.verb === 5 && this.noun === 9)) {
+        // Alarm code octal display (01202)
+        const octStr = this.alarmCode
+          ? this.alarmCode.toString(8).padStart(5, "0")
+          : "00000";
+        this.r1 = "+" + octStr;
+        this.r2 = "+" + String(this.alarmCount).padStart(5, "0");
+        this.r3 = "+" + String(this.bailoutRecoveries).padStart(5, "0");
+        return;
+      }
+      if (this.noun === 62) {
+        const vTot = Math.hypot(this.vertVelFps, this.horizVelFps);
+        this.r1 = this._fmtSigned5(vTot * 10);
+        this.r2 = this._fmtSigned5(this.vertVelFps * 10);
+        this.r3 = this._fmtSigned5(this.throttlePct * 10);
+        return;
+      }
+      if (this.noun === 43) {
+        // Lat / Lon / Alt (Sea of Tranquility 0.674° N, 23.473° E)
+        this.r1 = "+00067";
+        this.r2 = "+02347";
+        this.r3 = this._fmtSigned5(this.altitudeFt);
+        return;
+      }
+      // Default N68: Landing radar altitude (ft), vertical velocity (0.1 fps), horizontal velocity (0.1 fps)
+      this.r1 = this._fmtSigned5(this.altitudeFt);
+      this.r2 = this._fmtSigned5(this.vertVelFps * 10);
+      this.r3 = this._fmtSigned5(this.horizVelFps * 10);
+    }
+
+    step() {
+      this.cycle++;
+      // Execute 15-bit 1's-complement AGC instruction from Fixed Core Rope ROM!
+      const pcIdx = (this.Z - 0o4000) & 0x3ff;
+      const inst = this.fixedBank[pcIdx % 7];
+      const op = (inst >>> 12) & 0x7;
+      const addr = inst & 0x7ff;
+      if (op === 3) {
+        this.A = this.erasable[addr] & 0x7fff;
+        this.Z++;
+      } else if (op === 6) {
+        this.A = this._onesAdd15(this.A, this.erasable[addr]);
+        this.Z++;
+      } else if (op === 5) {
+        this.erasable[addr] = this.A & 0x7fff;
+        this.Z++;
+      } else {
+        this.Z = 0o4000 + (addr & 0x3ff);
+      }
+
+      // If Rendezvous Radar SLEW buzz is active, periodically inject low-prio steal jobs -> 1202 recovery!
+      if (this.radarBuzz && this.cycle % 3 === 0) {
+        this._handleExecutiveJobRequest({
+          name: `RR SLEW IRQ #${this.cycle % 9}`,
+          prio: 9,
+          bank: 0o21,
+        });
+      }
+
+      // Real-time Lunar Descent guidance control loop (P63/P64/P66) — NEVER dropped during 1202!
+      if (this.prog !== 0) {
+        if (this.altitudeFt > 0) {
+          const targetRate = -Math.max(2.5, Math.min(85, this.altitudeFt * 0.018 + 2.2));
+          const err = targetRate - this.vertVelFps;
+          this.throttlePct = Math.round(Math.max(12, Math.min(94, 52 + err * 2.4)));
+          const lunarGrav = -5.32; // ft/s^2
+          const thrustAcc = (this.throttlePct / 52) * 5.38;
+          const dt = 0.25;
+          this.vertVelFps = Math.max(
+            -110,
+            Math.min(-1.5, this.vertVelFps + (lunarGrav + thrustAcc) * dt),
+          );
+          this.horizVelFps = Math.max(0, this.horizVelFps * 0.985);
+          this.altitudeFt = Math.max(0, this.altitudeFt + this.vertVelFps * dt);
+        } else {
+          // Tranquility Base touchdown — recycle approach profile for continuous live demo
+          this.altitudeFt = 2450;
+          this.vertVelFps = -44;
+          this.horizVelFps = 68;
+        }
+      } else {
+        this.throttlePct = 0;
+      }
+
+      this.compActy = this.cycle % 4 !== 0;
+      this._refreshDskyRegisters();
+      return {
+        zOctal: this.Z.toString(8),
+        aOctal: this.A.toString(8).padStart(5, "0"),
+        alarm: this.alarmCode,
+        alt: this.altitudeFt,
+      };
+    }
+  }
+
+  // ============================================================================
+  // 17. XEROX PARC ALTO WORKSTATION (1973)
+  //     Real 16-Op BitBLT Rasterop Engine + Smalltalk Stack VM + 3 Mbps CSMA/CD
+  // ============================================================================
+  class XeroxAltoSystem {
+    constructor() {
+      this.fbW = 160;
+      this.fbH = 128; // High-DPI 1-bit portrait CRT window buffer (black ink on white paper!)
+      this.vram = new Uint8Array(this.fbW * this.fbH); // 1 = dark ink pixel, 0 = white phosphor paper
+      this.rasterOp = "XOR"; // "SRC" | "OR" | "XOR" | "AND" | "INVERT"
+      this.bitbltOps = 0;
+      this.mouseX = 86;
+      this.mouseY = 62;
+      // Overlapping GUI Windows (Alan Kay / Dan Ingalls Smalltalk-76 desktop!)
+      this.windows = [
+        { title: "SystemBrowser", x: 8, y: 10, w: 94, h: 62, z: 1 },
+        { title: "BitBLT Canvas", x: 52, y: 46, w: 98, h: 68, z: 2 },
+      ];
+      // Smalltalk-76 Bytecode Stack Machine
+      this.stStack = [];
+      this.stPc = 0;
+      this.stBytecodes = [
+        { op: "PUSH_RCVR", arg: "box", hex: 0x70 },
+        { op: "PUSH_CONST", arg: 12, hex: 0x21 },
+        { op: "PUSH_CONST", arg: 8, hex: 0x22 },
+        { op: "SEND_MSG", arg: "area:", hex: 0xb2 },
+        { op: "SEND_MSG", arg: "bitbltXor", hex: 0xd4 },
+        { op: "RETURN_TOP", arg: null, hex: 0x7c },
+      ];
+      this.lastResult = 96;
+      // 3 Mbps Experimental Ethernet (CSMA/CD + Truncated Binary Exponential Backoff!)
+      this.ethPackets = 0;
+      this.ethCollisions = 0;
+      this.backoffAttempt = 0;
+      this.backoffSlots = 0;
+      this.composeDesktop();
+    }
+
+    // Genuine Dan Ingalls Bit-Boundary Block Transfer (BitBLT) 2D Boolean RasterOp!
+    bitblt(srcBits, sw, sh, dx, dy, w, h, mode = this.rasterOp) {
+      let touched = 0;
+      for (let r = 0; r < h; r++) {
+        const py = dy + r;
+        if (py < 0 || py >= this.fbH) continue;
+        for (let c = 0; c < w; c++) {
+          const px = dx + c;
+          if (px < 0 || px >= this.fbW) continue;
+          const sBit = srcBits
+            ? srcBits[(r % sh) * sw + (c % sw)] & 1
+            : ((r >> 2) ^ (c >> 2)) & 1;
+          const idx = py * this.fbW + px;
+          const dBit = this.vram[idx] & 1;
+          let out = dBit;
+          if (mode === "SRC") out = sBit;
+          else if (mode === "OR") out = sBit | dBit;
+          else if (mode === "XOR") out = sBit ^ dBit;
+          else if (mode === "AND") out = sBit & dBit;
+          else if (mode === "INVERT") out = dBit ^ 1;
+          else if (mode === "CLEAR") out = 0;
+          else if (mode === "SET") out = 1;
+          this.vram[idx] = out;
+          touched++;
+        }
+      }
+      this.bitbltOps++;
+      return touched;
+    }
+
+    composeDesktop() {
+      // Classic Alto 50% halftone stipple desktop background via BitBLT!
+      for (let y = 0; y < this.fbH; y++) {
+        for (let x = 0; x < this.fbW; x++) {
+          this.vram[y * this.fbW + x] = (x + y) % 2 === 0 && y % 4 === 0 ? 1 : 0;
+        }
+      }
+      // Top menu bar
+      for (let y = 0; y < 7; y++) {
+        for (let x = 0; x < this.fbW; x++) this.vram[y * this.fbW + x] = y === 6 ? 1 : 0;
+      }
+
+      const sorted = [...this.windows].sort((a, b) => a.z - b.z);
+      for (const win of sorted) {
+        // Drop shadow + white window interior + 1px black frame + inverted title bar
+        this.bitblt(null, 1, 1, win.x + 2, win.y + 2, win.w, win.h, "SET");
+        this.bitblt(null, 1, 1, win.x, win.y, win.w, win.h, "CLEAR");
+        for (let x = win.x; x < win.x + win.w; x++) {
+          if (x >= 0 && x < this.fbW) {
+            this.vram[win.y * this.fbW + x] = 1;
+            this.vram[(win.y + win.h - 1) * this.fbW + x] = 1;
+          }
+        }
+        for (let y = win.y; y < win.y + win.h; y++) {
+          if (y >= 0 && y < this.fbH) {
+            this.vram[y * this.fbW + win.x] = 1;
+            this.vram[y * this.fbW + (win.x + win.w - 1)] = 1;
+          }
+        }
+        this.bitblt(null, 1, 1, win.x + 1, win.y + 1, win.w - 2, 9, "SET");
+      }
+
+      // Stamp active rasterOp pattern inside top window!
+      const topWin = sorted[sorted.length - 1];
+      const pat = new Uint8Array(64);
+      for (let i = 0; i < 64; i++) {
+        const rx = (i % 8) - 3.5;
+        const ry = Math.floor(i / 8) - 3.5;
+        pat[i] = rx * rx + ry * ry <= 11 ? 1 : 0;
+      }
+      this.bitblt(
+        pat,
+        8,
+        8,
+        topWin.x + 10,
+        topWin.y + 16,
+        topWin.w - 20,
+        topWin.h - 24,
+        this.rasterOp,
+      );
+
+      // XOR cursor arrow at (mouseX, mouseY) — how Alto drew flicker-free cursors without hardware sprites!
+      const cur = [
+        [1, 0, 0, 0, 0],
+        [1, 1, 0, 0, 0],
+        [1, 1, 1, 0, 0],
+        [1, 1, 1, 1, 0],
+        [1, 1, 1, 1, 1],
+        [1, 1, 1, 0, 0],
+        [1, 0, 1, 1, 0],
+      ];
+      const flatCur = new Uint8Array(35);
+      cur.forEach((row, r) => row.forEach((b, c) => (flatCur[r * 5 + c] = b)));
+      this.bitblt(flatCur, 5, 7, this.mouseX, this.mouseY, 5, 7, "XOR");
+    }
+
+    bringWindowFront(idx = 0) {
+      const target = this.windows[idx % this.windows.length];
+      const maxZ = Math.max(...this.windows.map((w) => w.z));
+      target.z = maxZ + 1;
+      this.composeDesktop();
+    }
+
+    stepSmalltalkBytecode() {
+      const bc = this.stBytecodes[this.stPc % this.stBytecodes.length];
+      if (bc.op === "PUSH_RCVR") this.stStack = ["BitRect"];
+      else if (bc.op === "PUSH_CONST") this.stStack.push(bc.arg);
+      else if (bc.op === "SEND_MSG" && bc.arg === "area:") {
+        const h = this.stStack.pop() || 8;
+        const w = this.stStack.pop() || 12;
+        this.lastResult = w * h;
+        this.stStack.push(this.lastResult);
+      } else if (bc.op === "SEND_MSG" && bc.arg === "bitbltXor") {
+        this.mouseX = 48 + ((this.mouseX + 11) % 82);
+        this.mouseY = 34 + ((this.mouseY + 7) % 64);
+        this.composeDesktop();
+      } else if (bc.op === "RETURN_TOP") {
+        this.lastResult = this.stStack[this.stStack.length - 1] ?? this.lastResult;
+      }
+      this.stPc = (this.stPc + 1) % this.stBytecodes.length;
+      return bc;
+    }
+
+    // 3 Mbps Experimental Ethernet CSMA/CD with Truncated Binary Exponential Backoff
+    transmitEthernetFrame(forceCollision = false) {
+      const busyContention =
+        forceCollision || (this.ethPackets + this.ethCollisions) % 5 === 3;
+      if (busyContention) {
+        this.ethCollisions++;
+        this.backoffAttempt = Math.min(10, this.backoffAttempt + 1);
+        const maxSlots = 1 << this.backoffAttempt; // 2^k slot times (51.2 us nominal)
+        // Deterministic pseudo-random backoff slot in [1, maxSlots - 1]
+        this.backoffSlots =
+          1 + ((this.ethCollisions * 7 + 3) % Math.max(1, maxSlots - 1));
+        return {
+          ok: false,
+          collision: true,
+          attempt: this.backoffAttempt,
+          backoffSlots: this.backoffSlots,
+        };
+      }
+      this.ethPackets++;
+      this.backoffAttempt = 0;
+      this.backoffSlots = 0;
+      return { ok: true, collision: false, attempt: 0, backoffSlots: 0 };
+    }
+
+    step() {
+      const bc = this.stepSmalltalkBytecode();
+      const eth = this.transmitEthernetFrame(false);
+      return { bc, eth, bitbltOps: this.bitbltOps };
+    }
+  }
+
+  // ============================================================================
+  // 18. MOBILE ARM RISC SoC & MULTI-TOUCH POCKET COMPUTER (2007+)
+  //     big.LITTLE OoO/In-Order Scheduler + CMOS DVFS (C*V^2*f) + TBDR GPU + Touch
+  // ============================================================================
+  class MobileArmSoc {
+    constructor() {
+      this.governor = "schedutil"; // "powersave" | "schedutil" | "performance"
+      this.workload = 0.58; // 0..1 UI + physics + neural camera load
+      this.tbdrEnabled = true; // Tile-Based Deferred Rendering vs Immediate-Mode DRAM!
+      // 2x Performance Out-of-Order ARM cores + 4x Efficiency In-Order ARM cores
+      this.bigFreqGHz = 2.4;
+      this.bigVolt = 0.92;
+      this.litFreqGHz = 1.2;
+      this.litVolt = 0.64;
+      this.activeBig = 1;
+      this.activeLit = 4;
+      this.dieTempC = 36.5;
+      this.batteryPct = 88.0;
+      // 12 x 8 Mutual-Capacitance Multi-Touch Grid (Delta-C femtofarads)
+      this.touchCols = 12;
+      this.touchRows = 8;
+      this.touchGrid = new Float32Array(12 * 8);
+      this.fingers = [
+        { x: 3.4, y: 3.8, active: true },
+        { x: 8.2, y: 4.4, active: true },
+      ];
+      this.pinchZoom = 1.0;
+      this.recomputeSoCTelemetry();
+      this.scanCapacitiveTouch();
+    }
+
+    setGovernor(mode) {
+      this.governor = mode;
+      this.recomputeSoCTelemetry();
+    }
+
+    // Exact CMOS Dynamic + Subthreshold Leakage Power & Energy-Per-Instruction!
+    recomputeSoCTelemetry() {
+      const w = Math.max(0.05, Math.min(1.0, this.workload));
+      if (this.governor === "powersave") {
+        this.activeBig = 0;
+        this.activeLit = Math.max(1, Math.ceil(w * 4));
+        this.bigFreqGHz = 0.8;
+        this.bigVolt = 0.65;
+        this.litFreqGHz = +(0.6 + 0.8 * w).toFixed(2);
+        this.litVolt = +(0.56 + 0.12 * w).toFixed(3);
+      } else if (this.governor === "performance") {
+        this.activeBig = 2;
+        this.activeLit = 4;
+        this.bigFreqGHz = 3.2;
+        this.bigVolt = 1.08;
+        this.litFreqGHz = 2.0;
+        this.litVolt = 0.78;
+      } else {
+        // Heterogeneous big.LITTLE schedutil energy-aware placement!
+        this.activeBig = w > 0.72 ? 2 : w > 0.38 ? 1 : 0;
+        this.activeLit = 4;
+        this.bigFreqGHz = this.activeBig ? +(1.4 + 1.7 * w).toFixed(2) : 0.0;
+        this.bigVolt = this.activeBig ? +(0.72 + 0.32 * w).toFixed(3) : 0.55;
+        this.litFreqGHz = +(0.75 + 1.1 * w).toFixed(2);
+        this.litVolt = +(0.58 + 0.16 * w).toFixed(3);
+      }
+
+      // P_dyn = N * C_eff * V^2 * f (Watts)
+      const cBig = 0.95; // nF effective switched capacitance per wide OoO core
+      const cLit = 0.22; // nF effective switched capacitance per narrow in-order core
+      const pBigDynW =
+        this.activeBig * cBig * this.bigVolt * this.bigVolt * this.bigFreqGHz;
+      const pLitDynW =
+        this.activeLit * cLit * this.litVolt * this.litVolt * this.litFreqGHz;
+
+      // Subthreshold leakage doubles roughly every ~25 C
+      const leakThermal = Math.exp((this.dieTempC - 30) / 34);
+      const pLeakW = (0.045 + 0.06 * this.activeBig * this.bigVolt) * leakThermal;
+
+      // Tile-Based Deferred Rendering (TBDR) keeps depth/color in 32x32 on-chip SRAM tiles!
+      // Immediate-Mode desktop GPUs read/write external LPDDR5X on every overdrawn fragment (~3.8x DRAM power!)
+      const overdraw = 3.2;
+      this.dramBwGBs = this.tbdrEnabled
+        ? +(4.8 * (0.4 + 0.6 * w)).toFixed(2)
+        : +(4.8 * overdraw * (0.4 + 0.6 * w)).toFixed(2);
+      const pGpuMemW = this.dramBwGBs * 0.055 + 0.28 * w;
+
+      this.totalPowerW = +(pBigDynW + pLitDynW + pLeakW + pGpuMemW).toFixed(3);
+      // Throughput in Billion Instructions Per Second (BIPS): OoO IPC=2.9, LITTLE IPC=1.25
+      this.bips = +(
+        this.activeBig * this.bigFreqGHz * 2.9 +
+        this.activeLit * this.litFreqGHz * 1.25
+      ).toFixed(2);
+      // Energy efficiency: picojoules per instruction (pJ / inst) = (W / BIPS) * 1000
+      this.pjPerInst = +((this.totalPowerW / Math.max(0.1, this.bips)) * 1000).toFixed(1);
+      return {
+        powerW: this.totalPowerW,
+        bips: this.bips,
+        pjPerInst: this.pjPerInst,
+        dramBwGBs: this.dramBwGBs,
+      };
+    }
+
+    scanCapacitiveTouch() {
+      this.touchGrid.fill(0);
+      for (const f of this.fingers) {
+        if (!f.active) continue;
+        for (let r = 0; r < this.touchRows; r++) {
+          for (let c = 0; c < this.touchCols; c++) {
+            const d2 = (c - f.x) * (c - f.x) + (r - f.y) * (r - f.y);
+            this.touchGrid[r * this.touchCols + c] += Math.exp(-d2 / 1.65);
+          }
+        }
+      }
+      const dx = this.fingers[1].x - this.fingers[0].x;
+      const dy = this.fingers[1].y - this.fingers[0].y;
+      this.pinchZoom = +(Math.hypot(dx, dy) / 4.8).toFixed(2);
+      return this.pinchZoom;
+    }
+
+    setPinchSpread(spread = 4.8) {
+      const half = Math.max(1.0, Math.min(5.2, spread * 0.5));
+      this.fingers[0].x = 5.5 - half;
+      this.fingers[1].x = 5.5 + half;
+      return this.scanCapacitiveTouch();
+    }
+
+    step(dt = 0.016) {
+      const targetTemp = 29 + this.totalPowerW * 3.8;
+      this.dieTempC += (targetTemp - this.dieTempC) * Math.min(1, dt * 1.5);
+      // Subtle animated multi-touch pinch breathing
+      const t = (this._ph = (this._ph || 0) + dt * 1.6);
+      this.fingers[0].y = 3.5 + Math.sin(t) * 0.8;
+      this.fingers[1].y = 3.5 - Math.sin(t) * 0.8;
+      this.scanCapacitiveTouch();
+      this.recomputeSoCTelemetry();
+      return { powerW: this.totalPowerW, bips: this.bips, pj: this.pjPerInst };
+    }
+  }
+
+  // ============================================================================
+  // 19. DEC VAX-11/780 VIRTUAL MEMORY & 4.2BSD TCP/IP SERVER (1978)
+  //     32-bit P0/P1/S0 Demand Paging + TLB + FIFO/Clock/LRU (Belady's Anomaly!)
+  // ============================================================================
+  class VaxVirtualMemorySystem {
+    constructor() {
+      this.policy = "CLOCK"; // "FIFO" | "CLOCK" | "LRU"
+      this.numFrames = 3; // 3 or 4 physical frames (famous Belady's Anomaly pair!)
+      // Canonical Belady's Anomaly virtual page reference trace:
+      // FIFO faults = 9 on 3 frames, 10 on 4 frames! LRU faults = 10 on 3 frames, 8 on 4 frames!
+      this.beladyTrace = [1, 2, 3, 4, 1, 2, 5, 1, 2, 3, 4, 5];
+      this.traceIdx = 0;
+      this.tlbSize = 4;
+      this.resetVm();
+      // 4.2BSD UNIX TCP/IP Reno/Tahoe Congestion Control (SYN -> Slow Start -> AIMD!)
+      this.tcpState = "ESTABLISHED";
+      this.cwnd = 4;
+      this.ssthresh = 16;
+      this.rttMs = 28;
+      this.tcpSeq = 1024;
+      this.tcpLosses = 0;
+      this.cwndHistory = [1, 2, 4];
+    }
+
+    resetVm() {
+      this.frames = []; // { vpn, useBit, lastUsed, loadOrder }
+      this.tlb = []; // { vpn, pfn }
+      this.clockHand = 0;
+      this.accessCount = 0;
+      this.pageFaults = 0;
+      this.tlbHits = 0;
+      this.lastAccess = null;
+    }
+
+    // Access a 32-bit VAX virtual address (bits 31..30 = region P0/P1/S0, 512-byte pages => 9-bit offset!)
+    accessVirtualPage(vpn, region = 0) {
+      this.accessCount++;
+      const vaddr = ((region & 3) << 30) | ((vpn & 0x1fffff) << 9) | 0x0a4;
+
+      // 1. Probe Associative Translation Buffer (TB / TLB)
+      const tlbEntry = this.tlb.find((e) => e.vpn === vpn);
+      if (tlbEntry) {
+        this.tlbHits++;
+        const fr = this.frames[tlbEntry.pfn];
+        if (fr) {
+          fr.useBit = 1;
+          fr.lastUsed = this.accessCount;
+        }
+        this.lastAccess = {
+          vaddr: vaddr >>> 0,
+          vpn,
+          pfn: tlbEntry.pfn,
+          tlbHit: true,
+          pageFault: false,
+          evicted: null,
+        };
+        return this.lastAccess;
+      }
+
+      // 2. Hardware 2-Level Page Table Walk (P0BR / P0LR in System Space S0)
+      const pfnExisting = this.frames.findIndex((f) => f && f.vpn === vpn);
+      if (pfnExisting >= 0) {
+        const fr = this.frames[pfnExisting];
+        fr.useBit = 1;
+        fr.lastUsed = this.accessCount;
+        this._insertTlb(vpn, pfnExisting);
+        this.lastAccess = {
+          vaddr: vaddr >>> 0,
+          vpn,
+          pfn: pfnExisting,
+          tlbHit: false,
+          pageFault: false,
+          evicted: null,
+        };
+        return this.lastAccess;
+      }
+
+      // 3. Demand-Paging Fault! Select free frame or victim via FIFO / CLOCK / LRU
+      this.pageFaults++;
+      let targetPfn = -1;
+      let evictedVpn = null;
+
+      if (this.frames.length < this.numFrames) {
+        targetPfn = this.frames.length;
+        this.frames.push({
+          vpn,
+          useBit: 1,
+          lastUsed: this.accessCount,
+          loadOrder: this.accessCount,
+        });
+      } else if (this.policy === "FIFO") {
+        let oldestIdx = 0;
+        for (let i = 1; i < this.frames.length; i++) {
+          if (this.frames[i].loadOrder < this.frames[oldestIdx].loadOrder) oldestIdx = i;
+        }
+        targetPfn = oldestIdx;
+        evictedVpn = this.frames[targetPfn].vpn;
+        this.frames[targetPfn] = {
+          vpn,
+          useBit: 1,
+          lastUsed: this.accessCount,
+          loadOrder: this.accessCount,
+        };
+      } else if (this.policy === "LRU") {
+        let lruIdx = 0;
+        for (let i = 1; i < this.frames.length; i++) {
+          if (this.frames[i].lastUsed < this.frames[lruIdx].lastUsed) lruIdx = i;
+        }
+        targetPfn = lruIdx;
+        evictedVpn = this.frames[targetPfn].vpn;
+        this.frames[targetPfn] = {
+          vpn,
+          useBit: 1,
+          lastUsed: this.accessCount,
+          loadOrder: this.accessCount,
+        };
+      } else {
+        // VAX/BSD Second-Chance CLOCK replacement!
+        for (let guard = 0; guard <= this.frames.length * 2; guard++) {
+          const idx = this.clockHand % this.frames.length;
+          this.clockHand = (this.clockHand + 1) % this.frames.length;
+          if (this.frames[idx].useBit === 0) {
+            targetPfn = idx;
+            break;
+          }
+          this.frames[idx].useBit = 0;
+        }
+        if (targetPfn < 0) targetPfn = 0;
+        evictedVpn = this.frames[targetPfn].vpn;
+        this.frames[targetPfn] = {
+          vpn,
+          useBit: 1,
+          lastUsed: this.accessCount,
+          loadOrder: this.accessCount,
+        };
+      }
+
+      if (evictedVpn !== null) {
+        this.tlb = this.tlb.filter((e) => e.vpn !== evictedVpn);
+      }
+      this._insertTlb(vpn, targetPfn);
+      this.lastAccess = {
+        vaddr: vaddr >>> 0,
+        vpn,
+        pfn: targetPfn,
+        tlbHit: false,
+        pageFault: true,
+        evicted: evictedVpn,
+      };
+      return this.lastAccess;
+    }
+
+    _insertTlb(vpn, pfn) {
+      this.tlb = this.tlb.filter((e) => e.vpn !== vpn);
+      this.tlb.push({ vpn, pfn });
+      if (this.tlb.length > this.tlbSize) this.tlb.shift();
+    }
+
+    // Run full Belady trace cleanly for quantitative comparison!
+    runBeladyBenchmark(policy = this.policy, frames = this.numFrames) {
+      const savedPol = this.policy;
+      const savedFr = this.numFrames;
+      this.policy = policy;
+      this.numFrames = frames;
+      this.resetVm();
+      for (const vpn of this.beladyTrace) this.accessVirtualPage(vpn, 0);
+      const faults = this.pageFaults;
+      this.policy = savedPol;
+      this.numFrames = savedFr;
+      this.resetVm();
+      return faults;
+    }
+
+    // 4.2BSD TCP/IP Sliding-Window Congestion Control (Slow Start + AIMD)
+    stepTcpRtt(packetDrop = false) {
+      if (packetDrop) {
+        this.tcpLosses++;
+        this.ssthresh = Math.max(2, Math.floor(this.cwnd / 2));
+        this.cwnd = this.ssthresh; // Fast Recovery / Multiplicative Decrease!
+      } else if (this.cwnd < this.ssthresh) {
+        this.cwnd = Math.min(32, this.cwnd * 2); // Exponential Slow Start
+      } else {
+        this.cwnd = Math.min(32, this.cwnd + 1); // Linear Additive Increase
+      }
+      this.tcpSeq += this.cwnd * 512;
+      this.cwndHistory.push(this.cwnd);
+      if (this.cwndHistory.length > 24) this.cwndHistory.shift();
+      return { cwnd: this.cwnd, ssthresh: this.ssthresh, seq: this.tcpSeq };
+    }
+
+    step() {
+      const vpn = this.beladyTrace[this.traceIdx % this.beladyTrace.length];
+      this.traceIdx++;
+      const vmRes = this.accessVirtualPage(vpn, vpn >= 4 ? 1 : 0);
+      const drop = this.traceIdx % 11 === 0;
+      const tcpRes = this.stepTcpRtt(drop);
+      return { vm: vmRes, tcp: tcpRes };
+    }
+  }
+
+  // ============================================================================
+  // 20. CDC 6600 SUPERCOMPUTER — JAMES THORNTON'S SCOREBOARD (1964)
+  //     10 Parallel Functional Units + Out-of-Order Dynamic Hazard Scheduling
+  // ============================================================================
+  class Cdc6600Scoreboard {
+    constructor() {
+      // 10 Authentic CDC 6600 Functional Units & latencies (100 ns minor cycles)
+      this.unitDefs = [
+        { name: "Increment 1", kind: "LD", lat: 3 },
+        { name: "Increment 2", kind: "LD", lat: 3 },
+        { name: "FP Multiply 1", kind: "FMUL", lat: 10 },
+        { name: "FP Multiply 2", kind: "FMUL", lat: 10 },
+        { name: "FP Add", kind: "FADD", lat: 4 },
+        { name: "FP Divide", kind: "FDIV", lat: 29 },
+        { name: "Long Add", kind: "IADD", lat: 3 },
+        { name: "Boolean", kind: "BOOL", lat: 3 },
+        { name: "Shift", kind: "SHFT", lat: 4 },
+        { name: "Branch", kind: "BR", lat: 5 },
+      ];
+      // Canonical Hennessy & Patterson / Thornton CDC 6600 hazard benchmark!
+      // Exercises RAW (FMUL waits on LD X2), WAR (FADD X6 waits for FDIV to read old X6!), and OoO completion!
+      this.defaultProgram = [
+        { op: "LD", kind: "LD", fi: "X6", fj: null, fk: "A1", asm: "SA1 B1+34  (LD X6)" },
+        { op: "LD", kind: "LD", fi: "X2", fj: null, fk: "A2", asm: "SA2 B1+45  (LD X2)" },
+        { op: "FMUL", kind: "FMUL", fi: "X0", fj: "X2", fk: "X4", asm: "FX0 X2*X4" },
+        { op: "FSUB", kind: "FADD", fi: "X5", fj: "X6", fk: "X2", asm: "FX5 X6-X2" },
+        { op: "FDIV", kind: "FDIV", fi: "X7", fj: "X0", fk: "X6", asm: "FX7 X0/X6" },
+        {
+          op: "FADD",
+          kind: "FADD",
+          fi: "X6",
+          fj: "X5",
+          fk: "X2",
+          asm: "FX6 X5+X2  (WAR on X6!)",
+        },
+      ];
+      this.ppSlot = 0; // 10 barrel-threaded Peripheral Processors PP0..PP9!
+      this.reset();
+    }
+
+    reset() {
+      this.clock = 0;
+      this.issuePtr = 0;
+      this.rawStalls = 0;
+      this.warStalls = 0;
+      this.wawStalls = 0;
+      this.oooCompletions = 0;
+      this.regs = {
+        X0: 0,
+        X1: 1.5,
+        X2: 3.0,
+        X3: 2.0,
+        X4: 4.0,
+        X5: 0,
+        X6: 9.0,
+        X7: 0,
+        A1: 12.0,
+        A2: 5.0,
+      };
+      this.regStatus = {}; // reg -> unitIndex or null
+      this.units = this.unitDefs.map((d, idx) => ({
+        idx,
+        name: d.name,
+        kind: d.kind,
+        lat: d.lat,
+        busy: false,
+        op: "",
+        fi: null,
+        fj: null,
+        fk: null,
+        qj: null,
+        qk: null,
+        rj: false,
+        rk: false,
+        rem: 0,
+        instIdx: -1,
+      }));
+      this.instTable = this.defaultProgram.map((ins, i) => ({
+        ...ins,
+        idx: i,
+        issue: null,
+        readOps: null,
+        execDone: null,
+        writeRes: null,
+        unitName: "",
+      }));
+    }
+
+    isComplete() {
+      return this.instTable.every((r) => r.writeRes !== null);
+    }
+
+    step() {
+      if (this.isComplete()) this.reset();
+      this.clock++;
+      this.ppSlot = (this.ppSlot + 1) % 10; // Barrel-processor rotation across PP0..PP9
+
+      // Snapshot start-of-cycle state so stage transitions obey non-overlapping minor-cycle latch timing!
+      const c = this.clock;
+      const writeQueue = [];
+      const readCompletedUnits = [];
+
+      // 1. WRITE RESULT check: Exec complete (execDone < c) AND no WAR hazard!
+      //    WAR condition: no other busy unit still has (Fj==Fi && Rj==true) or (Fk==Fi && Rk==true)
+      for (const u of this.units) {
+        if (!u.busy) continue;
+        const row = this.instTable[u.instIdx];
+        if (row.execDone !== null && row.execDone < c && row.writeRes === null) {
+          const warBlocked = this.units.some(
+            (other) =>
+              other.busy &&
+              other.idx !== u.idx &&
+              ((other.fj === u.fi && other.rj) || (other.fk === u.fi && other.rk)),
+          );
+          if (warBlocked) {
+            this.warStalls++;
+          } else {
+            writeQueue.push(u);
+          }
+        }
+      }
+
+      // 2. EXECUTE countdown for units that already read operands on a prior cycle
+      for (const u of this.units) {
+        if (!u.busy) continue;
+        const row = this.instTable[u.instIdx];
+        if (row.readOps !== null && row.readOps < c && row.execDone === null) {
+          u.rem--;
+          if (u.rem <= 0) {
+            row.execDone = c;
+            // Compute actual 60-bit floating-point result!
+            const vj = u.fj ? this.regs[u.fj] || 0 : 0;
+            const vk = u.fk ? this.regs[u.fk] || 0 : 0;
+            u._resVal =
+              u.op === "LD"
+                ? vk
+                : u.op === "FMUL"
+                  ? vj * vk
+                  : u.op === "FSUB"
+                    ? vj - vk
+                    : u.op === "FDIV"
+                      ? vk !== 0
+                        ? +(vj / vk).toFixed(4)
+                        : 0
+                      : vj + vk;
+          }
+        }
+      }
+
+      // 3. READ OPERANDS check: issued on prior cycle AND Rj && Rk both ready!
+      for (const u of this.units) {
+        if (!u.busy) continue;
+        const row = this.instTable[u.instIdx];
+        if (row.issue !== null && row.issue < c && row.readOps === null) {
+          if (u.rj && u.rk) {
+            row.readOps = c;
+            readCompletedUnits.push(u);
+          } else {
+            this.rawStalls++;
+          }
+        }
+      }
+
+      // 4. ISSUE check: in-order issue if matching Functional Unit is free AND no WAW (regStatus[Fi] == null)!
+      if (this.issuePtr < this.instTable.length) {
+        const nextRow = this.instTable[this.issuePtr];
+        const freeUnit = this.units.find((u) => u.kind === nextRow.kind && !u.busy);
+        const wawBusy = this.regStatus[nextRow.fi] != null;
+        if (wawBusy) {
+          this.wawStalls++;
+        } else if (freeUnit) {
+          freeUnit.busy = true;
+          freeUnit.op = nextRow.op;
+          freeUnit.fi = nextRow.fi;
+          freeUnit.fj = nextRow.fj;
+          freeUnit.fk = nextRow.fk;
+          const qj = nextRow.fj ? (this.regStatus[nextRow.fj] ?? null) : null;
+          const qk = nextRow.fk ? (this.regStatus[nextRow.fk] ?? null) : null;
+          freeUnit.qj = qj;
+          freeUnit.qk = qk;
+          freeUnit.rj = qj === null;
+          freeUnit.rk = qk === null;
+          freeUnit.rem = freeUnit.lat;
+          freeUnit.instIdx = nextRow.idx;
+          this.regStatus[nextRow.fi] = freeUnit.idx;
+          nextRow.issue = c;
+          nextRow.unitName = freeUnit.name;
+          this.issuePtr++;
+        }
+      }
+
+      // Commit operand read clears (Rj/Rk <- false once read completes)
+      for (const u of readCompletedUnits) {
+        u.rj = false;
+        u.rk = false;
+      }
+
+      // Commit WRITE RESULT broadcasts to waiting Qj/Qk reservation stations!
+      for (const u of writeQueue) {
+        const row = this.instTable[u.instIdx];
+        row.writeRes = c;
+        if (this.instTable.some((prev) => prev.idx < row.idx && prev.writeRes === null)) {
+          this.oooCompletions++;
+        }
+        this.regs[u.fi] = u._resVal ?? this.regs[u.fi];
+        for (const w of this.units) {
+          if (!w.busy) continue;
+          if (w.qj === u.idx) {
+            w.qj = null;
+            w.rj = true;
+          }
+          if (w.qk === u.idx) {
+            w.qk = null;
+            w.rk = true;
+          }
+        }
+        if (this.regStatus[u.fi] === u.idx) this.regStatus[u.fi] = null;
+        u.busy = false;
+      }
+
+      return {
+        clock: this.clock,
+        rawStalls: this.rawStalls,
+        warStalls: this.warStalls,
+        wawStalls: this.wawStalls,
+        oooCompletions: this.oooCompletions,
+      };
+    }
+  }
+
+  // ============================================================================
+  // 21. SANDIA / INTEL ASCI RED 1.3-TFLOPS MPP (1997)
+  //     2D Mesh Dimension-Order (XY) Wormhole Flit Router + MPI Shock-Wave PDE
+  // ============================================================================
+  class AsciRedWormholeMpp {
+    constructor() {
+      this.meshW = 6;
+      this.meshH = 6; // 36 visible compute/service tiles representing 9,298 Pentium Pro CPUs!
+      this.routerNs = 25; // per-hop router pipeline latency (ns)
+      this.flitsPerPacket = 8; // 1 Head + 6 Body + 1 Tail flit
+      this.linkBwFlitsPerCycle = 1;
+      this.flows = [];
+      this.packetsDelivered = 0;
+      this.contentionStalls = 0;
+      // 2D MPI Shock-Wave Pressure Field across the 6x6 distributed memory subdomains
+      this.gridN = 18;
+      this.uCur = new Float32Array(18 * 18);
+      this.uPrev = new Float32Array(18 * 18);
+      this.mpiHaloExchanges = 0;
+      this.triggerShockPulse(9, 9);
+      this.injectFlow(0, 0, 5, 5);
+      this.injectFlow(0, 2, 5, 2);
+    }
+
+    // Dimension-Order XY deterministic deadlock-free path on 2D mesh!
+    computeXYPath(sx, sy, dx, dy) {
+      const path = [[sx, sy]];
+      let x = sx;
+      let y = sy;
+      while (x !== dx) {
+        x += dx > x ? 1 : -1;
+        path.push([x, y]);
+      }
+      while (y !== dy) {
+        y += dy > y ? 1 : -1;
+        path.push([x, y]);
+      }
+      return path;
+    }
+
+    // Compare Wormhole Cut-Through Latency vs Classical Store-and-Forward!
+    compareLatencyCycles(hops = 8, flits = this.flitsPerPacket) {
+      // Wormhole: head flit pipelines 1 hop/cycle, body/tail follow immediately -> D + L
+      const wormholeCycles = hops + flits;
+      // Store-and-Forward: entire L-flit packet buffered at every hop -> D * L
+      const storeForwardCycles = hops * flits;
+      return {
+        hops,
+        wormholeCycles,
+        storeForwardCycles,
+        speedup: +(storeForwardCycles / Math.max(1, wormholeCycles)).toFixed(2),
+      };
+    }
+
+    injectFlow(sx, sy, dx, dy) {
+      const path = this.computeXYPath(sx, sy, dx, dy);
+      this.flows.push({
+        path,
+        headIdx: 0,
+        length: 4, // 4 flits visible snaking across mesh links
+        stalled: false,
+        color: this.flows.length % 2 === 0 ? "#38bdf8" : "#f97316",
+      });
+      if (this.flows.length > 5) this.flows.shift();
+      return path;
+    }
+
+    triggerShockPulse(cx = 9, cy = 9) {
+      const N = this.gridN;
+      for (let y = 0; y < N; y++) {
+        for (let x = 0; x < N; x++) {
+          const d2 = (x - cx) * (x - cx) + (y - cy) * (y - cy);
+          const amp = 1.6 * Math.exp(-d2 / 4.5);
+          this.uCur[y * N + x] = amp;
+          this.uPrev[y * N + x] = amp * 0.92;
+        }
+      }
+    }
+
+    step() {
+      // 1. Advance wormhole flit trains with link-exclusivity contention detection!
+      const occupiedLinks = new Set();
+      const surviving = [];
+      for (const f of this.flows) {
+        if (f.headIdx < f.path.length - 1) {
+          const [ax, ay] = f.path[f.headIdx];
+          const [bx, by] = f.path[f.headIdx + 1];
+          const edgeKey = `${ax},${ay}->${bx},${by}`;
+          if (occupiedLinks.has(edgeKey)) {
+            f.stalled = true;
+            this.contentionStalls++;
+          } else {
+            f.stalled = false;
+            occupiedLinks.add(edgeKey);
+            f.headIdx++;
+          }
+          surviving.push(f);
+        } else if (f.length > 1) {
+          f.length--;
+          surviving.push(f);
+        } else {
+          this.packetsDelivered++;
+        }
+      }
+      this.flows = surviving;
+      if (this.flows.length < 2) {
+        const r = this.packetsDelivered % 6;
+        this.injectFlow(0, r, 5, (r + 3) % 6);
+        this.injectFlow(1, r, 5, r); // deliberate shared X-axis row to exercise wormhole contention!
+      }
+
+      // 2. Step 2D MPI Shock-Wave Acoustic PDE across 36 domain-decomposed subdomains
+      const N = this.gridN;
+      const next = new Float32Array(N * N);
+      const c2 = 0.22;
+      for (let y = 1; y < N - 1; y++) {
+        for (let x = 1; x < N - 1; x++) {
+          const i = y * N + x;
+          const lap =
+            this.uCur[i - 1] +
+            this.uCur[i + 1] +
+            this.uCur[i - N] +
+            this.uCur[i + N] -
+            4 * this.uCur[i];
+          next[i] = (2 * this.uCur[i] - this.uPrev[i] + c2 * lap) * 0.992;
+        }
+      }
+      this.uPrev = this.uCur;
+      this.uCur = next;
+      this.mpiHaloExchanges += 36 * 4;
+
+      // Re-ignite shockwave periodically so field stays lively
+      let energy = 0;
+      for (let i = 0; i < next.length; i++) energy += next[i] * next[i];
+      if (energy < 0.08) this.triggerShockPulse(5 + (this.packetsDelivered % 8), 9);
+
+      return {
+        delivered: this.packetsDelivered,
+        stalls: this.contentionStalls,
+        halos: this.mpiHaloExchanges,
+      };
+    }
+  }
+
+  // ============================================================================
+  // 22. TRAPPED-ION 171Yb+ LINEAR RF PAUL TRAP & QCCD QPU (1995 / 2024)
+  //     Cirac-Zoller / Mølmer-Sørensen All-to-All Phonon-Bus Entangling Gates
+  // ============================================================================
+  class TrappedIonPaulQccd {
+    constructor() {
+      this.nQubits = 4; // 16-state exact complex state vector for 4 levitated 171Yb+ ions
+      this.re = new Float64Array(16);
+      this.im = new Float64Array(16);
+      this.rfFreqMHz = 36.5; // Radial RF Paul drive Omega_RF / 2pi
+      this.rfVolt = 240; // Peak RF electrode voltage (V)
+      this.axialFreqMHz = 1.45; // Collective center-of-mass axial phonon mode omega_z / 2pi
+      this.meanPhonons = 0.02; // Sideband-cooled near |n=0> motional ground state!
+      this.gateLog = [];
+      this.resetState();
+      // Prepare an all-to-all Mølmer-Sørensen Bell pair between NON-ADJACENT ions 0 and 3!
+      this.applyMolmerSorensen(0, 3, Math.PI / 2);
+    }
+
+    resetState() {
+      this.re.fill(0);
+      this.im.fill(0);
+      this.re[0] = 1.0; // |0000> hyperfine clock state |F=0, m_F=0>
+      this.gateLog = [];
+    }
+
+    // Mathieu RF Paul Trap radial stability parameter q = 2 e V_RF / (m r0^2 Omega_RF^2)
+    // Stable secular confinement requires 0 < q < 0.908 (typically q ~ 0.22 - 0.35)!
+    mathieuQ() {
+      const qVal = (0.28 * (this.rfVolt / 240)) / Math.pow(this.rfFreqMHz / 36.5, 2);
+      return +qVal.toFixed(3);
+    }
+
+    isTrapStable() {
+      const qVal = this.mathieuQ();
+      return qVal > 0.04 && qVal < 0.908;
+    }
+
+    // Single-ion stimulated Raman rotation Rx(theta) on ion q
+    applyRx(q, theta) {
+      const c = Math.cos(theta / 2);
+      const s = Math.sin(theta / 2); // -i sin(theta/2) X
+      const bit = 1 << q;
+      for (let idx = 0; idx < 16; idx++) {
+        if ((idx & bit) === 0) {
+          const j = idx | bit;
+          const r0 = this.re[idx],
+            i0 = this.im[idx];
+          const r1 = this.re[j],
+            i1 = this.im[j];
+          // |0'> = c|0> - i s|1>; |1'> = -i s|0> + c|1>
+          this.re[idx] = c * r0 + s * i1;
+          this.im[idx] = c * i0 - s * r1;
+          this.re[j] = s * i0 + c * r1;
+          this.im[j] = -s * r0 + c * i1;
+        }
+      }
+      this.gateLog.push(`Rx(${q},${(theta / Math.PI).toFixed(2)}π)`);
+      if (this.gateLog.length > 8) this.gateLog.shift();
+    }
+
+    // Exact All-to-All Mølmer-Sørensen Bichromatic Phonon-Bus Gate:
+    //   U_MS(i, j, theta) = exp(-i * (theta / 2) * X_i X_j) = cos(theta/2) I - i sin(theta/2) X_i X_j
+    // Couples ANY two ions (i, j) directly via shared axial phonon mode — ZERO SWAP gates required!
+    applyMolmerSorensen(i, j, theta = Math.PI / 2) {
+      if (i === j) return this.probabilities();
+      const c = Math.cos(theta / 2);
+      const s = Math.sin(theta / 2);
+      const mask = (1 << i) | (1 << j);
+      const visited = new Uint8Array(16);
+      for (let a = 0; a < 16; a++) {
+        if (visited[a]) continue;
+        const b = a ^ mask;
+        visited[a] = 1;
+        visited[b] = 1;
+        const ra = this.re[a],
+          ia = this.im[a];
+        const rb = this.re[b],
+          ib = this.im[b];
+        //psi_a' = c*psi_a - i*s*psi_b => re = c*ra + s*ib, im = c*ia - s*rb
+        this.re[a] = c * ra + s * ib;
+        this.im[a] = c * ia - s * rb;
+        this.re[b] = c * rb + s * ia;
+        this.im[b] = c * ib - s * ra;
+      }
+      this.gateLog.push(`MS(${i},${j})`);
+      if (this.gateLog.length > 8) this.gateLog.shift();
+      return this.probabilities();
+    }
+
+    probabilities() {
+      const p = new Float64Array(16);
+      for (let i = 0; i < 16; i++)
+        p[i] = this.re[i] * this.re[i] + this.im[i] * this.im[i];
+      return p;
+    }
+
+    // Marginal bright-state |1> fluorescence probability per 171Yb+ ion under 369.5 nm laser!
+    ionBrightProbabilities() {
+      const bright = [0, 0, 0, 0];
+      const probs = this.probabilities();
+      for (let idx = 0; idx < 16; idx++) {
+        for (let q = 0; q < 4; q++) {
+          if ((idx >>> q) & 1) bright[q] += probs[idx];
+        }
+      }
+      return bright;
+    }
+
+    twoQubitGateFidelity() {
+      // Fidelity degrades gently if mean axial phonon number n_bar rises above ground state
+      return Math.max(0.85, +(0.9992 - 0.018 * this.meanPhonons).toFixed(5));
+    }
+
+    step() {
+      // Cycle through a 4-ion GHZ-like all-to-all MS entangling sequence
+      const k = (this._stepIdx = ((this._stepIdx || 0) + 1) % 4);
+      if (k === 0) {
+        this.resetState();
+        this.applyMolmerSorensen(0, 3, Math.PI / 2);
+      } else if (k === 1) {
+        this.applyMolmerSorensen(0, 1, Math.PI / 2);
+      } else if (k === 2) {
+        this.applyMolmerSorensen(1, 2, Math.PI / 2);
+      } else {
+        this.applyRx(2, Math.PI / 4);
+      }
+      return { probs: this.probabilities(), bright: this.ionBrightProbabilities() };
+    }
+  }
+
+  // ============================================================================
+  // 23. SUPERCONDUCTING FLUX-QUBIT ADIABATIC QUANTUM ANNEALER (2011 / 2023)
+  //     Exact Transverse-Field Ising Spin Glass H(s) Tunneling vs Thermal SA
+  // ============================================================================
+  class QuantumAnnealerIsing {
+    constructor() {
+      this.nSpins = 6; // 2^6 = 64 spin configurations for exact instantaneous spectrum & RK4 Schrödinger tunneling!
+      this.preset = "tunnel"; // "tunnel" (tall thin barrier!) | "maxcut" (frustrated ring)
+      this.annealTimeUs = 18.0; // Longer T_anneal -> higher adiabatic ground-state probability (Landau-Zener!)
+      this.thermalTemp = 0.32;
+      this.s = 0.0;
+      this.h = new Float64Array(6);
+      this.J = [];
+      this.diagEnergies = new Float64Array(64);
+      this.spectrumCurve = []; // { s, e0, e1, gap }
+      this.loadInstance("tunnel");
+    }
+
+    loadInstance(kind = "tunnel") {
+      this.preset = kind;
+      this.h.fill(0);
+      this.J = [];
+      if (kind === "maxcut") {
+        // Antiferromagnetic frustrated ring + chord (Max-Cut QUBO benchmark!)
+        const edges = [
+          [0, 1, 1.0],
+          [1, 2, 1.0],
+          [2, 3, 1.0],
+          [3, 4, 1.0],
+          [4, 5, 1.0],
+          [5, 0, 1.0],
+          [0, 3, 0.75],
+          [1, 4, -0.6],
+        ];
+        this.J = edges;
+        this.h[0] = -0.25; // break Z2 degeneracy cleanly
+      } else {
+        // Canonical D-Wave / Boixo et al. Tall-Thin Spin-Glass Tunneling Barrier!
+        // Ferromagnetic core (0..5) biased so all-+1 is a FALSE local minimum, all--1 is TRUE global minimum,
+        // separated by a tall Hamming-distance-6 energy barrier that traps classical thermal annealing!
+        for (let i = 0; i < 6; i++) {
+          this.J.push([i, (i + 1) % 6, -1.15]);
+          if (i < 3) this.J.push([i, i + 3, -0.65]);
+          this.h[i] = 0.22; // global ground state is all sigma_z = -1 (bit = 1 -> mask 63)!
+        }
+      }
+      this._buildDiagonalIsingEnergies();
+      this._computeGapCurve();
+      this.runComparison(this.annealTimeUs);
+    }
+
+    _buildDiagonalIsingEnergies() {
+      let bestE = Infinity;
+      let bestMask = 0;
+      for (let mask = 0; mask < 64; mask++) {
+        // Convention: bit=0 -> sigma_z = +1 (spin UP), bit=1 -> sigma_z = -1 (spin DOWN)
+        let e = 0;
+        for (let i = 0; i < 6; i++) {
+          const sz = (mask >>> i) & 1 ? -1 : 1;
+          e += this.h[i] * sz;
+        }
+        for (const [i, j, Jij] of this.J) {
+          const szi = (mask >>> i) & 1 ? -1 : 1;
+          const szj = (mask >>> j) & 1 ? -1 : 1;
+          e += Jij * szi * szj;
+        }
+        this.diagEnergies[mask] = e;
+        if (e < bestE) {
+          bestE = e;
+          bestMask = mask;
+        }
+      }
+      // Penalty spike on intermediate Hamming weight 2..4 in "tunnel" mode (tall, narrow barrier!)
+      if (this.preset === "tunnel") {
+        for (let mask = 0; mask < 64; mask++) {
+          let ones = 0;
+          for (let b = 0; b < 6; b++) ones += (mask >>> b) & 1;
+          if (ones >= 2 && ones <= 4) this.diagEnergies[mask] += 2.6;
+        }
+        bestE = Infinity;
+        for (let mask = 0; mask < 64; mask++) {
+          if (this.diagEnergies[mask] < bestE) {
+            bestE = this.diagEnergies[mask];
+            bestMask = mask;
+          }
+        }
+      }
+      this.groundEnergy = bestE;
+      this.groundMask = bestMask;
+    }
+
+    // Compute exact instantaneous ground & 1st-excited gap Delta(s) across s in [0, 1] via Lanczos/power-deflation
+    _computeGapCurve() {
+      this.spectrumCurve = [];
+      let minGap = Infinity;
+      for (let k = 0; k <= 16; k++) {
+        const s = +(k / 16).toFixed(3);
+        const A = (1 - s) * 1.4;
+        const B = s * 1.0;
+        // H(s) = -A sum X_i + B diagEnergies -> off-diagonal entries are non-positive (-A), so Perron-Frobenius guarantees ground state is real & positive!
+        // Shift I*shift - H(s) so largest eigenvalue corresponds to E_0(s)!
+        const shift = 18.0;
+        const applyShifted = (vec) => {
+          const out = new Float64Array(64);
+          for (let m = 0; m < 64; m++) {
+            let acc = (shift - B * this.diagEnergies[m]) * vec[m];
+            for (let b = 0; b < 6; b++) acc += A * vec[m ^ (1 << b)];
+            out[m] = acc;
+          }
+          return out;
+        };
+
+        // Ground eigenvector v0 via power iteration
+        let v0 = new Float64Array(64).fill(1 / 8);
+        for (let it = 0; it < 36; it++) {
+          const w = applyShifted(v0);
+          let nrm = 0;
+          for (let m = 0; m < 64; m++) nrm += w[m] * w[m];
+          nrm = Math.sqrt(nrm) || 1;
+          for (let m = 0; m < 64; m++) v0[m] = w[m] / nrm;
+        }
+        const hv0 = applyShifted(v0);
+        let lam0 = 0;
+        for (let m = 0; m < 64; m++) lam0 += v0[m] * hv0[m];
+        const e0 = shift - lam0;
+
+        // First-excited eigenvector v1 via orthogonalized power iteration!
+        let v1 = new Float64Array(64);
+        for (let m = 0; m < 64; m++) v1[m] = m < 32 ? 0.125 : -0.125;
+        for (let it = 0; it < 44; it++) {
+          const w = applyShifted(v1);
+          let dot = 0;
+          for (let m = 0; m < 64; m++) dot += w[m] * v0[m];
+          let nrm = 0;
+          for (let m = 0; m < 64; m++) {
+            w[m] -= dot * v0[m];
+            nrm += w[m] * w[m];
+          }
+          nrm = Math.sqrt(nrm) || 1;
+          for (let m = 0; m < 64; m++) v1[m] = w[m] / nrm;
+        }
+        const hv1 = applyShifted(v1);
+        let lam1 = 0;
+        for (let m = 0; m < 64; m++) lam1 += v1[m] * hv1[m];
+        const e1 = Math.max(e0, shift - lam1);
+        const gap = Math.max(0.01, e1 - e0);
+        if (gap < minGap) minGap = gap;
+        this.spectrumCurve.push({ s, e0, e1, gap });
+      }
+      this.minGapGHz = +minGap.toFixed(3);
+      return this.spectrumCurve;
+    }
+
+    // Exact RK4 Real-Time Schrödinger Integration of 6-Qubit Transverse-Field Ising Anneal vs Classical SA!
+    runComparison(annealTimeUs = this.annealTimeUs) {
+      this.annealTimeUs = Math.max(0.5, Math.min(40, annealTimeUs));
+      const T = this.annealTimeUs;
+      const steps = Math.max(60, Math.min(480, Math.round(T * 14)));
+      const dt = T / steps;
+
+      // Initial ground state of -sum X_i is uniform superposition |++++++> = 1/8
+      let re = new Float64Array(64).fill(0.125);
+      let im = new Float64Array(64).fill(0);
+
+      const deriv = (r, m, sVal) => {
+        const A = (1 - sVal) * 1.4;
+        const B = sVal * 1.0;
+        const dr = new Float64Array(64);
+        const dm = new Float64Array(64);
+        for (let idx = 0; idx < 64; idx++) {
+          let hr = B * this.diagEnergies[idx] * r[idx];
+          let hm = B * this.diagEnergies[idx] * m[idx];
+          for (let b = 0; b < 6; b++) {
+            const j = idx ^ (1 << b);
+            hr -= A * r[j];
+            hm -= A * m[j];
+          }
+          // d/dt (r + i m) = -i H (r + i m) => dr = H*m, dm = -H*r
+          dr[idx] = hm;
+          dm[idx] = -hr;
+        }
+        return { dr, dm };
+      };
+
+      for (let st = 0; st < steps; st++) {
+        const s0 = st / steps;
+        const sMid = (st + 0.5) / steps;
+        const s1 = (st + 1) / steps;
+        const k1 = deriv(re, im, s0);
+        const r2 = new Float64Array(64),
+          m2 = new Float64Array(64);
+        for (let i = 0; i < 64; i++) {
+          r2[i] = re[i] + 0.5 * dt * k1.dr[i];
+          m2[i] = im[i] + 0.5 * dt * k1.dm[i];
+        }
+        const k2 = deriv(r2, m2, sMid);
+        const r3 = new Float64Array(64),
+          m3 = new Float64Array(64);
+        for (let i = 0; i < 64; i++) {
+          r3[i] = re[i] + 0.5 * dt * k2.dr[i];
+          m3[i] = im[i] + 0.5 * dt * k2.dm[i];
+        }
+        const k3 = deriv(r3, m3, sMid);
+        const r4 = new Float64Array(64),
+          m4 = new Float64Array(64);
+        for (let i = 0; i < 64; i++) {
+          r4[i] = re[i] + dt * k3.dr[i];
+          m4[i] = im[i] + dt * k3.dm[i];
+        }
+        const k4 = deriv(r4, m4, s1);
+        for (let i = 0; i < 64; i++) {
+          re[i] += (dt / 6) * (k1.dr[i] + 2 * k2.dr[i] + 2 * k3.dr[i] + k4.dr[i]);
+          im[i] += (dt / 6) * (k1.dm[i] + 2 * k2.dm[i] + 2 * k3.dm[i] + k4.dm[i]);
+        }
+      }
+
+      this.finalProbs = new Float64Array(64);
+      let norm = 0;
+      for (let i = 0; i < 64; i++) {
+        this.finalProbs[i] = re[i] * re[i] + im[i] * im[i];
+        norm += this.finalProbs[i];
+      }
+      if (norm > 0) {
+        for (let i = 0; i < 64; i++) this.finalProbs[i] /= norm;
+      }
+
+      // Sum probability on all degenerate ground states within 1e-6 of groundEnergy
+      let qGroundProb = 0;
+      for (let i = 0; i < 64; i++) {
+        if (Math.abs(this.diagEnergies[i] - this.groundEnergy) < 1e-5) {
+          qGroundProb += this.finalProbs[i];
+        }
+      }
+      this.quantumSuccessProb = +qGroundProb.toFixed(4);
+
+      // Classical Thermal Simulated Annealing (exact master-equation Markov chain over single-spin flips from false-well / uniform start!)
+      let saDist = new Float64Array(64).fill(1 / 64);
+      const saSweeps = 28;
+      for (let sw = 0; sw < saSweeps; sw++) {
+        const temp = Math.max(
+          0.08,
+          1.4 * Math.pow(1 - sw / saSweeps, 1.8) * this.thermalTemp * 3,
+        );
+        const nextDist = new Float64Array(64);
+        for (let m = 0; m < 64; m++) {
+          let stay = 1.0;
+          for (let b = 0; b < 6; b++) {
+            const nb = m ^ (1 << b);
+            const dE = this.diagEnergies[nb] - this.diagEnergies[m];
+            const pAccept = dE <= 0 ? 1 / 6 : Math.exp(-dE / temp) / 6;
+            nextDist[nb] += saDist[m] * pAccept;
+            stay -= pAccept;
+          }
+          nextDist[m] += saDist[m] * Math.max(0, stay);
+        }
+        saDist = nextDist;
+      }
+      let cGroundProb = 0;
+      for (let i = 0; i < 64; i++) {
+        if (Math.abs(this.diagEnergies[i] - this.groundEnergy) < 1e-5) {
+          cGroundProb += saDist[i];
+        }
+      }
+      this.classicalSuccessProb = +cGroundProb.toFixed(4);
+      this.s = 1.0;
+      return {
+        quantumProb: this.quantumSuccessProb,
+        classicalProb: this.classicalSuccessProb,
+        minGap: this.minGapGHz,
+      };
+    }
+
+    step(dt = 0.016) {
+      this.s = (this.s + dt * 0.45) % 1.0;
+      return {
+        s: this.s,
+        quantumProb: this.quantumSuccessProb,
+        classicalProb: this.classicalSuccessProb,
+      };
     }
   }
 
@@ -1992,6 +3628,14 @@ DONE  ST    R2,NETOUT
     PhotonicMbqcSim,
     TopologicalMajoranaSim,
     OmegaSingularityCore,
+    ApolloAgcDsky,
+    XeroxAltoSystem,
+    MobileArmSoc,
+    VaxVirtualMemorySystem,
+    Cdc6600Scoreboard,
+    AsciRedWormholeMpp,
+    TrappedIonPaulQccd,
+    QuantumAnnealerIsing,
   };
 
   Object.assign(globalScope, exportsMap);

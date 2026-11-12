@@ -643,6 +643,180 @@ function siliconDieMaps() {
   });
 }
 
+// 7. 512x512 Staggered Honeycomb Perforated Server / Supercomputer Door Grille Maps
+function perfMeshMaps() {
+  return gn("__tex_perf_mesh", () => {
+    const sz = 512;
+    const cCan = document.createElement("canvas");
+    const bCan = document.createElement("canvas");
+    const rCan = document.createElement("canvas");
+    cCan.width = cCan.height = bCan.width = bCan.height = rCan.width = rCan.height = sz;
+    const cCtx = cCan.getContext("2d");
+    const bCtx = bCan.getContext("2d");
+    const rCtx = rCan.getContext("2d");
+
+    cCtx.fillStyle = "#e6ebf2";
+    cCtx.fillRect(0, 0, sz, sz);
+    bCtx.fillStyle = "#dcdcdc";
+    bCtx.fillRect(0, 0, sz, sz);
+    rCtx.fillStyle = "#767676";
+    rCtx.fillRect(0, 0, sz, sz);
+
+    const stepX = 16;
+    const stepY = 16;
+    for (let row = 0; row < sz / stepY; row++) {
+      const xOff = (row & 1) * (stepX * 0.5);
+      const cy = row * stepY + stepY * 0.5;
+      for (let col = -1; col <= sz / stepX; col++) {
+        const cx = col * stepX + xOff;
+        // Bevel rim
+        bCtx.fillStyle = "#989898";
+        bCtx.beginPath();
+        bCtx.arc(cx, cy, 5.4, 0, Math.PI * 2);
+        bCtx.fill();
+        // Deep dark aperture hole
+        cCtx.fillStyle = "#161b24";
+        cCtx.beginPath();
+        cCtx.arc(cx, cy, 4.4, 0, Math.PI * 2);
+        cCtx.fill();
+        bCtx.fillStyle = "#181818";
+        bCtx.beginPath();
+        bCtx.arc(cx, cy, 4.3, 0, Math.PI * 2);
+        bCtx.fill();
+        rCtx.fillStyle = "#dadada";
+        rCtx.beginPath();
+        rCtx.arc(cx, cy, 4.3, 0, Math.PI * 2);
+        rCtx.fill();
+      }
+    }
+    return {
+      map: makeCanvasTex(cCan, true, 4),
+      normal: heightCanvasToNormalTex(bCan, 2.4, 4),
+      rough: makeCanvasTex(rCan, false, 4),
+    };
+  });
+}
+
+// 8. 512x512 Aerospace / Cryogenic Crinkled Gold Kapton MLI Foil Maps
+function cryoGoldMaps() {
+  return gn("__tex_cryo_gold", () => {
+    const sz = 512;
+    const bCan = document.createElement("canvas");
+    const rCan = document.createElement("canvas");
+    bCan.width = bCan.height = rCan.width = rCan.height = sz;
+    const bCtx = bCan.getContext("2d");
+    const rCtx = rCan.getContext("2d");
+    const rng = seededRng(19690720);
+
+    bCtx.fillStyle = "#808080";
+    bCtx.fillRect(0, 0, sz, sz);
+    rCtx.fillStyle = "#525252";
+    rCtx.fillRect(0, 0, sz, sz);
+
+    // Crinkled faceted Kapton foil polygons + crease ridges
+    for (let i = 0; i < 420; i++) {
+      const x = rng() * sz;
+      const y = rng() * sz;
+      const rad = 18 + rng() * 44;
+      const shade = Math.floor(72 + rng() * 115);
+      const grad = bCtx.createLinearGradient(x - rad, y - rad, x + rad, y + rad);
+      grad.addColorStop(0, `rgb(${shade},${shade},${shade})`);
+      grad.addColorStop(1, `rgb(${210 - shade},${210 - shade},${210 - shade})`);
+      bCtx.fillStyle = grad;
+      bCtx.beginPath();
+      const sides = 4 + Math.floor(rng() * 3);
+      for (let s = 0; s < sides; s++) {
+        const ang = (s / sides) * Math.PI * 2 + rng() * 0.5;
+        const px = x + Math.cos(ang) * rad;
+        const py = y + Math.sin(ang) * rad;
+        if (s === 0) bCtx.moveTo(px, py);
+        else bCtx.lineTo(px, py);
+      }
+      bCtx.closePath();
+      bCtx.fill();
+
+      const rVal = Math.floor(55 + rng() * 45);
+      rCtx.strokeStyle = `rgba(${rVal},${rVal},${rVal},0.55)`;
+      rCtx.lineWidth = 1.4;
+      rCtx.stroke();
+    }
+    return {
+      normal: heightCanvasToNormalTex(bCan, 1.85, 2),
+      rough: makeCanvasTex(rCan, false, 2),
+    };
+  });
+}
+
+// 9. 512x512 Woven Copper Magnet-Wire & Toroidal Ferrite Core / Rope Memory Plane
+function corePlaneMaps() {
+  return gn("__tex_core_plane", () => {
+    const sz = 512;
+    const cCan = document.createElement("canvas");
+    const bCan = document.createElement("canvas");
+    cCan.width = cCan.height = bCan.width = bCan.height = sz;
+    const cCtx = cCan.getContext("2d");
+    const bCtx = bCan.getContext("2d");
+
+    cCtx.fillStyle = "#18211b";
+    cCtx.fillRect(0, 0, sz, sz);
+    bCtx.fillStyle = "#484848";
+    bCtx.fillRect(0, 0, sz, sz);
+
+    const step = 32;
+    // X & Y copper drive wires
+    cCtx.strokeStyle = "#cf7c48";
+    bCtx.strokeStyle = "#9e9e9e";
+    cCtx.lineWidth = bCtx.lineWidth = 3.2;
+    for (let p = step / 2; p < sz; p += step) {
+      cCtx.beginPath();
+      cCtx.moveTo(0, p);
+      cCtx.lineTo(sz, p);
+      cCtx.moveTo(p, 0);
+      cCtx.lineTo(p, sz);
+      cCtx.stroke();
+
+      bCtx.beginPath();
+      bCtx.moveTo(0, p);
+      bCtx.lineTo(sz, p);
+      bCtx.moveTo(p, 0);
+      bCtx.lineTo(p, sz);
+      bCtx.stroke();
+    }
+
+    // Diagonal gold/enamel sense wire threading alternating cores!
+    cCtx.strokeStyle = "#e5b45b";
+    cCtx.lineWidth = 2.0;
+    for (let d = -sz; d < sz * 2; d += step * 2) {
+      cCtx.beginPath();
+      cCtx.moveTo(d, 0);
+      cCtx.lineTo(d + sz, sz);
+      cCtx.stroke();
+    }
+
+    // Sintered manganese-zinc ferrite toroid rings at every X/Y intersection!
+    for (let y = step / 2; y < sz; y += step) {
+      for (let x = step / 2; x < sz; x += step) {
+        cCtx.strokeStyle = "#2b2f36";
+        cCtx.lineWidth = 4.6;
+        cCtx.beginPath();
+        cCtx.arc(x, y, 6.8, 0, Math.PI * 2);
+        cCtx.stroke();
+
+        bCtx.strokeStyle = "#ececec";
+        bCtx.lineWidth = 4.6;
+        bCtx.beginPath();
+        bCtx.arc(x, y, 6.8, 0, Math.PI * 2);
+        bCtx.stroke();
+      }
+    }
+
+    return {
+      map: makeCanvasTex(cCan, true, 3),
+      normal: heightCanvasToNormalTex(bCan, 2.2, 3),
+    };
+  });
+}
+
 var In = (col, rough = 0.55, metal = 0, extra = {}) =>
   new et({
     color: metal > 0.4 ? col : calibrateDielectricColor(col, 0.8),
@@ -908,6 +1082,52 @@ var U = {
         metalness: 0.0,
         normalMap: gmTex.userData.normal,
         normalScale: new ye(0.32, 0.32),
+      });
+    }),
+
+  perfMesh: (col = 0x1a2230) =>
+    gn("perf_" + col, () => {
+      const pm = perfMeshMaps();
+      return new Cn({
+        color: calibrateDielectricColor(col, 0.84),
+        map: pm.map,
+        normalMap: pm.normal,
+        normalScale: new ye(0.55, 0.55),
+        roughnessMap: pm.rough,
+        roughness: 0.44,
+        metalness: 0.78,
+        envMapIntensity: 0.82,
+      });
+    }),
+
+  cryoGold: () =>
+    gn("cryo_gold", () => {
+      const cg = cryoGoldMaps();
+      return new Cn({
+        color: 0xe3b144,
+        roughness: 0.24,
+        metalness: 0.96,
+        normalMap: cg.normal,
+        normalScale: new ye(0.46, 0.46),
+        roughnessMap: cg.rough,
+        clearcoat: 0.28,
+        clearcoatRoughness: 0.22,
+        envMapIntensity: 0.94,
+      });
+    }),
+
+  corePlane: () =>
+    gn("core_plane", () => {
+      const cp = corePlaneMaps();
+      return new Cn({
+        color: 0xffffff,
+        map: cp.map,
+        normalMap: cp.normal,
+        normalScale: new ye(0.48, 0.48),
+        roughness: 0.38,
+        metalness: 0.65,
+        clearcoat: 0.18,
+        clearcoatRoughness: 0.35,
       });
     }),
 

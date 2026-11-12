@@ -162,24 +162,65 @@ var us = {
   },
   qtopo: {
     film: "The Tree of Life & Annihilation",
-    style: "annihilation",
+    style: "malick",
     mood: "suspended Majorana divisi strings, organ & formant choir",
   },
   qomega: {
     film: "Interstellar & 2001: A Space Odyssey",
-    style: "interstellar",
-    mood: "grand cathedral organ, French horns & horizon choir",
+    style: "zimmer",
+    mood: "grand cathedral organ, solo cello, French horns & horizon choir",
+  },
+  agc66: {
+    film: "Apollo 13 & First Man",
+    style: "horner",
+    mood: "noble mission brass, solo trumpet, luminous choir & felt piano",
+  },
+  alto73: {
+    film: "The Imitation Game & Steve Jobs",
+    style: "imitation",
+    mood: "intimate felt piano arpeggios, solo cello & chamber strings",
+  },
+  arm07: {
+    film: "Ex Machina & Her",
+    style: "exmachina",
+    mood: "warm felt grand piano, glass harmonics & intimate strings",
+  },
+  vax78: {
+    film: "JFK & All the President's Men",
+    style: "stone",
+    mood: "elegiac adagio strings, noble solo brass & concert snare",
+  },
+  cdc6600: {
+    film: "Oppenheimer & Hidden Figures",
+    style: "nolan",
+    mood: "clockwork spiccato strings, Freon-era horns & concert timpani",
+  },
+  ascired97: {
+    film: "Crimson Tide & Inception",
+    style: "inception",
+    mood: "driving cello ostinato, TeraFLOPS low brass & cathedral horns",
+  },
+  qion: {
+    film: "Arrival & Contact",
+    style: "glass",
+    mood: "crystalline trapped-ion harmonic waves, celesta & choir",
+  },
+  qanneal: {
+    film: "Interstellar & Sunshine",
+    style: "malick",
+    mood: "15 mK cathedral pedal organ, suspended strings & solo cello",
   },
 };
 
 var SCORE_THEMES = [
   ["auto", "Auto · Era-Matched Film Score"],
-  ["interstellar", "Zimmer · Cathedral Pipe Organ & Ostinato"],
-  ["gallery", "Malick / Stone · Adagio Divisi Strings & Horns"],
-  ["mind", "Horner · Luminous Choir, Piano & Noble Brass"],
-  ["oppenheimer", "Nolan · Clockwork Spiccato & Timpani"],
-  ["inception", "Zimmer · 'Time' Slow-Build Cello & Brass"],
-  ["blade", "Vangelis / 2049 · CS-80 Noir Symphony"],
+  ["zimmer", "Hans Zimmer · Cathedral Organ, Solo Cello & Ostinato"],
+  ["horner", "James Horner · Noble Horns, Choir & Kaleidoscope Piano"],
+  ["nolan", "Christopher Nolan / Göransson · Clockwork Spiccato & Brass"],
+  ["malick", "Terrence Malick · Suspended Cathedral Strings & 32' Organ"],
+  ["stone", "Oliver Stone · Elegiac Adagio Strings, Trumpet & Snare"],
+  ["inception", "Hans Zimmer · 'Time' Slow-Build Cello & Brass"],
+  ["vangelis", "Vangelis / 2049 · Expressive CS-80 Brass & Rain Bells"],
 ];
 
 var Yy = (id) => {
@@ -272,6 +313,9 @@ var CINEMATIC_CUES = {
           stepDur * 16,
           0.09 + 0.08 * act,
         );
+      }
+      if (stepInChord === 8 && act > 0.14) {
+        eng.soloCello(chord.notes[2], stepDur * 22, 0.19 + 0.09 * act);
       }
       if (stepInChord % 4 === 0) {
         const mIdx = Math.floor(stepInChord / 4);
@@ -373,6 +417,9 @@ var CINEMATIC_CUES = {
         const pulseVel = (idx % 2 === 0 ? 0.18 : 0.12) * (0.85 + 0.35 * act);
         eng.cathedralOrgan([n], stepDur * 2.1, pulseVel * 0.85);
         eng.concertPiano(n, stepDur * 3.0, pulseVel, ((idx % 4) - 1.5) * 0.1);
+      }
+      if (stepInChord === 0 && act > 0.12) {
+        eng.soloCello(chord.notes[2], stepDur * 15.2, 0.18 + 0.11 * act);
       }
       if (stepInChord === 8 && act > 0.2) {
         eng.concertPiano(chord.top, stepDur * 8, 0.2 + 0.08 * act, 0.18);
@@ -653,6 +700,7 @@ var CINEMATIC_CUES = {
       );
       if (stepInChord === 6 && act > 0.2) {
         eng.celestaBell(chord.horn, stepDur * 6, 0.09 + 0.06 * act);
+        eng.soloTrumpet(chord.horn - 12, stepDur * 6.2, 0.15 + 0.1 * act);
       }
     },
   },
@@ -1052,7 +1100,136 @@ var CINEMATIC_CUES = {
       }
     },
   },
+
+  // Terrence Malick ("The Thin Red Line" / "The Tree of Life"): 32' Cathedral Organ, Suspended Diatonic Strings & Singing Solo Cello
+  malick: {
+    bpm: 56,
+    subdiv: 4,
+    barsPerChord: 2,
+    chords: [
+      {
+        name: "Dm(add9)",
+        bass: 26,
+        notes: [38, 45, 53, 62, 64],
+        cello: 57,
+        vox: [65, 69, 74],
+      },
+      {
+        name: "Bbmaj7(#11)",
+        bass: 34,
+        notes: [46, 53, 57, 62, 69],
+        cello: 58,
+        vox: [65, 69, 72],
+      },
+      {
+        name: "Fmaj9/A",
+        bass: 33,
+        notes: [45, 53, 60, 64, 67],
+        cello: 60,
+        vox: [65, 72, 76],
+      },
+      {
+        name: "Csus4 → C",
+        bass: 36,
+        notes: [48, 55, 60, 65, 67],
+        cello: 62,
+        vox: [67, 72, 74],
+      },
+      {
+        name: "Gm11",
+        bass: 31,
+        notes: [43, 50, 58, 62, 65],
+        cello: 58,
+        vox: [65, 69, 74],
+      },
+      {
+        name: "Asus4 → A",
+        bass: 33,
+        notes: [45, 52, 57, 64, 69],
+        cello: 57,
+        vox: [64, 69, 73],
+      },
+    ],
+    render(eng, stepInChord, chord, stepDur, act) {
+      if (stepInChord === 0) {
+        eng.divisiStrings(chord.notes, stepDur * 33.2, 0.24 + 0.12 * act);
+        eng.cathedralOrgan(
+          [chord.bass, chord.notes[0], chord.notes[2]],
+          stepDur * 32.5,
+          0.16 + 0.1 * act,
+        );
+        eng.soloCello(chord.cello, stepDur * 28, 0.22 + 0.1 * act);
+      }
+      if (stepInChord === 12) {
+        eng.luminousChoir(chord.vox, stepDur * 20, 0.14 + 0.1 * act);
+        if (act > 0.22) {
+          eng.frenchHorns(
+            [chord.notes[0], chord.notes[2], chord.notes[3]],
+            stepDur * 18,
+            0.15 + 0.12 * act,
+          );
+        }
+      }
+      if (stepInChord === 6 || stepInChord === 22) {
+        eng.concertPiano(
+          chord.vox[stepInChord === 6 ? 1 : 2],
+          stepDur * 10,
+          0.16 + 0.06 * act,
+          0.12,
+        );
+      }
+    },
+  },
+
+  // Oliver Stone ("Platoon" Barber Adagio / "JFK" / "Born on the Fourth of July"): Climbing Elegiac Strings, Noble Solo Trumpet & Distant Concert Snare
+  stone: {
+    bpm: 60,
+    subdiv: 4,
+    barsPerChord: 2,
+    chords: [
+      { name: "Bm(add9)", bass: 35, notes: [47, 54, 59, 62, 66], trp: [66, 71, 73, 74] },
+      { name: "Gmaj9", bass: 31, notes: [43, 50, 59, 62, 69], trp: [71, 74, 78, 76] },
+      { name: "Em11", bass: 28, notes: [40, 47, 55, 62, 67], trp: [74, 71, 67, 69] },
+      {
+        name: "F#7sus4 → F#",
+        bass: 30,
+        notes: [42, 49, 54, 61, 66],
+        trp: [66, 67, 66, 64],
+      },
+      { name: "Dmaj9/F#", bass: 30, notes: [42, 50, 57, 62, 69], trp: [69, 74, 76, 78] },
+      { name: "Em7/G", bass: 31, notes: [43, 52, 59, 64, 71], trp: [76, 74, 71, 67] },
+      { name: "Asus4", bass: 33, notes: [45, 52, 57, 62, 69], trp: [69, 71, 74, 73] },
+      { name: "Bm/F#", bass: 30, notes: [42, 47, 54, 62, 66], trp: [71, 69, 66, 62] },
+    ],
+    render(eng, stepInChord, chord, stepDur, act) {
+      if (stepInChord === 0) {
+        eng.divisiStrings(chord.notes, stepDur * 33.4, 0.25 + 0.13 * act);
+        eng.frenchHorns(
+          [chord.notes[0], chord.notes[1], chord.notes[3]],
+          stepDur * 30,
+          0.16 + 0.12 * act,
+        );
+        eng.soloCello(chord.notes[1], stepDur * 28, 0.18 + 0.08 * act);
+      }
+      if (stepInChord % 8 === 0) {
+        const idx = Math.floor(stepInChord / 8) % 4;
+        eng.soloTrumpet(chord.trp[idx], stepDur * 8.4, 0.19 + 0.1 * act);
+      }
+      if (stepInChord === 0 || stepInChord === 16) {
+        eng.concertSnareRoll(stepDur * 7.5, 0.065 + 0.055 * act);
+      }
+      if (stepInChord === 16 && act > 0.25) {
+        eng.concertTimpani(chord.bass, 0.18 + 0.12 * act);
+      }
+    },
+  },
 };
+
+// Canonical composer aliases so both UI SCORE_THEMES and automated tests resolve directly
+CINEMATIC_CUES.zimmer = CINEMATIC_CUES.interstellar;
+CINEMATIC_CUES.horner = CINEMATIC_CUES.mind;
+CINEMATIC_CUES.nolan = CINEMATIC_CUES.oppenheimer;
+CINEMATIC_CUES.vangelis = CINEMATIC_CUES.blade;
 
 var OrchestralScoreEngine = class {
   constructor(host) {
@@ -1099,9 +1276,16 @@ var OrchestralScoreEngine = class {
     this.ensIn.connect(dR);
     dL.connect(merge, 0, 0);
     dR.connect(merge, 0, 1);
-    const ensOut = host.gain(0.38, this.dryBus);
+    const ensOut = host.gain(0.4, this.dryBus);
     merge.connect(ensOut);
     merge.connect(this.hallSend);
+
+    // Precomputed warm nonlinear brass saturation curve (soft acoustic harmonic bloom)
+    this.brassCurve = new Float32Array(1024);
+    for (let i = 0; i < 1024; i++) {
+      const x = i / 511.5 - 1;
+      this.brassCurve[i] = Math.tanh(1.42 * x) / Math.tanh(1.42);
+    }
   }
 
   _pan(panVal, destA, sendGain = 0.5) {
@@ -1169,50 +1353,75 @@ var OrchestralScoreEngine = class {
     }
   }
 
-  // 1. Divisi Orchestral Strings (Violins I/II L, Violas C, Celli/Contrabass R, wooden body formants + delayed vibrato)
+  // 1. Divisi Orchestral Strings (Violins I/II L, Violas C, Celli/Contrabass R, Stradivari/Cello wood corpus + Bridge Hill + rosin harshness notch + staggered bow entry)
   divisiStrings(midiList, dur, vel = 0.2) {
-    const t = this._t;
+    const tBase = this._t;
     const ac = this.ac;
-    const pans = [0.26, 0.1, -0.08, -0.24, -0.36];
-    midiList.forEach((midi, idx) => {
+    const pans = [0.28, 0.11, -0.07, -0.25, -0.38];
+    const fullVoicing =
+      midiList.length >= 3 && midiList[0] >= 36
+        ? [midiList[0] - 12, ...midiList]
+        : midiList;
+
+    fullVoicing.forEach((midi, idx) => {
+      const t = tBase + idx * 0.015; // Natural desk-by-desk bow entry stagger
       const f = ii(midi);
-      const panOut = this._pan(pans[idx % pans.length], this.dryBus, 0.68);
+      const panOut = this._pan(pans[idx % pans.length], this.dryBus, 0.72);
       panOut.connect(this.ensIn);
 
-      // Wooden violin/cello body resonance + warm lowpass
-      const bodyPeak = this.h.filt("peaking", midi < 55 ? 240 : 520, 1.4);
-      bodyPeak.gain.value = 3.5;
-      const lpf = this.h.filt("lowpass", Math.min(4200, f * (3.6 + vel * 5.5)), 0.7);
+      // Multi-stage acoustic corpus: wood resonance + 2.1 kHz Bridge Hill + 3.85 kHz harshness dip + warm lowpass
+      const bodyPeak = this.h.filt("peaking", midi < 52 ? 215 : 460, 1.35);
+      bodyPeak.gain.value = 4.0;
+      const bridgeHill = this.h.filt("peaking", 2050, 1.5);
+      bridgeHill.gain.value = 2.4;
+      const rosinDip = this.h.filt("peaking", 3850, 2.2);
+      rosinDip.gain.value = -4.8;
+      const lpf = this.h.filt("lowpass", Math.min(3900, f * (3.4 + vel * 5.0)), 0.65);
       const envG = this.h.gain(0.0001, panOut);
-      bodyPeak.connect(lpf);
+      bodyPeak.connect(bridgeHill);
+      bridgeHill.connect(rosinDip);
+      rosinDip.connect(lpf);
       lpf.connect(envG);
 
-      const atk = Math.min(0.45, dur * 0.28);
-      const peak = (vel * 0.13) / Math.sqrt(Math.max(1, midiList.length * 0.65));
+      const atk = Math.min(0.52, dur * 0.3);
+      const isSub = idx === 0 && fullVoicing.length > midiList.length;
+      const peak =
+        ((isSub ? 0.72 : 1.0) * (vel * 0.132)) /
+        Math.sqrt(Math.max(1, fullVoicing.length * 0.68));
       envG.gain.setValueAtTime(0.0001, t);
       envG.gain.linearRampToValueAtTime(peak, t + atk);
-      envG.gain.setValueAtTime(peak * 0.88, t + Math.max(atk + 0.02, dur * 0.72));
-      envG.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.45);
+      envG.gain.setValueAtTime(peak * 0.9, t + Math.max(atk + 0.03, dur * 0.74));
+      envG.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.55);
 
-      // Delayed expressive human vibrato (5.3 Hz)
+      // Subtle horsehair-on-string breath during bow engagement
+      if (!isSub && idx < 2) {
+        const bowAir = this.h.filt("bandpass", 1900, 2.4, envG);
+        const bg = this.h.gain(0.0001, bowAir);
+        bg.gain.setValueAtTime(0.0001, t);
+        bg.gain.linearRampToValueAtTime(peak * 0.14, t + Math.min(0.18, atk));
+        bg.gain.exponentialRampToValueAtTime(0.0001, t + Math.min(0.45, dur * 0.5));
+        this.h.noiseSrc(t, Math.min(0.5, dur * 0.5), bg, 0.95);
+      }
+
+      // Delayed expressive human vibrato (5.1–5.7 Hz)
       const vib = ac.createOscillator();
       const vibG = this.h.gain(0);
-      vib.frequency.value = 5.1 + (idx % 3) * 0.25;
+      vib.frequency.value = 5.05 + (idx % 4) * 0.22;
       vibG.gain.setValueAtTime(0, t);
-      vibG.gain.linearRampToValueAtTime(f * 0.0042, t + Math.min(0.65, dur * 0.45));
+      vibG.gain.linearRampToValueAtTime(f * 0.0044, t + Math.min(0.7, dur * 0.45));
       vib.connect(vibG);
       vib.start(t);
-      vib.stop(t + dur + 0.5);
+      vib.stop(t + dur + 0.6);
 
-      for (const det of [-5.5, 0, 6.0]) {
+      for (const det of isSub ? [-3.5, 3.5] : [-6.2, 0, 6.5]) {
         const osc = ac.createOscillator();
-        osc.type = det === 0 && midi < 48 ? "triangle" : "sawtooth";
+        osc.type = isSub || (det === 0 && midi < 50) ? "triangle" : "sawtooth";
         osc.frequency.setValueAtTime(f, t);
         osc.detune.value = det;
         vibG.connect(osc.frequency);
         osc.connect(bodyPeak);
         osc.start(t);
-        osc.stop(t + dur + 0.5);
+        osc.stop(t + dur + 0.6);
         this.h.stats.voices++;
       }
     });
@@ -1247,57 +1456,55 @@ var OrchestralScoreEngine = class {
     }
   }
 
-  // 3. Concert Felt-to-Bright Grand Piano (Stretched harmonics + wooden hammer thud + dynamic filter)
+  // 3. Concert Felt-to-Bright Grand Piano (Spruce soundboard body + stretched harmonics + humanized micro-timing)
   concertPiano(midi, dur, vel = 0.2, pan = 0) {
-    const t = this._t;
+    const t = this._t + ((midi * 7) % 5) * 0.0018; // Subtle human finger micro-timing
     const f = ii(midi);
-    const panOut = this._pan(pan, this.dryBus, 0.52);
-    const lpf = this.h.filt(
-      "lowpass",
-      Math.min(5800, f * (2.4 + vel * 9.5)),
-      0.75,
-      panOut,
-    );
-    lpf.frequency.setValueAtTime(Math.min(6400, f * (3.4 + vel * 11)), t);
+    const panOut = this._pan(pan, this.dryBus, 0.56);
+    const board = this.h.filt("peaking", 195, 1.2, panOut);
+    board.gain.value = 2.8;
+    const lpf = this.h.filt("lowpass", Math.min(5200, f * (2.2 + vel * 8.5)), 0.7, board);
+    lpf.frequency.setValueAtTime(Math.min(5600, f * (3.1 + vel * 9.5)), t);
     lpf.frequency.exponentialRampToValueAtTime(
-      Math.max(260, f * 1.65),
-      t + Math.max(0.25, dur * 0.9),
+      Math.max(240, f * 1.55),
+      t + Math.max(0.28, dur * 0.92),
     );
 
     const envG = this.h.gain(0.0001, lpf);
     const peak = vel * 0.24;
     envG.gain.setValueAtTime(0.0001, t);
-    envG.gain.linearRampToValueAtTime(peak, t + 0.006);
-    envG.gain.exponentialRampToValueAtTime(peak * 0.34, t + Math.min(0.32, dur * 0.35));
-    envG.gain.exponentialRampToValueAtTime(0.0001, t + Math.max(0.38, dur * 1.25));
+    envG.gain.linearRampToValueAtTime(peak, t + 0.007);
+    envG.gain.exponentialRampToValueAtTime(peak * 0.38, t + Math.min(0.36, dur * 0.38));
+    envG.gain.exponentialRampToValueAtTime(0.0001, t + Math.max(0.42, dur * 1.32));
 
-    // Stretched piano string partials (inharmonicity coefficient B = 0.00035)
+    // Stretched piano string partials + unison Bichord/Trichord warmth
     const partials = [
-      [1, 1.0, "triangle"],
-      [2, 0.42, "sine"],
-      [3, 0.16, "sine"],
-      [4, 0.07, "sine"],
+      [1, 0.72, "triangle", -1.2],
+      [1, 0.52, "sine", 1.4],
+      [2, 0.38, "sine", 0],
+      [3, 0.15, "sine", 0],
+      [4, 0.06, "sine", 0],
     ];
-    for (const [n, amp, type] of partials) {
+    for (const [n, amp, type, det] of partials) {
       const fn = f * n * Math.sqrt(1 + 0.00035 * n * n);
-      if (fn > 9500) continue;
+      if (fn > 9200) continue;
       const pg = this.h.gain(amp, envG);
       const o = this.ac.createOscillator();
       o.type = type;
       o.frequency.setValueAtTime(fn, t);
-      if (n === 1) o.detune.value = 1.6;
+      if (det) o.detune.value = det;
       o.connect(pg);
       o.start(t);
-      o.stop(t + dur * 1.3 + 0.06);
+      o.stop(t + dur * 1.35 + 0.08);
       this.h.stats.voices++;
     }
 
-    // Subtle wooden keybed / felt hammer knock
-    const knock = this.h.filt("bandpass", 360 + (midi - 48) * 6, 1.8, panOut);
+    // Soft felt hammer & wooden keybed transient
+    const knock = this.h.filt("bandpass", 310 + (midi - 48) * 5, 1.6, panOut);
     const kg = this.h.gain(0.0001, knock);
-    kg.gain.setValueAtTime(vel * 0.055, t);
-    kg.gain.exponentialRampToValueAtTime(0.0001, t + 0.018);
-    this.h.noiseSrc(t, 0.02, kg, 0.8);
+    kg.gain.setValueAtTime(vel * 0.045, t);
+    kg.gain.exponentialRampToValueAtTime(0.0001, t + 0.02);
+    this.h.noiseSrc(t, 0.022, kg, 0.75);
   }
 
   // 4. Hans Zimmer Temple-Church Cathedral Pipe Organ (32'/16'/8'/4'/2-2/3'/2' stops + wind chiff)
@@ -1348,39 +1555,48 @@ var OrchestralScoreEngine = class {
     });
   }
 
-  // 5. Noble French Horns & Low Brass Swells (Conical-bore dynamic filter bloom)
+  // 5. Noble French Horns & Low Brass Swells (Conical-bore dual bell formants + warm nonlinear brass bloom)
   frenchHorns(midiList, dur, vel = 0.18) {
-    const t = this._t;
+    const tBase = this._t;
     midiList.forEach((midi, idx) => {
+      const t = tBase + idx * 0.012;
       const f = ii(midi);
-      const panOut = this._pan(-0.28 + idx * 0.14, this.dryBus, 0.72);
-      const lpf = this.h.filt("lowpass", 280, 1.15, panOut);
-      const swellPeakT = t + Math.min(0.65, dur * 0.38);
-      lpf.frequency.setValueAtTime(Math.max(200, f * 1.4), t);
+      const panOut = this._pan(-0.28 + idx * 0.14, this.dryBus, 0.76);
+      const bellChest = this.h.filt("peaking", 355, 1.3, panOut);
+      bellChest.gain.value = 3.2;
+      const bellCore = this.h.filt("peaking", 760, 1.5, bellChest);
+      bellCore.gain.value = 2.6;
+      const shaper = this.ac.createWaveShaper();
+      shaper.curve = this.brassCurve;
+      shaper.connect(bellCore);
+      const lpf = this.h.filt("lowpass", 280, 1.05, shaper);
+      const swellPeakT = t + Math.min(0.68, dur * 0.38);
+      lpf.frequency.setValueAtTime(Math.max(190, f * 1.35), t);
       lpf.frequency.exponentialRampToValueAtTime(
-        Math.min(2200, f * (4.2 + vel * 6)),
+        Math.min(2100, f * (4.0 + vel * 5.8)),
         swellPeakT,
       );
-      lpf.frequency.exponentialRampToValueAtTime(Math.max(240, f * 1.8), t + dur + 0.25);
+      lpf.frequency.exponentialRampToValueAtTime(Math.max(230, f * 1.75), t + dur + 0.28);
 
       const envG = this.h.gain(0.0001, lpf);
-      const peak = (vel * 0.14) / Math.sqrt(Math.max(1, midiList.length * 0.65));
+      const peak = (vel * 0.145) / Math.sqrt(Math.max(1, midiList.length * 0.65));
       envG.gain.setValueAtTime(0.0001, t);
       envG.gain.linearRampToValueAtTime(peak, swellPeakT);
-      envG.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.32);
+      envG.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.36);
 
       for (const [det, wave] of [
-        [-3.5, "sawtooth"],
-        [3.5, "sawtooth"],
+        [-3.8, "sawtooth"],
+        [3.8, "sawtooth"],
         [0, "triangle"],
       ]) {
         const o = this.ac.createOscillator();
         o.type = wave;
-        o.frequency.setValueAtTime(f, t);
+        o.frequency.setValueAtTime(f * 0.996, t);
+        o.frequency.exponentialRampToValueAtTime(f, t + 0.045); // subtle horn lip attack
         o.detune.value = det;
         o.connect(envG);
         o.start(t);
-        o.stop(t + dur + 0.38);
+        o.stop(t + dur + 0.42);
         this.h.stats.voices++;
       }
     });
@@ -1388,6 +1604,119 @@ var OrchestralScoreEngine = class {
 
   lowBrassSwell(midi, dur, vel = 0.22) {
     this.frenchHorns([midi, midi + 12], dur, vel * 0.95);
+  }
+
+  // 5b. Expressive Singing Solo Cello (Zimmer / Malick lyrical voice: 215 Hz chest + 690 Hz A-string bridge + vibrato)
+  soloCello(midi, dur, vel = 0.2) {
+    const t = this._t + 0.01;
+    const f = ii(midi);
+    const panOut = this._pan(-0.18, this.dryBus, 0.76);
+    panOut.connect(this.ensIn);
+
+    const chest = this.h.filt("peaking", 215, 1.4, panOut);
+    chest.gain.value = 4.5;
+    const nasal = this.h.filt("peaking", 690, 1.8, chest);
+    nasal.gain.value = 3.2;
+    const lpf = this.h.filt("lowpass", Math.min(2800, f * 5.8), 0.75, nasal);
+    const envG = this.h.gain(0.0001, lpf);
+
+    const atk = Math.min(0.42, dur * 0.25);
+    const peak = vel * 0.145;
+    envG.gain.setValueAtTime(0.0001, t);
+    envG.gain.linearRampToValueAtTime(peak, t + atk);
+    envG.gain.setValueAtTime(peak * 0.88, t + Math.max(atk + 0.04, dur * 0.76));
+    envG.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.45);
+
+    const vib = this.ac.createOscillator();
+    const vibG = this.h.gain(0);
+    vib.frequency.value = 5.45;
+    vibG.gain.setValueAtTime(0, t);
+    vibG.gain.linearRampToValueAtTime(f * 0.0056, t + Math.min(0.55, dur * 0.4));
+    vib.connect(vibG);
+    vib.start(t);
+    vib.stop(t + dur + 0.5);
+
+    for (const [det, wave] of [
+      [-2.5, "sawtooth"],
+      [2.5, "triangle"],
+    ]) {
+      const o = this.ac.createOscillator();
+      o.type = wave;
+      o.frequency.setValueAtTime(f * 0.994, t);
+      o.frequency.exponentialRampToValueAtTime(f, t + 0.09); // expressive finger slide
+      o.detune.value = det;
+      vibG.connect(o.frequency);
+      o.connect(envG);
+      o.start(t);
+      o.stop(t + dur + 0.5);
+      this.h.stats.voices++;
+    }
+  }
+
+  // 5c. Noble Elegiac Solo Trumpet (Oliver Stone "JFK" / James Horner "Apollo 13" warm brass lead)
+  soloTrumpet(midi, dur, vel = 0.18) {
+    const t = this._t + 0.008;
+    const f = ii(midi);
+    const panOut = this._pan(-0.08, this.dryBus, 0.84);
+    const f1 = this.h.filt("peaking", 920, 1.6, panOut);
+    f1.gain.value = 3.4;
+    const f2 = this.h.filt("peaking", 1820, 1.8, f1);
+    f2.gain.value = 2.0;
+    const shaper = this.ac.createWaveShaper();
+    shaper.curve = this.brassCurve;
+    shaper.connect(f2);
+    const lpf = this.h.filt("lowpass", Math.min(2900, f * 4.8), 0.9, shaper);
+    lpf.frequency.setValueAtTime(f * 1.6, t);
+    lpf.frequency.exponentialRampToValueAtTime(
+      Math.min(3100, f * 5.2),
+      t + Math.min(0.28, dur * 0.35),
+    );
+    lpf.frequency.exponentialRampToValueAtTime(f * 2.1, t + dur + 0.25);
+
+    const envG = this.h.gain(0.0001, lpf);
+    const peak = vel * 0.13;
+    envG.gain.setValueAtTime(0.0001, t);
+    envG.gain.linearRampToValueAtTime(peak, t + 0.085);
+    envG.gain.setValueAtTime(peak * 0.86, t + Math.max(0.12, dur * 0.72));
+    envG.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.35);
+
+    const vib = this.ac.createOscillator();
+    const vibG = this.h.gain(0);
+    vib.frequency.value = 5.3;
+    vibG.gain.setValueAtTime(0, t);
+    vibG.gain.linearRampToValueAtTime(f * 0.0038, t + Math.min(0.45, dur * 0.45));
+    vib.connect(vibG);
+    vib.start(t);
+    vib.stop(t + dur + 0.4);
+
+    for (const [det, wave] of [
+      [-2.2, "sawtooth"],
+      [2.2, "triangle"],
+    ]) {
+      const o = this.ac.createOscillator();
+      o.type = wave;
+      o.frequency.setValueAtTime(f * 0.995, t);
+      o.frequency.exponentialRampToValueAtTime(f, t + 0.05);
+      o.detune.value = det;
+      vibG.connect(o.frequency);
+      o.connect(envG);
+      o.start(t);
+      o.stop(t + dur + 0.4);
+      this.h.stats.voices++;
+    }
+  }
+
+  // 5d. Soft Distant Concert Snare Roll (Oliver Stone / Apollo 13 ceremonial pulse)
+  concertSnareRoll(dur, vel = 0.08) {
+    const t = this._t;
+    const panOut = this._pan(0.22, this.dryBus, 0.68);
+    const bp = this.h.filt("bandpass", 1450, 1.3, panOut);
+    const hp = this.h.filt("highpass", 420, 0.7, bp);
+    const envG = this.h.gain(0.0001, hp);
+    envG.gain.setValueAtTime(0.0001, t);
+    envG.gain.linearRampToValueAtTime(vel * 0.14, t + dur * 0.55);
+    envG.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.18);
+    this.h.noiseSrc(t, dur + 0.2, envG, 0.92);
   }
 
   // 6. Luminous Wordless Choir (3-Formant Vowel Filter Bank: "Ahh -> Ohh")
@@ -2140,6 +2469,70 @@ var Nm = class LabAudioController {
       case "alife":
         fan(0.03, 5).set(680);
         break;
+      case "agc66":
+        hum(400, 0.008, [1, 0.35]); // 400 Hz Apollo spacecraft inverter hum!
+        break;
+      case "alto73":
+        hum(60, 0.012);
+        fan(0.075, 5).set(1500); // Diablo Model 31 1500 RPM spindle + blower
+        break;
+      case "arm07":
+        break; // True silent fanless 4-watt mobile slab!
+      case "s360":
+      case "unix70":
+      case "vax78":
+      case "sun90":
+        hum(60, 0.018);
+        fan(0.085, 6).set(1550);
+        break;
+      case "cloud10":
+      case "zmain20": {
+        const fn = fan(0.095, 7);
+        updater = (k) => fn.set(1100 + 1300 * k);
+        break;
+      }
+      case "cdc6600":
+      case "cray1":
+        hum(60, 0.024, [1, 0.5, 0.2]); // Freon-12 compressor + 400 Hz motor-generator
+        flow(0.032, 520);
+        break;
+      case "cm2":
+      case "ascired97":
+      case "bgene":
+        fan(0.09, 7).set(1650);
+        break;
+      case "exascale":
+      case "gb200":
+        flow(0.045, 580);
+        fan(0.085, 9).set(1450);
+        break;
+      case "qtransmon":
+      case "qanneal": {
+        // Authentic ~1.4 Hz Pulse-Tube Dilution Cryocooler helium valve breath!
+        const ptSrc = track(ac.createBufferSource());
+        ptSrc.buffer = this.noise;
+        ptSrc.loop = true;
+        const ptBp = this.filt("bandpass", 440, 2.2);
+        const ptG = this.gain(0.012, out);
+        ptSrc.connect(ptBp);
+        ptBp.connect(ptG);
+        ptSrc.start();
+        const ptLfo = track(ac.createOscillator());
+        ptLfo.frequency.value = 1.4;
+        const ptDepth = this.gain(0.011);
+        ptLfo.connect(ptDepth);
+        ptDepth.connect(ptG.gain);
+        ptLfo.start();
+        break;
+      }
+      case "qion":
+      case "qatom":
+      case "qphotonic":
+      case "qtopo":
+      case "qomega":
+        hum(60, 0.008);
+        fan(0.032, 7).set(780);
+        break;
       default:
         break;
     }
@@ -2471,6 +2864,40 @@ var Oa = Math.random,
       "tele>core": () => ["photon", { f: 1.25 + Oa() * 0.35, min: 0.12 }],
       "core>alg": ["rf", { min: 0.12 }],
     },
+    agc66: {
+      "dsky>nor": ["relay", { v: 0.45, min: 0.06 }],
+      "rope>nor": () => ["tick", { f: 1024, v: 0.045, min: 0.07 }],
+      "exec>nor": ["bell", { min: 0.6 }],
+    },
+    alto73: {
+      "mse>alu": ["toggle", { min: 0.06 }],
+      "dsk>alu": () => ["seek", { d: 0.3 + Oa() * 0.4, min: 0.09 }],
+      "alu>eth": () => ["tick", { f: 1470, v: 0.04, min: 0.08 }],
+    },
+    arm07: {
+      "ito>big": () => ["tick", { f: 1900, v: 0.035, min: 0.09 }],
+      "pmic>big": ["coil", { v: 0.35, min: 0.14 }],
+    },
+    vax78: {
+      "tlb>sbi": () => ["tick", { f: 980, v: 0.045, min: 0.08 }],
+      "sbi>rp06": () => ["seek", { d: 0.35 + Oa() * 0.45, min: 0.09 }],
+    },
+    cdc6600: {
+      "scb>fu10": () => ["tick", { f: 1250 + Oa() * 400, v: 0.05, min: 0.07 }],
+      "pp10>cmem": ["coil", { v: 0.45, min: 0.14 }],
+    },
+    ascired97: {
+      "mrc>flit": () => ["tick", { f: 1620, v: 0.045, min: 0.08 }],
+      "flit>mpi": ["coil", { v: 0.6, min: 0.14 }],
+    },
+    qion: {
+      "ms>ions": () => ["photon", { f: 1.1 + Oa() * 0.25, min: 0.1 }],
+      "ions>pmt": ["stim", { min: 0.1 }],
+    },
+    qanneal: {
+      "tun>squid": ["rf", { min: 0.12 }],
+      "gap>gs": () => ["photon", { f: 0.72 + Oa() * 0.25, min: 0.14 }],
+    },
   };
 
 function Qy(machineId, fromNode, toNode) {
@@ -2521,13 +2948,15 @@ var g0 = {
   ],
   synth: [
     "concert-hall multi-reflection convolution reverb (HF air-damped)",
-    "divisi orchestral strings with wooden body formants & delayed vibrato",
-    "stretched-harmonic felt-to-bright grand piano",
+    "divisi orchestral strings with Stradivari/cello wood corpus, 2.1 kHz Bridge Hill & staggered bow entry",
+    "expressive solo cello & noble elegiac solo trumpet with warm nonlinear brass bloom",
+    "stretched-harmonic spruce-soundboard felt-to-bright grand piano",
     "32'/16'/8'/4'/2-2/3' cathedral pipe organ with wind chiff",
-    "conical-bore French horns & low brass swells",
+    "conical-bore dual-formant French horns & distant concert snare roll",
     "3-formant vowel-morphing luminous choir",
     "Vangelis-style CS-80 ribbon synthesizer",
     "Bessel-mode concert timpani & pocket-watch escapement",
+    "1.4 Hz pulse-tube dilution cryocooler helium breath & 400 Hz Apollo inverter tone",
     "relay armature + Z1 sliding plates + mercury delay-line ticks",
     "ASR-33 Teletype hammer, HDD voice-coil seek, NMR FID & wet spike pops",
   ],
