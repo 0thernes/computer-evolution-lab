@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use Computer Evolution Lab in teaching or research, please cite it as below."
+title: "Computer Evolution Lab"
+type: software
+version: 6.0.0
+date-released: 2026-11-13
+authors:
+  - name: "0thernes LLC"
+    email: "0_0@0thernes.art"
+    website: "https://0thernes.art"
+repository-code: "https://github.com/0thernes/computer-evolution-lab"
+license-url: "https://github.com/0thernes/computer-evolution-lab/blob/main/LICENSE"
+keywords:
+  - computer history
+  - emulation
+  - RISC-V
+  - "6502"
+  - WebGL
+  - education
