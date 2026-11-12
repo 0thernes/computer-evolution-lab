@@ -2118,6 +2118,21 @@ var Nm = class LabAudioController {
         } catch {}
       }
 
+      // CC0 recorded SFX (assets/audio/*.mp3, credited in SOUNDS.md). http(s) only; from file://
+      // the synthesized versions are used.
+      if (typeof CelAssets !== "undefined" && CelAssets.canLoad()) {
+        for (const name of ["relay", "toggle", "ttyhit", "seek", "bell", "floppy", "keys", "modem"]) {
+          fetch(CelAssets.sfx(name))
+            .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(r.status))))
+            .then((ab) => ac.decodeAudioData(ab))
+            .then((audioBuf) => {
+              this.buf[name] = audioBuf;
+              if (name === "keys") this.keyGrains = this.grains(audioBuf, 0.2);
+            })
+            .catch(() => {});
+        }
+      }
+
       this.setMachine(this.machine, true);
       this.emit();
       return true;
@@ -2365,6 +2380,14 @@ var Nm = class LabAudioController {
     return o;
   }
 
+  // Play a short random grain of a recorded clip; returns false if the clip isn't loaded
+  sampleGrain(name, t, dur, peak, randomOffset = true) {
+    const b = this.buf[name];
+    if (!b) return false;
+    const off = randomOffset ? Math.random() * Math.max(0, b.duration - dur - 0.02) : 0;
+    return !!this.play(name, t, { off, dur, peak, rate: 0.94 + Math.random() * 0.12 });
+  }
+
   play(clipName, t, { off = 0, dur, rate = 1, peak = 1, dest = this.sfxBus } = {}) {
     const buf = this.buf[clipName];
     if (!buf) return false;
@@ -2373,6 +2396,12 @@ var Nm = class LabAudioController {
     src.buffer = buf;
     src.playbackRate.value = rate;
     src.connect(g);
+    if (dur) {
+      // short fade-out so cut grains don't click
+      const fade = Math.min(0.012, dur * 0.25);
+      g.gain.setValueAtTime(peak, t + dur - fade);
+      g.gain.linearRampToValueAtTime(0, t + dur);
+    }
     src.start(t, off, dur);
     this.stats.samples++;
     this.stats.voices++;
@@ -2624,6 +2653,7 @@ var Vm = {
   },
   relay(a, t, o) {
     const v = o.v ?? 0.5;
+    if (a.sampleGrain("relay", t, 0.12, v * 1.3)) return;
     a.burst(t, { f: 3800, q: 1.2, dur: 0.006, peak: v });
     a.burst(t + 0.0025, { f: 2400, q: 3, dur: 0.004, peak: v * 0.4 });
     a.thump(t, { f0: 420, f1: 180, dur: 0.012, peak: v * 0.35 });
@@ -2646,6 +2676,7 @@ var Vm = {
     a.burst(t + 0.045, { f: 2600, q: 2, dur: 0.006, peak: 0.35 });
   },
   toggle(a, t) {
+    if (a.sampleGrain("toggle", t, 0.25, 0.8, false)) return;
     a.burst(t, { f: 4200, q: 2, dur: 0.005, peak: 0.55 });
     a.ring(t, { f: 2900, dur: 0.05, peak: 0.045 });
     a.thump(t, { f0: 500, f1: 200, dur: 0.012, peak: 0.28 });
@@ -2654,6 +2685,7 @@ var Vm = {
     Vm.toggle(a, t);
   },
   tty(a, t, o) {
+    if (!o.nl && a.sampleGrain("ttyhit", t, 0.1, 0.8)) return;
     a.thump(t, { f0: 210, f1: 120, dur: 0.03, peak: 0.5, type: "triangle" });
     a.burst(t, { f: 1300, q: 1.5, dur: 0.018, peak: 0.55 });
     a.burst(t + 0.02, { f: 600, q: 2, dur: 0.02, peak: 0.28 });
@@ -2705,6 +2737,7 @@ var Vm = {
   },
   seek(a, t, o) {
     const d = Fm(o.d ?? 0.5, 0, 1);
+    if (a.sampleGrain("seek", t, 0.08, 0.45 + 0.35 * d)) return;
     a.thump(t, { f0: 180 + 120 * d, f1: 70, dur: 0.01 + 0.012 * d, peak: 0.5 });
     a.burst(t + 0.004, { f: 1800, q: 1.5, dur: 0.008, peak: 0.22 + 0.18 * d });
     if (o.w) a.burst(t + 0.02, { f: 5200, q: 2, dur: 0.01, peak: 0.1 });
