@@ -505,7 +505,50 @@ function buildPcbMaps() {
     b.fill();
   }
 
-  // Crisp silkscreen component designators
+  // Crisp silkscreen component designators + BGA escape fanout grids + optical fiducial targets
+  for (let bg = 0; bg < 4; bg++) {
+    const gx = 160 + bg * 430;
+    const gy = 180 + ((bg * 310) % 1200);
+    for (let r0 = 0; r0 < 8; r0++) {
+      for (let c0 = 0; c0 < 8; c0++) {
+        const px = gx + c0 * 11;
+        const py = gy + r0 * 11;
+        for (const ctx of [c, o]) {
+          ctx.fillStyle = "#eac76b";
+          ctx.beginPath();
+          ctx.arc(px, py, 2.7, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        m.fillStyle = "#f4f4f4";
+        m.fillRect(px - 2.6, py - 2.6, 5.2, 5.2);
+        r.fillStyle = "#2b2b2b";
+        r.fillRect(px - 2.6, py - 2.6, 5.2, 5.2);
+      }
+    }
+  }
+  for (const [fx, fy] of [
+    [64, 64],
+    [sz - 64, 64],
+    [64, sz - 64],
+    [sz - 64, sz - 64],
+  ]) {
+    for (const ctx of [c, o]) {
+      ctx.strokeStyle = "rgba(242, 246, 250, 0.85)";
+      ctx.lineWidth = 2.0;
+      ctx.beginPath();
+      ctx.arc(fx, fy, 11, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.fillStyle = "#eac76b";
+      ctx.beginPath();
+      ctx.arc(fx, fy, 4.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    m.fillStyle = "#f4f4f4";
+    m.beginPath();
+    m.arc(fx, fy, 4.2, 0, Math.PI * 2);
+    m.fill();
+  }
+
   c.fillStyle = o.fillStyle = "rgba(242, 246, 250, 0.82)";
   c.font = o.font = "bold 11px monospace";
   const prefixes = ["U", "R", "C", "L", "Q", "J", "TP", "FB", "Y"];
@@ -817,6 +860,73 @@ function corePlaneMaps() {
   });
 }
 
+// 10. 1024x1024 300 mm Reticle-Stitched Silicon Wafer Photolithography Maps (84 EUV Reticles + Stitch Bridges)
+function waferMaps() {
+  return gn("__tex_wafer_300mm", () => {
+    const sz = 1024;
+    const cCan = document.createElement("canvas");
+    const bCan = document.createElement("canvas");
+    cCan.width = cCan.height = bCan.width = bCan.height = sz;
+    const ctx = cCan.getContext("2d");
+    const bCtx = bCan.getContext("2d");
+    const rng = seededRng(20240300);
+
+    ctx.fillStyle = "#192334";
+    ctx.fillRect(0, 0, sz, sz);
+    bCtx.fillStyle = "#686868";
+    bCtx.fillRect(0, 0, sz, sz);
+
+    const pitch = 96;
+    const palette = ["#2a4f78", "#27646f", "#4c3c76", "#356652", "#5d4f34", "#284c68"];
+    for (let ry = 32; ry < sz - 32; ry += pitch) {
+      for (let rx = 32; rx < sz - 32; rx += pitch) {
+        const rw = pitch - 8;
+        const rh = pitch - 8;
+        ctx.fillStyle = palette[Math.floor(rng() * palette.length)];
+        ctx.fillRect(rx + 4, ry + 4, rw, rh);
+        bCtx.fillStyle = "#9d9d9d";
+        bCtx.fillRect(rx + 4, ry + 4, rw, rh);
+
+        // Dense 4x4 compute sub-clusters inside each stitched reticle
+        const sub = rw / 4;
+        ctx.strokeStyle = "rgba(182, 232, 255, 0.34)";
+        bCtx.strokeStyle = "rgba(215, 215, 215, 0.5)";
+        ctx.lineWidth = bCtx.lineWidth = 1.2;
+        for (let k = 1; k < 4; k++) {
+          ctx.beginPath();
+          ctx.moveTo(rx + 4 + k * sub, ry + 6);
+          ctx.lineTo(rx + 4 + k * sub, ry + 2 + rh);
+          ctx.moveTo(rx + 6, ry + 4 + k * sub);
+          ctx.lineTo(rx + 2 + rw, ry + 4 + k * sub);
+          ctx.stroke();
+
+          bCtx.beginPath();
+          bCtx.moveTo(rx + 4 + k * sub, ry + 6);
+          bCtx.lineTo(rx + 4 + k * sub, ry + 2 + rh);
+          bCtx.moveTo(rx + 6, ry + 4 + k * sub);
+          bCtx.lineTo(rx + 2 + rw, ry + 4 + k * sub);
+          bCtx.stroke();
+        }
+
+        // Inter-reticle copper scribe-line stitch bridges!
+        ctx.fillStyle = "#e3a857";
+        bCtx.fillStyle = "#e4e4e4";
+        for (let s = 12; s < rw - 8; s += 16) {
+          ctx.fillRect(rx + 4 + s, ry - 1, 6, 6);
+          ctx.fillRect(rx - 1, ry + 4 + s, 6, 6);
+          bCtx.fillRect(rx + 4 + s, ry - 1, 6, 6);
+          bCtx.fillRect(rx - 1, ry + 4 + s, 6, 6);
+        }
+      }
+    }
+
+    return {
+      map: makeCanvasTex(cCan, true, 1),
+      normal: heightCanvasToNormalTex(bCan, 2.1, 1),
+    };
+  });
+}
+
 var In = (col, rough = 0.55, metal = 0, extra = {}) =>
   new et({
     color: metal > 0.4 ? col : calibrateDielectricColor(col, 0.8),
@@ -996,6 +1106,24 @@ var U = {
         iridescenceThicknessRange: [150, 620],
         clearcoat: 1.0,
         clearcoatRoughness: 0.05,
+      });
+    }),
+
+  wafer: (tint = 0xffffff) =>
+    gn("wafer_" + tint, () => {
+      const wm = waferMaps();
+      return new Cn({
+        color: tint,
+        map: wm.map,
+        normalMap: wm.normal,
+        normalScale: new ye(0.36, 0.36),
+        roughness: 0.12,
+        metalness: 0.82,
+        iridescence: 1.0,
+        iridescenceIOR: 1.78,
+        iridescenceThicknessRange: [160, 680],
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.04,
       });
     }),
 

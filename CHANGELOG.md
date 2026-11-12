@@ -2,6 +2,31 @@
 
 All notable changes to **Computer Evolution Lab** are documented in this file.
 
+## [5.0.0] - 2026-11-12
+
+### Added
+
+- **Hard-Wired Operational Overcharge — 48 Operational Computers (`49` Live 4K 3D Scenes · `528` Primary Rungs · `1,584` Interactive Sub-Lens Views)**:
+  - **Circle I Hard-Wired, Symbolic & Wafer-Scale Milestones (`src/machines/machines-hardwired.js`, `src/sim/hardwired-frontier-sims.js`)**:
+    - **`eniac46` (`1946` UPenn ENIAC Hard-Wired Plugboard & Decade Rings)**: 6 signed 10-digit vacuum-tube decade-ring accumulators (`100 kHz` 10-pulse addition cycle), interactive coaxial `CPP` & Digit Trunk patch cords, and 104-entry Function Table `G(Mach)` supersonic artillery drag integration (`dx/dt`, `dy/dt`, `dv_x/dt`, `dv_y/dt`), Fibonacci ring cascade, and finite-difference squares/cubes table.
+    - **`lisp83` (`1983` Symbolics 3600 / MIT CADR Hardware-Tagged LISP Machine)**: 36-bit hardware-tagged word architecture (`2-bit CDR-code + 4-bit tag + 30-bit payload`), live S-expression parser & evaluator (`deriv` symbolic differentiation, `mapcar`/`reduce`, lexical closures), `50%` cons-cell compaction via `CDR-NEXT`/`CDR-NIL`, and Cheney two-space ephemeral copying garbage collection with `DTP-FORWARD` broken-heart pointers.
+    - **`wse24` (`2024` 300 mm Monolithic Wafer-Scale Dataflow & Neuromorphic Engine)**: Full `300 mm` `U.wafer` EUV reticle-stitched processor (`84` reticles, `44 GB` 1-cycle on-wafer SRAM @ `21 PB/s`), dual-mode spatial **Wavelet Dataflow** and asynchronous **Leaky Integrate-and-Fire (`LIF`) + `STDP` Neuromorphic** execution, plus click-to-inject lithographic defect bypass via redundant spare-core fabric routing.
+  - **Circle II Fault-Tolerant & Virtualization Milestones (`src/machines/machines-servers.js`)**:
+    - **`tandem77` (`1977` Tandem NonStop-16 Share-Nothing Fault-Tolerant Cluster)**: 4 independent CPU modules, dual `Dynabus X/Y` backplanes, mirrored dual-ported RAID-1 disks, active/backup **Process Pairs** (`$ATM-SW`, `$LEDGER`, `$CLEAR`, `$AUDIT`), and Jim Gray **Write-Ahead Logging (`WAL`)** `UNDO`/`REDO` crash recovery preserving an exact `$1,000,000.00` ACID ledger invariant under live fault injection.
+    - **`blade04` (`2004` Dual-Opteron x86-64 Hypervisor, `ccNUMA` & `C10K` Blade Server)**: 24-reference 2D Nested Page Table (`EPT`/`RVI`) walk (`gVA -> gPA -> hPA`) with VPID-tagged TLB caching, `VT-x`/`AMD-V` vs. trap-and-emulate `VM-Exit` comparison, `KSM` + balloon memory overcommit, HyperTransport `ccNUMA` locality, and `O(1)` `epoll` vs. `O(N)` `select()` across `10,000` concurrent sockets.
+  - **Circle III Systolic & Predicated Vector-HBM Milestones (`src/machines/machines-super.js`)**:
+    - **`systolic82` (`1982` Kung–Leiserson 2D VLSI Systolic Array)**: Cycle-accurate `4×4` skewed-wavefront `MAC` array supporting both `Output-Stationary` and TPU-style `Weight-Stationary` schedules, proving exact `C = A × B` matrix multiplication in `3N - 2 = 10` beats with `6×` boundary SRAM reuse.
+    - **`fugaku20` (`2020` RIKEN / Fujitsu Fugaku A64FX & 6D TofuD Supercomputer)**: `512`-bit predicated ARM `SVE` (`WHILELT` `P0` predicate mask eliminating scalar tail loops), 4 Core Memory Groups (`1,024 GB/s` `HBM2`), `6D` TofuD torus link-fault detour routing, and live sparse **Conjugate Gradient (`HPCG`)** convergence.
+  - **Circle IV 9th Physical Quantum Modality (`src/machines/machines-quantum-age.js`)**:
+    - **`qspin` (`1998/2024` Loss–DiVincenzo `²⁸Si/SiGe` Quantum-Dot Spin QPU)**: `1.2 K` "hot-qubit" `300 mm` CMOS quantum-dot processor integrating exact 16-amplitude 4-spin statevector evolution, Heisenberg exchange `U_ex(θ)` (`√SWAP` & 3-pulse exact `CNOT`), `²⁹Si` nuclear-spin Overhauser `T₂*` isotopic purification sweep (`50 ppm` vs. `46,700 ppm`), and **Pauli Spin Blockade (`PSB`)** singlet-triplet charge-sensor readout.
+- **11-Rung × 3-Sub-Lens Deep Layer Stack (`528` Primary Rungs · `1,584` Sub-Lens Views) & Universal Gate Netlist Solver**:
+  - Expanded every machine from 9 to **11 primary rungs** (`6 Hardware` + `5 Software`) and added **3 interactive Sub-Layer Drill-Down Lenses** (`0: ◈ Rung View`, `1: ⚡ Gate Bench`, `2: 🔬 Signal Eye`) in `src/layers/layer-stack.js` and `src/layers/hardwired-gate-engine.js`.
+  - Implemented `HardWiredNetlistSolver` across all **8 physical switching families** (`mech_relay_plate`, `thermionic_tube`, `bipolar_rtl_ttl_ecl`, `nmos_depletion`, `planar_cmos`, `finfet_gaa_wafer`, `bio_photonic_wet`, `quantum_reversible`) with clickable canvas input pins `[A, B, CIN, MODE]` and live CPU bus coupling, plus 8 new domain visualizers (`eniacring`, `lisptag`, `waferfabric`, `tandemwal`, `hypervisorept`, `systolicpe`, `fugakusve`, `spinqdot`).
+- **3D Hardware Bus Wave-Packet Propagation (`BusPulse3D`), Wafer PBR & 5-Tab Roofline Atlas**:
+  - Hooked `Ra.prototype.pulse` into `LAB.busPulses` (`src/app/lab-main.js`) so every architectural bus pulse launches real 3D emissive wave-packets along hardware traces between matched 3D sub-assemblies (and across the 4-Circle Hub light bridges).
+  - Added `U.wafer` `300 mm` EUV reticle-stitched silicon PBR maps, BGA solder-ball fanout grids + optical fiducials on `2048×2048` PCBs, shielded ferrite VRM inductors & HC-49 quartz crystal cans (`Dy`), and an anti-aliased `ShaderMaterial` CAD laser-reticle millimeter grid on `CrossSectionSlicer`.
+  - Added **Tab 5 (`📐 Roofline & ½CV² Physics Lab`)** and expanded **Tab 4 (`⚛️ 9 Quantum Eras & Modalities`)** in `src/app/compare-modal.js`.
+
 ## [4.0.0] - 2026-11-11
 
 ### Added

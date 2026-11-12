@@ -1,4 +1,4 @@
-# ◈ Computer Evolution Lab (v4.0)
+# ◈ Computer Evolution Lab (v5.0)
 
 [![CI](https://github.com/0thernes/computer-evolution-lab/actions/workflows/ci.yml/badge.svg)](https://github.com/0thernes/computer-evolution-lab/actions/workflows/ci.yml)
 [![Live Demo](https://img.shields.io/badge/live%204K%20web%20lab-0thernes.github.io-0284c7)](https://0thernes.github.io/computer-evolution-lab/)
@@ -6,7 +6,7 @@
 [![Coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2F0thernes%2Fcomputer-evolution-lab%2Fmain%2Fdocs%2Fbadges%2Fcoverage.json)](docs/badges/coverage.json)
 [![License](https://img.shields.io/badge/license-Cosmogonic%20Non--Commercial-0f766e)](LICENSE)
 
-> **40 operational computers across 4 Grand Circles + a 41-scene 4K HDR 3D interactive museum** — spanning **Personal & Logic Foundations**, **Mainframes & Enterprise Servers**, **Supercomputers**, and **The Age of Quantum Computers**, complete with a **4-Tab MIT/Stanford/Caltech CS Architecture Atlas**, live **RISC-V `RV32IM` + WebGL2 GPU Modern Mini PC**, **X/Y/Z 3D Cross-Section Slicer**, **360 live hardware & software abstraction layer visualizers**, and an **acoustic concert-hall orchestral WebAudio film-score engine**.
+> **48 hard-wired operational computers across 4 Grand Circles + a 49-scene 4K HDR 3D interactive museum** — spanning **Personal, Hard-Wired & Wafer-Scale Foundations (`22`)**, **Mainframes & Enterprise Servers (`8`)**, **Supercomputers (`9`)**, and **The Age of Quantum Computers (`9` Physical Modalities)**, complete with a **5-Tab MIT/Stanford/Caltech CS Roofline & Physics Atlas**, live **RISC-V `RV32IM` + WebGL2 GPU Modern Mini PC**, **Universal Transistor/Gate Netlist Bench + Eye-Diagram Scope (`528` primary rungs / `1,584` interactive sub-lens views)**, **3D Hardware Bus Wave-Packet Propagation (`BusPulse3D`)**, **X/Y/Z CAD Laser-Reticle Cross-Section Slicer**, and an **acoustic concert-hall orchestral WebAudio film-score engine**.
 >
 > - **Launch Live in Browser (Zero Install)**: **[https://0thernes.github.io/computer-evolution-lab/](https://0thernes.github.io/computer-evolution-lab/)**
 > - **Download Standalone Windows `.exe`**: **[GitHub Releases (`Computer Evolution Lab.exe`)](https://github.com/0thernes/computer-evolution-lab/releases/latest)**
@@ -48,58 +48,65 @@ npm run install:desktop   # installs to Windows Desktop & Start Menu Programs
 
 ---
 
-## The 4 Grand Circles — 40 Operational Machines
+## The 4 Grand Circles — 48 Hard-Wired Operational Machines
 
-Each Grand Circle in the 3D Campus surrounds its **★ Capital Breakthrough Monument** on an illuminated central dais:
+Each Grand Circle in the 3D Campus surrounds its **★ Capital Breakthrough Monument** on an illuminated central dais, with real-time 3D wave-packets (`BusPulse3D`) flying across active hardware buses:
 
-### Circle I — Personal, Logic & Bio/Optical Frontier (`19` Machines · ★ Capital: `1975` MOS 6502)
+### Circle I — Personal, Hard-Wired, Symbolic & Wafer-Scale Frontier (`22` Machines · ★ Capital: `1975` MOS 6502)
 
-| ID         | Era   | Machine                                     | Live Computational Engine                                                                                                                     |
-| :--------- | :---- | :------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------- |
-| `m6502` ★  | 1975  | **MOS 6502 & MOnSter 6502 (★ Capital)**     | Switch-level transistor netlist (`visual6502`) + 3,218 discrete SMD MOSFET carrier                                                            |
-| `turing`   | 1936  | **Alan Turing Tape Machine**                | Exact state-transition table (`(q, sym) -> (q', sym', L/R)`), unbounded tape, head stepper                                                    |
-| `z1`       | 1938  | **Konrad Zuse Z1**                          | Mechanical 22-bit binary floating-point adder/multiplier & sliding-plate memory                                                               |
-| `analog`   | 1947  | **REAC Electronic Analog Computer**         | RK4 continuous op-amp integrator/summer patchbay solving live ODEs on CRT                                                                     |
-| `tube`     | 1949  | **EDSAC Vacuum-Tube Computer**              | 18-bit accumulator ISA + acoustic mercury delay-line tank circulation                                                                         |
-| `pdp8`     | 1965  | **DEC PDP-8 Straight-8**                    | 12-bit PDP-8 ISA (`AND`, `TAD`, `ISZ`, `DCA`, `JMS`, `JMP`, `IOT`, `OPR`) + magnetic core plane                                               |
-| `agc66`    | 1966  | **Apollo Guidance Computer (Block II)**     | First flat-pack IC computer (`5,600` NOR3 gates), priority-scheduled Executive (`P63`/`P64`/`P66` + `1202` overload recovery), DSKY & rope    |
-| `alto73`   | 1973  | **Xerox PARC Alto Workstation**             | `170 ns` 8-task cooperative microcode engine, hardware `BitBlt` rasterop (`606×808` portrait CRT), WIMP GUI, 3-button mouse & 3 Mbps Ethernet |
-| `altair`   | 1975  | **MITS Altair 8800**                        | Cycle-faithful Intel 8080 CPU + working front-panel toggle switches & bus LEDs                                                                |
-| `home80`   | 1982  | **1980s Home Micro (C64-class)**            | MOS 6510 CPU + line-numbered BASIC interpreter + 40×25 character/color video                                                                  |
-| `pc90`     | 1992  | **1990s 486 Multimedia Tower**              | FAT16 cluster filesystem, BIOS `INT 13h` C/H/S spinning platter seek simulator, DOS shell                                                     |
-| `pc00`     | 2002  | **2000s GHz-War ATX Tower**                 | Configurable pipeline depth + 2-bit branch predictor + superscalar stall analyzer                                                             |
-| `arm07`    | 2007  | **Mobile ARM big.LITTLE Heterogeneous SoC** | `P = C·V²·f + V·I_leak` DVFS governor, heterogeneous P/E core scheduler, tile-based deferred GPU (`TBDR`), NPU, ISP & 5G baseband PoP SoC     |
-| `pc10`     | 2013  | **2010s Multicore FinFET Tower**            | 4-core / 8-thread SMT + Linux Completely Fair Scheduler (`vruntime` red-black tree)                                                           |
-| `pc20`     | 2020s | **Modern Mini-ITX Workstation**             | **Dual-Engine**: 32-bit **RISC-V `RV32IM` 5-stage CPU** (`L1I`/`L1D`/`L2` caches, NVMe, Mini-OS) + **WebGL2 GLSL ES 3.0 GPU** via PCIe MMIO   |
-| `aibox`    | 2021  | **4-GPU AI Deskside Supercomputer**         | Live multi-GPU backpropagation + ring-all-reduce gradient sync across 4 SXM CoWoS GPUs                                                        |
-| `bci`      | 2022  | **DishBrain Wet Biocomputer**               | 100 spiking Izhikevich neurons on a TiN multi-electrode array learning Pong via STDP                                                          |
-| `alife`    | 2006+ | **Wet Reaction-Diffusion & DNA Gate**       | Gray–Scott PDE (`128×128`), Belousov–Zhabotinsky waves & Seelig 2006 DNA toehold `AND` kinetics                                               |
-| `photonic` | 2017+ | **Programmable Nanophotonic Mesh**          | Clements `4×4` unitary Mach–Zehnder interferometer waveguide matrix (`U·x` by light interference)                                             |
+| ID         | Era   | Machine                                          | Live Computational Engine                                                                                                                        |
+| :--------- | :---- | :----------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `m6502` ★  | 1975  | **MOS 6502 & MOnSter 6502 (★ Capital)**          | Switch-level transistor netlist (`visual6502`) + 3,218 discrete SMD MOSFET carrier                                                               |
+| `turing`   | 1936  | **Alan Turing Tape Machine**                     | Exact state-transition table (`(q, sym) -> (q', sym', L/R)`), unbounded tape, head stepper                                                       |
+| `z1`       | 1938  | **Konrad Zuse Z1**                               | Mechanical 22-bit binary floating-point adder/multiplier & sliding-plate memory                                                                  |
+| `eniac46`  | 1946  | **ENIAC Hard-Wired Plugboard & Decade Rings**    | `6` signed 10-digit vacuum-tube decade-ring accumulators, coaxial `CPP`/Digit patch cords & Function Table `G(Mach)` ballistic shell integration |
+| `analog`   | 1947  | **REAC Electronic Analog Computer**              | RK4 continuous op-amp integrator/summer patchbay solving live ODEs on CRT                                                                        |
+| `tube`     | 1949  | **EDSAC Vacuum-Tube Computer**                   | 18-bit accumulator ISA + acoustic mercury delay-line tank circulation                                                                            |
+| `pdp8`     | 1965  | **DEC PDP-8 Straight-8**                         | 12-bit PDP-8 ISA (`AND`, `TAD`, `ISZ`, `DCA`, `JMS`, `JMP`, `IOT`, `OPR`) + magnetic core plane                                                  |
+| `agc66`    | 1966  | **Apollo Guidance Computer (Block II)**          | First flat-pack IC computer (`5,600` NOR3 gates), priority-scheduled Executive (`P63`/`P64`/`P66` + `1202` overload recovery), DSKY & rope       |
+| `alto73`   | 1973  | **Xerox PARC Alto Workstation**                  | `170 ns` 8-task cooperative microcode engine, hardware `BitBlt` rasterop (`606×808` portrait CRT), WIMP GUI, 3-button mouse & 3 Mbps Ethernet    |
+| `altair`   | 1975  | **MITS Altair 8800**                             | Cycle-faithful Intel 8080 CPU + working front-panel toggle switches & bus LEDs                                                                   |
+| `home80`   | 1982  | **1980s Home Micro (C64-class)**                 | MOS 6510 CPU + line-numbered BASIC interpreter + 40×25 character/color video                                                                     |
+| `lisp83`   | 1983  | **Symbolics 3600 / MIT CADR LISP Machine**       | 36-bit hardware-tagged architecture (`2b CDR-code + 4b tag + 30b payload`), symbolic `deriv`/`mapcar` evaluator & Cheney two-space copying GC    |
+| `pc90`     | 1992  | **1990s 486 Multimedia Tower**                   | FAT16 cluster filesystem, BIOS `INT 13h` C/H/S spinning platter seek simulator, DOS shell                                                        |
+| `pc00`     | 2002  | **2000s GHz-War ATX Tower**                      | Configurable pipeline depth + 2-bit branch predictor + superscalar stall analyzer                                                                |
+| `arm07`    | 2007  | **Mobile ARM big.LITTLE Heterogeneous SoC**      | `P = C·V²·f + V·I_leak` DVFS governor, heterogeneous P/E core scheduler, tile-based deferred GPU (`TBDR`), NPU, ISP & 5G baseband PoP SoC        |
+| `pc10`     | 2013  | **2010s Multicore FinFET Tower**                 | 4-core / 8-thread SMT + Linux Completely Fair Scheduler (`vruntime` red-black tree)                                                              |
+| `pc20`     | 2020s | **Modern Mini-ITX Workstation**                  | **Dual-Engine**: 32-bit **RISC-V `RV32IM` 5-stage CPU** (`L1I`/`L1D`/`L2` caches, NVMe, Mini-OS) + **WebGL2 GLSL ES 3.0 GPU** via PCIe MMIO      |
+| `aibox`    | 2021  | **4-GPU AI Deskside Supercomputer**              | Live multi-GPU backpropagation + ring-all-reduce gradient sync across 4 SXM CoWoS GPUs                                                           |
+| `bci`      | 2022  | **DishBrain Wet Biocomputer**                    | 100 spiking Izhikevich neurons on a TiN multi-electrode array learning Pong via STDP                                                             |
+| `wse24`    | 2024  | **300 mm Wafer-Scale Dataflow & Spiking Engine** | 84-reticle monolithic wafer (`44 GB` 1-cycle SRAM, `21 PB/s`), color-routed wavelet dataflow, LIF `STDP` spiking mode & spare-core defect bypass |
+| `alife`    | 2006+ | **Wet Reaction-Diffusion & DNA Gate**            | Gray–Scott PDE (`128×128`), Belousov–Zhabotinsky waves & Seelig 2006 DNA toehold `AND` kinetics                                                  |
+| `photonic` | 2017+ | **Programmable Nanophotonic Mesh**               | Clements `4×4` unitary Mach–Zehnder interferometer waveguide matrix (`U·x` by light interference)                                                |
 
-### Circle II — Mainframes & Enterprise Servers (`6` Machines · ★ Capital: `1964` IBM System/360)
+### Circle II — Mainframes & Enterprise Servers (`8` Machines · ★ Capital: `1964` IBM System/360)
 
-| ID        | Era  | Machine                                          | Live Computational Engine                                                                                                                   |
-| :-------- | :--- | :----------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------ |
-| `s360` ★  | 1964 | **IBM System/360 Model 50 (★ Capital)**          | 32-bit GPR + Packed-BCD `AP` decimal ledger, ROS microcode control store, storage keys & autonomous `CCW` Tape/Disk/1403 I/O Channels       |
-| `unix70`  | 1973 | **DEC PDP-11/70 UNIX v6 & ARPANET Server**       | Kernel/User 22-bit APR MMU relocation, `fork`/`exec`/`pipe` process table, hierarchical inode FS, UNIX shell (`ps`, `ls \| wc`, `cat`)      |
-| `vax78`   | 1978 | **DEC VAX-11/780 32-Bit Virtual-Memory Server**  | Canonical `1.0 MIPS` CISC reference: `4 GiB` virtual space (`P0`/`P1`/`S0`), 2-way `TB` TLB, two-handed Working-Set clock & `K/E/S/U` rings |
-| `sun90`   | 1993 | **Sun SPARCcenter RISC SMP & RAID-5 Server**     | 4-CPU snooping `MESI` (`M/E/S/I`) XDBus coherence FSM (`BusRd`, `BusRdX`, `BusUpgr`) + 5-disk SCSI RAID-5 live XOR parity reconstruction    |
-| `cloud10` | 2014 | **Open-Compute Cloud Rack & Raft Cluster**       | 5-node `Raft` consensus FSM (leader election, split-brain quorum halt, `AppendEntries` WAL) + 48V busbar & 25.6 Tbps Clos Leaf-Spine        |
-| `zmain20` | 2022 | **Telum z16 Zero-Downtime Enterprise Mainframe** | 2 GB Virtual L3/L4 cache ring, 5-channel `RAIM` full-DIMM failover, `PR/SM` LPARs & inline `<1 ms` neural fraud scoring inside ACID TPS     |
+| ID         | Era  | Machine                                           | Live Computational Engine                                                                                                                   |
+| :--------- | :--- | :------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------ |
+| `s360` ★   | 1964 | **IBM System/360 Model 50 (★ Capital)**           | 32-bit GPR + Packed-BCD `AP` decimal ledger, ROS microcode control store, storage keys & autonomous `CCW` Tape/Disk/1403 I/O Channels       |
+| `unix70`   | 1973 | **DEC PDP-11/70 UNIX v6 & ARPANET Server**        | Kernel/User 22-bit APR MMU relocation, `fork`/`exec`/`pipe` process table, hierarchical inode FS, UNIX shell (`ps`, `ls \| wc`, `cat`)      |
+| `tandem77` | 1977 | **Tandem NonStop-16 Fault-Tolerant Cluster**      | Share-nothing 4-CPU `Process Pairs`, dual `Dynabus X/Y`, mirrored RAID-1 & Jim Gray `WAL` `UNDO`/`REDO` preserving exact `$1,000,000` ACID  |
+| `vax78`    | 1978 | **DEC VAX-11/780 32-Bit Virtual-Memory Server**   | Canonical `1.0 MIPS` CISC reference: `4 GiB` virtual space (`P0`/`P1`/`S0`), 2-way `TB` TLB, two-handed Working-Set clock & `K/E/S/U` rings |
+| `sun90`    | 1993 | **Sun SPARCcenter RISC SMP & RAID-5 Server**      | 4-CPU snooping `MESI` (`M/E/S/I`) XDBus coherence FSM (`BusRd`, `BusRdX`, `BusUpgr`) + 5-disk SCSI RAID-5 live XOR parity reconstruction    |
+| `blade04`  | 2004 | **Dual-Opteron x86-64 Hypervisor & ccNUMA Blade** | 24-access 2D Nested Page Table (`EPT`/`RVI`) walk + VPID TLB, `KSM` RAM deduplication, HyperTransport `ccNUMA` & `O(1)` `epoll` C10K engine |
+| `cloud10`  | 2014 | **Open-Compute Cloud Rack & Raft Cluster**        | 5-node `Raft` consensus FSM (leader election, split-brain quorum halt, `AppendEntries` WAL) + 48V busbar & 25.6 Tbps Clos Leaf-Spine        |
+| `zmain20`  | 2022 | **Telum z16 Zero-Downtime Enterprise Mainframe**  | 2 GB Virtual L3/L4 cache ring, 5-channel `RAIM` full-DIMM failover, `PR/SM` LPARs & inline `<1 ms` neural fraud scoring inside ACID TPS     |
 
-### Circle III — Supercomputers (`7` Machines · ★ Capital: `1976` Cray-1 Vector)
+### Circle III — Supercomputers (`9` Machines · ★ Capital: `1976` Cray-1 Vector)
 
-| ID          | Era  | Machine                                       | Live Computational Engine                                                                                                                      |
-| :---------- | :--- | :-------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------- |
-| `cray1` ★   | 1976 | **Cray-1 Vector Supercomputer (★ Capital)**   | 80 MHz 64-element vector registers (`V0–V7`), 7-stage `FMUL` + 6-stage `FADD` pipelines & toggleable single-chime **Vector Chaining**          |
-| `cdc6600`   | 1964 | **CDC 6600 First Supercomputer (Thornton)**   | Cycle-accurate **Thornton Scoreboard** (`Issue`/`ReadOps`/`Exec`/`WriteRes`) resolving `WAW`, `RAW`, and `WAR` hazards across 10 FUs + 10 PPUs |
-| `cm2`       | 1987 | **Thinking Machines Connection Machine CM-2** | 256-PE active slice of 65,536 1-bit SIMD PEs, `O(log₂ N)` Hillis–Steele parallel prefix scan & 12-D hypercube `e-cube` XOR packet router       |
-| `ascired97` | 1997 | **Intel ASCI Red First TeraFLOPS MPP**        | Commodity x86 "Attack of the Killer Micros" (`9,298` Pentium Pro CPUs): dimension-ordered `X→Y` **Wormhole Flit Router** (`H/B/T`) + `MPI`     |
-| `bgene`     | 2008 | **IBM Blue Gene 3D Torus Supercomputer**      | `4×4×4` periodic 3D Torus Jacobi heat PDE (`±X, ±Y, ±Z` wrap) + hardware binary-tree `MPI_Allreduce` + live Amdahl vs. Gustafson law           |
-| `exascale`  | 2022 | **Frontier 1.194-ExaFLOPS Supercomputer**     | Mixed-precision (`FP16` LU → `FP64` residual iterative refinement) HPL solver + 3-hop Slingshot Dragonfly UGAL adaptive optical routing        |
-| `gb200`     | 2025 | **Blackwell NVL72 72-GPU AI Rack**            | Live trainable Top-2 Mixture-of-Experts (`MoE`) Transformer block (`FP8`/`FP4` backprop) + `130 TB/s` 5,000-wire copper NVLink5 spine          |
+| ID           | Era  | Machine                                       | Live Computational Engine                                                                                                                      |
+| :----------- | :--- | :-------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------- |
+| `cray1` ★    | 1976 | **Cray-1 Vector Supercomputer (★ Capital)**   | 80 MHz 64-element vector registers (`V0–V7`), 7-stage `FMUL` + 6-stage `FADD` pipelines & toggleable single-chime **Vector Chaining**          |
+| `cdc6600`    | 1964 | **CDC 6600 First Supercomputer (Thornton)**   | Cycle-accurate **Thornton Scoreboard** (`Issue`/`ReadOps`/`Exec`/`WriteRes`) resolving `WAW`, `RAW`, and `WAR` hazards across 10 FUs + 10 PPUs |
+| `systolic82` | 1982 | **Kung–Leiserson 2D VLSI Systolic Array**     | Cycle-accurate `4×4` skewed-wavefront `MAC` grid (`Output-Stationary` & TPU `Weight-Stationary`) verifying exact `C = A × B` in 10 beats       |
+| `cm2`        | 1987 | **Thinking Machines Connection Machine CM-2** | 256-PE active slice of 65,536 1-bit SIMD PEs, `O(log₂ N)` Hillis–Steele parallel prefix scan & 12-D hypercube `e-cube` XOR packet router       |
+| `ascired97`  | 1997 | **Intel ASCI Red First TeraFLOPS MPP**        | Commodity x86 "Attack of the Killer Micros" (`9,298` Pentium Pro CPUs): dimension-ordered `X→Y` **Wormhole Flit Router** (`H/B/T`) + `MPI`     |
+| `bgene`      | 2008 | **IBM Blue Gene 3D Torus Supercomputer**      | `4×4×4` periodic 3D Torus Jacobi heat PDE (`±X, ±Y, ±Z` wrap) + hardware binary-tree `MPI_Allreduce` + live Amdahl vs. Gustafson law           |
+| `fugaku20`   | 2020 | **RIKEN / Fujitsu Fugaku A64FX & 6D TofuD**   | `512`-bit predicated ARM `SVE` (`WHILELT` zero-remainder loops), `1 TB/s` 4-CMG `HBM2`, `6D` TofuD torus failover & sparse `HPCG` CG solver    |
+| `exascale`   | 2022 | **Frontier 1.194-ExaFLOPS Supercomputer**     | Mixed-precision (`FP16` LU → `FP64` residual iterative refinement) HPL solver + 3-hop Slingshot Dragonfly UGAL adaptive optical routing        |
+| `gb200`      | 2025 | **Blackwell NVL72 72-GPU AI Rack**            | Live trainable Top-2 Mixture-of-Experts (`MoE`) Transformer block (`FP8`/`FP4` backprop) + `130 TB/s` 5,000-wire copper NVLink5 spine          |
 
-### Circle IV — The Age of Quantum Computers (`8` Machines · ★ Capital: `2045+` OMEGA-Q Horizon)
+### Circle IV — The Age of Quantum Computers (`9` Machines · ★ Capital: `2045+` OMEGA-Q Horizon)
 
 | ID          | Era   | Machine                                             | Live Computational Engine                                                                                                                   |
 | :---------- | :---- | :-------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -109,37 +116,49 @@ Each Grand Circle in the 3D Campus surrounds its **★ Capital Breakthrough Monu
 | `qanneal`   | 2011+ | **Superconducting Flux-Qubit Quantum Annealer**     | Exact `2⁸×2⁸` (`256×256`) transverse-field **Ising Hamiltonian** solver (`H(s) = -A(s)∑σᵢˣ + B(s)[∑hᵢσᵢᶻ + ∑Jᵢⱼσᵢᶻσⱼᶻ]`) for Max-Cut        |
 | `qatom`     | 2023  | **Neutral-Atom `⁸⁷Rb` Rydberg Optical Tweezers**    | RK4 integration of exact 4-state Rydberg blockade Hamiltonian (`C₆/R⁶` `CZ` gate) + 2D AOD physical zone shuttling                          |
 | `qtransmon` | 2024  | **15 mK Dilution-Cryo & Surface-Code Transmon QPU** | 6-stage `³He/⁴He` cryostat (`15 mK`) + `d=3/5` Rotated Surface Code X/Z syndrome extraction, greedy decoder & `Λ = p_th/p` suppression      |
+| `qspin`     | 2024  | **Loss–DiVincenzo `²⁸Si/SiGe` Spin-Qubit QPU**      | `1.2 K` hot-qubit `300 mm` CMOS QPU: exact 4-spin Heisenberg exchange `√SWAP`/`CNOT`, `²⁹Si` isotopic `T₂*` physics & Pauli Spin Blockade   |
 | `qphotonic` | 2025  | **Fusion-Based Room-Temp Photonic Cluster QPU**     | Exact 16-amplitude 4-qubit linear cluster state (`\|G₄⟩`) + destructive `XY(α)` SNSPD measurements & nanosecond Pauli feedforward           |
 | `qtopo`     | 2025  | **Topological Majorana Nanowire Braiding QPU**      | Exact `16×16` Bogoliubov–de Gennes (`BdG`) Kitaev chain solver (`\|μ\| < 2t` MZM localization) + non-Abelian `σ₁, σ₂` braid unitaries       |
 
 ---
 
-## MIT / Stanford / Caltech CS Engineering Atlas (`G` / `📊 CS Atlas`)
+## 11-Rung × 3-Sub-Lens Deep Layer Stack (`528` Primary Rungs · `1,584` Interactive Views)
 
-Press `G` or click `📊 CS Atlas` in the top toolbar to open the **4-tab** comparative engineering reference ([`src/app/compare-modal.js`](src/app/compare-modal.js)):
+Every single one of the **48 machines** exposes **11 primary hardware & software abstraction rungs** (`6 Hardware`: _Physical Substrate_, _Transistor & Gate Switch_, _Combinational & ALU_, _Clock, Bus & Interconnect_, _Memory & Storage Hierarchy_, _I/O, Peripherals & Chassis_; `5 Software`: _Microcode & Control Signals_, _ISA & Machine Code_, _Assembler, Compiler & ABI_, _Kernel, Scheduler & Runtime_, _Live Application & Telemetry_), and **every rung** can be drilled into across **3 live Sub-Layer Lenses** (`src/layers/layer-stack.js`, `src/layers/hardwired-gate-engine.js`):
 
-1. **Quantitative Plot & Primary-Source Specs (40 Machines)**: Filter by Grand Circle (`All 40`, `Circle I`, `Circle II`, `Circle III`, `Circle IV`) and plot Transistor/Element Scale, Clock/Rate, Memory Capacity, Power Envelope, and System Price on calibrated logarithmic scales (with `—` preserved strictly where historical/speculative figures are undocumented).
-2. **Big-Drop Years vs. Quiet / Winter Bottleneck Years (`1936–2045+`)**: Contrasts explosive single-year bursts (`1964` S/360 + CDC 6600, `1966` Apollo AGC, `1973` C/UNIX + Alto + Ethernet, `1975–78` Altair/6502/Cray-1/VAX, `1993–97` SPARC SMP + Cirac–Zoller + ASCI Red, `2007` Mobile ARM SoC, `2022–25` Exascale + NVL72 + QEC threshold) against physical & software bottleneck periods (_1951–57 Tyranny of Numbers_, _1966–70 NATO Software Crisis_, _1988–92 2nd AI Winter_, _2002–05 Dennard Breakdown_, _2018–21 NISQ Plateau_).
+1. **`◈ Rung View`**: Domain-specific architecture & telemetry visualizer matched to highlighted 3D hardware sub-assemblies.
+2. **`⚡ Gate Bench` (`HardWiredNetlistSolver`)**: Interactive 6-gate full-adder / reversible Feynman–Toffoli netlist bench across all 8 physical switching families (mechanical plates/relays, thermionic vacuum triodes, bipolar RTL/TTL/ECL, depletion NMOS, planar CMOS, FinFET/GAA wafer-scale, bio/photonic wave-plates, and reversible quantum gates) — click input pins `[A, B, CIN, MODE]` directly on the canvas or couple live to the running CPU bus!
+3. **`🔬 Signal Eye`**: Real-time multi-trace analog voltage rail (`V_OH` / `V_OL`), `RC` rise/fall slew, propagation delay `t_pd`, thermal jitter eye diagram, and dynamic `E_sw = ½ C V²` switching-energy scope.
+
+---
+
+## MIT / Stanford / Caltech CS Engineering Atlas (`G` / `📊 CS Atlas` — 5 Tabs)
+
+Press `G` or click `📊 CS Atlas` in the top toolbar to open the **5-tab** comparative engineering reference ([`src/app/compare-modal.js`](src/app/compare-modal.js)):
+
+1. **Quantitative Plot & Primary-Source Specs (48 Machines)**: Filter by Grand Circle (`All 48`, `Circle I`, `Circle II`, `Circle III`, `Circle IV`) and plot Transistor/Element Scale, Clock/Rate, Memory Capacity, Power Envelope, and System Price on calibrated logarithmic scales (with `—` preserved strictly where historical/speculative figures are undocumented).
+2. **Big-Drop Years vs. Quiet / Winter Bottleneck Years (`1936–2045+`)**: Contrasts explosive single-year bursts (`1946` ENIAC, `1964` S/360 + CDC 6600, `1966` Apollo AGC, `1973` C/UNIX + Alto + Ethernet, `1975–78` Altair/6502/Cray-1/Tandem/VAX, `1982–83` Systolic VLSI + Symbolics LISP, `2004–07` x86-64 VT-x + Mobile ARM SoC, `2020–25` Fugaku SVE + Exascale + WSE-3 + NVL72 + `²⁸Si` Spin + QEC threshold) against physical & software bottleneck periods.
 3. **Mainframe vs. Server vs. Supercomputer vs. Quantum Matrix**: Side-by-side systems engineering comparison across Optimization Target, Failure Philosophy, I/O vs. FLOPS Balance, Memory Hierarchy, Canonical Workloads, and Flagship Lab Machines.
-4. **⚛️ 8 Quantum Eras & Modalities (`1995–2045+`)**: Compares all 8 physical quantum architectures side-by-side (`qion`, `quantum`, `qanneal`, `qatom`, `qtransmon`, `qphotonic`, `qtopo`, `qomega`) across Qubit Encoding, Operating Temperature, Entangling Physics, Connectivity, Error Regime, and Live Lab Simulation.
+4. **⚛️ 9 Quantum Eras & Modalities (`1995–2045+`)**: Compares all 9 physical quantum architectures side-by-side (`qion`, `quantum`, `qanneal`, `qatom`, `qtransmon`, `qspin`, `qphotonic`, `qtopo`, `qomega`) across Qubit Encoding, Operating Temperature, Entangling Physics, Connectivity, Error Regime, and Live Lab Simulation.
+5. **📐 Roofline & `½CV²` Switching Physics Lab**: Interactive log-log **Williams–Waterman–Patterson Roofline Model** (`P = min(P_peak, I × BW_mem)`) with live Operational Intensity (`FLOP/Byte`) slider & kernel presets (`SpMV / HPCG`, `FFT`, `FlashAttention-2`, `FP64 DGEMM`, `FP8 TensorCore`), paired with a `10¹⁹×` switching-energy cascade down to the **Landauer thermodynamic limit (`k_B T ln 2 ≈ 2.87 zJ`)**.
 
 ---
 
 ## Tests
 
-Automated verification covers static symbol/DOM integrity, standalone Node `RV32IM` + enterprise/HPC/quantum unit tests, full headless Chrome WebGL2 execution across all **40 machines** and **360 layer visualizers**, `X/Y/Z` cross-section slicing, 7 orchestral composer palettes, and direct `file://` double-click loading:
+Automated verification covers static symbol/DOM integrity, standalone Node `RV32IM` + frontier/enterprise/HPC/quantum + universal netlist unit tests, full headless Chrome WebGL2 execution across all **48 machines** and **528 primary layer visualizers (`1,584` sub-lens views)**, `BusPulse3D` 3D wave-packets, `X/Y/Z` cross-section slicing, 7 orchestral composer palettes, and direct `file://` double-click loading:
 
 ```bash
-# Run deterministic Node unit tests (AGC, Alto, ARM DVFS, VAX VM, CDC 6600 Scoreboard, ASCI Red Wormhole, Trapped-Ion, Ising Annealer, S/360, MESI/RAID, Raft, Cray-1, CM-2, Torus, QEC, Rydberg, MBQC, Kitaev, Shor/Grover/H2)
+# Run deterministic Node unit tests across all 31 standalone hardware/quantum engines + 768 HardWiredNetlistSolver truth-table states
 node --test tests/simulators.test.mjs
 
 # Run exhaustive static symbol, PBR helper, SFX, and HTML ID audit
 node tools/audit-exhaustive.mjs
 
-# Run full headless WebGL2 40-machine + 360-layer + audio + file:// verification suite
+# Run full headless WebGL2 48-machine + 528-layer (1,584 sub-lens) + audio + file:// verification suite
 npm test
 
-# Render 4K UHD (3840x2160) & Macro visual audit PNGs + white-clipping report
+# Render 51 4K UHD (3840x2160) & UI visual audit PNGs + white-clipping report
 npm run audit:4k
 ```
 

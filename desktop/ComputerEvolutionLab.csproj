@@ -10,10 +10,10 @@
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
     <ApplicationIcon>..\assets\icon\computer-evolution-lab.ico</ApplicationIcon>
     <Title>Computer Evolution Lab</Title>
-    <Product>Computer Evolution Lab — 40 Operational Computers Across 4 Grand Circles in 4K 3D</Product>
+    <Product>Computer Evolution Lab — 48 Hard-Wired Operational Computers Across 4 Grand Circles in 4K 3D</Product>
     <Company>0thernes</Company>
-    <Version>4.0.0</Version>
-    <FileVersion>4.0.0.0</FileVersion>
+    <Version>5.0.0</Version>
+    <FileVersion>5.0.0.0</FileVersion>
     <PublishSingleFile>true</PublishSingleFile>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     <SelfContained>false</SelfContained>

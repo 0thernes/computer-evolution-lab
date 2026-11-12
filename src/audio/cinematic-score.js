@@ -210,6 +210,46 @@ var us = {
     style: "malick",
     mood: "15 mK cathedral pedal organ, suspended strings & solo cello",
   },
+  eniac46: {
+    film: "Oppenheimer & The Imitation Game",
+    style: "oppenheimer",
+    mood: "100 kHz clockwork spiccato strings, contrabasses & brass",
+  },
+  lisp83: {
+    film: "A Beautiful Mind & Tron: Legacy",
+    style: "mind",
+    mood: "recursive felt piano triplets, celesta & wordless choir",
+  },
+  wse24: {
+    film: "Ex Machina & Blade Runner 2049",
+    style: "exmachina",
+    mood: "crystalline harmonic piano, organ pedal & wafer-scale pulse",
+  },
+  tandem77: {
+    film: "All the President's Men & JFK",
+    style: "stone",
+    mood: "elegiac adagio strings, noble solo trumpet & steady snare",
+  },
+  blade04: {
+    film: "The Social Network & Inception",
+    style: "inception",
+    mood: "driving ostinato, pocket-watch pulse & datacenter brass",
+  },
+  systolic82: {
+    film: "Tron: Legacy & Apollo 13",
+    style: "chiphero",
+    mood: "rhythmic systolic arpeggiator, French horns & strings",
+  },
+  fugaku20: {
+    film: "Inception & Oppenheimer",
+    style: "matrix",
+    mood: "titan low brass, spiccato strings & concert timpani",
+  },
+  qspin: {
+    film: "Arrival & Interstellar",
+    style: "glass",
+    mood: "crystalline silicon-spin harmonic waves, choir & organ",
+  },
 };
 
 var SCORE_THEMES = [
@@ -2897,6 +2937,39 @@ var Oa = Math.random,
     qanneal: {
       "tun>squid": ["rf", { min: 0.12 }],
       "gap>gs": () => ["photon", { f: 0.72 + Oa() * 0.25, min: 0.14 }],
+    },
+    eniac46: {
+      "mp>fta": () => ["tick", { f: 880 + Oa() * 620, v: 0.05, min: 0.05 }],
+      "bus>acc": ["merc", { min: 0.08 }],
+      "acc>io": ["clack", { min: 0.12 }],
+    },
+    lisp83: {
+      "wcs>alu": () => ["tick", { f: 1180, v: 0.04, min: 0.08 }],
+      "kbd>alu": ["key", { ibm: "F", min: 0.05 }],
+    },
+    wse24: {
+      "sram>wafer": ["coil", { v: 0.65, min: 0.14 }],
+      "wafer>cold": ["gurgle", { min: 1.5 }],
+    },
+    tandem77: {
+      "cpu01>busx": () => ["tick", { f: 960, v: 0.045, min: 0.08 }],
+      "busx>raid1": () => ["seek", { d: 0.3 + Oa() * 0.4, min: 0.1 }],
+    },
+    blade04: {
+      "n0>ht": () => ["tick", { f: 1580, v: 0.04, min: 0.09 }],
+      "ept>epoll": ["coil", { v: 0.5, min: 0.14 }],
+    },
+    systolic82: {
+      "west>grid": () => ["clock", { ph: Oa() > 0.5, min: 0.08 }],
+      "grid>out": ["tick", { f: 1420, v: 0.05, min: 0.12 }],
+    },
+    fugaku20: {
+      "hbm>sve": ["coil", { v: 0.72, min: 0.15 }],
+      "sve>tofu": () => ["tick", { f: 1720, v: 0.045, min: 0.09 }],
+    },
+    qspin: {
+      "edsr>dots": ["rf", { min: 0.11 }],
+      "dots>psb": () => ["photon", { f: 1.05 + Oa() * 0.28, min: 0.12 }],
     },
   };
 

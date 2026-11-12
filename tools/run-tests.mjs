@@ -158,7 +158,7 @@ async function runRiscvUnitChecks() {
 
 async function runHeadlessBrowserSuite() {
   console.log(
-    "\n[3/4] Headless Chrome WebGL2 Full 40-Machine + 360-Layer + Audio Verification",
+    "\n[3/4] Headless Chrome WebGL2 Full 48-Machine + 528-Layer (1,584 Sub-Lens) + Audio Verification",
   );
 
   const bin = findBrowserBinary();
@@ -196,8 +196,8 @@ async function runHeadlessBrowserSuite() {
 
     assert(bootInfo.webgl2, "WebGL2 context was not active");
     assert(
-      bootInfo.machines.length === 40,
-      `Expected 40 machines, got ${bootInfo.machines.length}`,
+      bootInfo.machines.length === 48,
+      `Expected 48 machines, got ${bootInfo.machines.length}`,
     );
     assert(
       session.pageExceptions.length === 0,
@@ -209,10 +209,10 @@ async function runHeadlessBrowserSuite() {
     );
     ok(
       "HTTP WebGL2 boot & StudioFX composer",
-      `40 machines, maxTex=${bootInfo.maxTex}, exposure=${bootInfo.exposure}`,
+      `48 machines, maxTex=${bootInfo.maxTex}, exposure=${bootInfo.exposure}`,
     );
 
-    // Verify all 40 machines: select, step frames, m.test(), and 9-layer selfCheck()
+    // Verify all 48 machines: select, step frames, m.test(), and 11-layer selfCheck()
     let totalLayersChecked = 0;
     const stepFrames = isSoftwareCI ? 2 : 6;
     for (const id of bootInfo.machines) {
@@ -241,8 +241,8 @@ async function runHeadlessBrowserSuite() {
       assert(mRes.ok, `Machine ${id}.test() failed: ${mRes.msg || mRes.err}`);
       assert(!mRes.errMark, `Machine ${id} threw an update() error`);
       assert(
-        Array.isArray(mRes.layers) && mRes.layers.length === 9,
-        `Machine ${id} layer count != 9`,
+        Array.isArray(mRes.layers) && mRes.layers.length === 11,
+        `Machine ${id} layer count != 11 (got ${mRes.layers && mRes.layers.length})`,
       );
       assert(!mRes.warned, `Machine ${id} threw a layer viz/probe error`);
       for (const item of mRes.layers) {
@@ -257,22 +257,36 @@ async function runHeadlessBrowserSuite() {
         totalLayersChecked++;
       }
       ok(
-        `Machine [${id}] hardware test & 9 layers`,
+        `Machine [${id}] hardware test & 11 layers`,
         `${mRes.partsCount} 3D parts · ${mRes.msg}`,
       );
     }
     ok(
-      "All 360 Hardware/Software layer canvases verified",
-      `${totalLayersChecked}/360 live, non-blank & part-matched`,
+      "All 528 Hardware/Software primary layer canvases verified",
+      `${totalLayersChecked}/528 live, non-blank & part-matched (1,584 sub-lens views)`,
     );
 
-    // Deep Modern Mini PC (pc20) interactive checks
+    // Deep Modern Mini PC (pc20), Sub-Lens Gate Bench, 3D Bus Wave-Packets & 5-Tab Roofline Atlas checks
     const pc20Deep = await session.evalValue(`(() => {
       LAB.select("pc20");
       const m = LAB.active;
-      const cpu = m.cpu || m.rv || (m._cpu);
-      // Test interactive 3D keyboard keycap metadata & onPick
       const keyParts = m.kit.parts.filter(p => p.userData.keyChar !== undefined || /Keyboard/i.test(p.userData.part?.name || ""));
+      // Fire diagram pulse to verify 3D BusPulse wave-packets spawn
+      const spawnedBefore = LAB.busPulses.spawned;
+      const nKeys = Object.keys(m.diag.nodes);
+      if (nKeys.length >= 2) m.diag.pulse(nKeys[0], nKeys[1], "#38bdf8");
+      const busPulseSpawned = LAB.busPulses.spawned > spawnedBefore;
+      // Verify Sub-Lens 1 (Hard-Wired Gate Bench + Interactive Pin Toggle) & Sub-Lens 2 (Signal Eye)
+      m._layers.set("hw", 3);
+      m._layers.setLens(1);
+      m._layers.toggleInputPin(0);
+      m._layers.draw(1.0, true);
+      const hitBoxCount = (m._layers._gateHitBoxes || []).length;
+      m._layers.setLens(2);
+      m._layers.draw(1.0, true);
+      const lensWarned = !!m._layers._warned;
+      m._layers.setLens(0);
+      m._layers.set("hw", -1);
       // Test Cross-Section Slicer on pc20
       LAB.slicer.enabled = true;
       LAB.slicer.axis = "x";
@@ -284,7 +298,7 @@ async function runHeadlessBrowserSuite() {
       });
       LAB.slicer.enabled = false;
       LAB.slicer.apply(m);
-      // Test Cutaway, Explode, Macro camera preset, Tour, Compare, Help
+      // Test Cutaway, Explode, Macro camera preset, Tour, 5-Tab Compare + Roofline, Help
       LAB.setCutaway(true, true);
       LAB.setExplode(0.5, true);
       LAB.setViewPreset("macro", true);
@@ -297,22 +311,46 @@ async function runHeadlessBrowserSuite() {
       LAB.stopTour();
       LAB.openCompare();
       const hasCmp = !!document.querySelector(".overlay");
+      const roofTabBtn = document.querySelector('.overlay button[data-tab="roofline"]');
+      if (roofTabBtn) roofTabBtn.click();
+      const hasRoofline = !!roofTabBtn;
       document.querySelectorAll(".overlay").forEach(o => o.remove());
       LAB.openHelp();
       const hasHelp = !!document.querySelector(".overlay.help");
       document.querySelectorAll(".overlay").forEach(o => o.remove());
-      return { keyParts: keyParts.length, clippedMats, tourLen, hasCmp, hasHelp };
+      return {
+        keyParts: keyParts.length,
+        clippedMats,
+        tourLen,
+        hasCmp,
+        hasRoofline,
+        hasHelp,
+        busPulseSpawned,
+        hitBoxCount,
+        lensWarned
+      };
     })()`);
 
     assert(
       pc20Deep.clippedMats > 10,
       `Expected slicer clipping planes on meshes, got ${pc20Deep.clippedMats}`,
     );
-    assert(pc20Deep.tourLen === 11, `Expected 11 tour steps, got ${pc20Deep.tourLen}`);
-    assert(pc20Deep.hasCmp && pc20Deep.hasHelp, "Compare or Help modal failed to render");
+    assert(pc20Deep.tourLen === 13, `Expected 13 tour steps, got ${pc20Deep.tourLen}`);
+    assert(
+      pc20Deep.hasCmp && pc20Deep.hasRoofline && pc20Deep.hasHelp,
+      "Compare (with Tab 5 Roofline) or Help modal failed to render",
+    );
+    assert(
+      pc20Deep.busPulseSpawned,
+      "3D BusPulse wave-packet failed to spawn on diagram pulse",
+    );
+    assert(
+      pc20Deep.hitBoxCount >= 2 && !pc20Deep.lensWarned,
+      `Sub-Lens Gate Bench / Signal Eye error (hitBoxes=${pc20Deep.hitBoxCount}, warned=${pc20Deep.lensWarned})`,
+    );
     ok(
-      "3D Cross-Section Slicer, Cutaway, Explode, Tour & Modals",
-      `${pc20Deep.clippedMats} meshes sliced cleanly, ${pc20Deep.tourLen} tour steps`,
+      "3D Bus Pulses, Interactive Gate Bench, Signal Eye, Slicer, Tour & 5-Tab Roofline Atlas",
+      `${pc20Deep.clippedMats} sliced meshes, ${pc20Deep.hitBoxCount} clickable gate pins, ${pc20Deep.tourLen} tour steps`,
     );
 
     // Cinematic Orchestral Audio Engine checks
@@ -368,7 +406,7 @@ async function runHeadlessBrowserSuite() {
     await session.waitForLabBoot(60000);
 
     const fileCheck = await session.evalValue(`(async () => {
-      const ids = ["pc20", "agc66", "alto73", "arm07", "m6502", "alife", "s360", "vax78", "cdc6600", "cray1", "ascired97", "qion", "qanneal", "qomega"];
+      const ids = ["pc20", "eniac46", "agc66", "alto73", "m6502", "lisp83", "arm07", "wse24", "alife", "s360", "tandem77", "vax78", "blade04", "cdc6600", "cray1", "systolic82", "ascired97", "fugaku20", "qion", "qanneal", "qspin", "qomega"];
       const failedIds = [];
       for (const id of ids) {
         LAB.select(id);

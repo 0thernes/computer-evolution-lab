@@ -1,4 +1,4 @@
-// 4-Tab MIT / Stanford / Caltech CS Engineering Atlas & Quantitative Era Comparator
+// 5-Tab MIT / Stanford / Caltech CS Engineering Atlas, Roofline Lab & Quantitative Era Comparator
 function Dc(selectMachine) {
   const overlay = q("div", {
     class: "overlay",
@@ -8,11 +8,11 @@ function Dc(selectMachine) {
   });
 
   const WING_META = {
-    all: { label: "All 40 Machines", color: "#58c4ff" },
-    personal: { label: "Circle I · Personal & Bio/Optical (19)", color: "#ffb347" },
-    servers: { label: "Circle II · Mainframes & Servers (6)", color: "#38bdf8" },
-    super: { label: "Circle III · Supercomputers (7)", color: "#f97316" },
-    quantum: { label: "Circle IV · Quantum Age (8)", color: "#c084fc" },
+    all: { label: "All 48 Machines", color: "#58c4ff" },
+    personal: { label: "Circle I · Personal & Bio/Wafer (22)", color: "#ffb347" },
+    servers: { label: "Circle II · Mainframes & Servers (8)", color: "#38bdf8" },
+    super: { label: "Circle III · Supercomputers (9)", color: "#f97316" },
+    quantum: { label: "Circle IV · Quantum Age (9)", color: "#c084fc" },
   };
   const CAPITALS = new Set(["m6502", "s360", "cray1", "qomega"]);
 
@@ -235,9 +235,9 @@ function Dc(selectMachine) {
       kind: "drop",
       badge: "🔥 BIG DROP CLUSTER",
       title:
-        "Von Neumann Stored-Program Architecture, Op-Amps & The Point-Contact Transistor",
-      body: "1945: EDVAC First Draft formalizes stored-program execution. 1947: Bell Labs (Bardeen, Brattain, Shockley) demonstrates the germanium transistor AND Ragazzini/Reeves pioneer electronic operational-amplifier analog computers. 1949: Cambridge EDSAC runs the first practical stored-program subroutine library in mercury delay lines.",
-      ids: ["analog", "tube"],
+        "ENIAC Electronic Speed (1946) · Stored-Program Architecture · Op-Amps & The Transistor",
+      body: "1945–46: Mauchly, Eckert & ENIAC's six women programmers unleash 100 kHz electronic plugboard speed (5,000 additions/s across 17,468 vacuum tubes) while the EDVAC Draft formalizes stored-program execution. 1947: Bell Labs demonstrates the germanium transistor AND Ragazzini/Reeves pioneer op-amp analog computers. 1949: Cambridge EDSAC runs the first stored-program subroutine library.",
+      ids: ["eniac46", "analog", "tube"],
     },
     {
       years: "1951–1957",
@@ -278,25 +278,26 @@ function Dc(selectMachine) {
       kind: "drop",
       badge: "🔥 THE 36-MONTH EXPLOSION",
       title:
-        "Altair 8800 · $25 MOS 6502 · Cray-1 Vector Supercomputer · DEC VAX-11/780 32-Bit Virtual Memory",
-      body: "Four revolutions detonated back-to-back: Jan 1975 MITS Altair 8800 launches personal kits; Sept 1975 Chuck Peddle's team ships the 3,510-transistor MOS 6502 for $25; 1976 Seymour Cray delivers Cray-1 #1 (80 MHz, vector registers V0–V7 & chaining); Oct 1977/78 DEC ships VAX-11/780, expanding virtual memory from 16-bit to 32-bit (4 GB) and hosting Berkeley 4.2BSD UNIX + TCP/IP.",
-      ids: ["altair", "m6502", "cray1", "vax78"],
+        "Altair 8800 · $25 MOS 6502 · Cray-1 Vector · Tandem NonStop ACID · DEC VAX-11/780 32-Bit VM",
+      body: "Five revolutions detonated back-to-back: Jan 1975 MITS Altair 8800 launches personal kits; Sept 1975 Chuck Peddle's team ships the 3,510-transistor MOS 6502 for $25; 1976 Seymour Cray delivers Cray-1 #1 (80 MHz, vector chaining); 1977 Treybig & Jim Gray ship Tandem NonStop share-nothing Process Pairs + Write-Ahead Logging for zero-downtime OLTP; 1977/78 DEC ships VAX-11/780 32-bit virtual memory.",
+      ids: ["altair", "m6502", "cray1", "tandem77", "vax78"],
     },
     {
       years: "1982–1987",
       kind: "drop",
-      badge: "🔥 HOME & MASSIVELY PARALLEL",
-      title: "Commodore 64 / IBM PC Clones + Connection Machine CM-2 (65,536 SIMD PEs)",
-      body: "1982–85 democratized sprites, SID synth audio, and PC clones in tens of millions of homes, while in 1987 Danny Hillis & Richard Feynman at Thinking Machines built the iconic LED-lit CM-2 hypercube (65,536 1-bit SIMD processors + e-cube XOR router), pioneering data-parallel prefix scans (*Lisp / C*) that prefigured modern GPU warps.",
-      ids: ["home80", "cm2"],
+      badge: "🔥 VLSI, SYMBOLIC & SIMD",
+      title:
+        "Kung–Leiserson Systolic Array (1982) · Symbolics 3600 Tagged LISP (1983) · C64/PC · CM-2 (1987)",
+      body: "1982: Kung & Leiserson formulate 2D VLSI Systolic Arrays (zero-fetch O(N)-reuse MAC wavefronts, the direct ancestor of Google TPUs & Tensor Cores) while home computers sweep millions of desks. 1983: Symbolics 3600 puts 36-bit hardware tags, CDR-coding & ephemeral GC on every word. 1987: Danny Hillis & Richard Feynman light up the 65,536-PE Connection Machine CM-2 hypercube.",
+      ids: ["systolic82", "home80", "lisp83", "cm2"],
     },
     {
       years: "1988–1992",
       kind: "quiet",
       badge: "🧊 2ND AI WINTER",
       title: "The Second AI Winter & Collapse of Specialized Symbolic / Vector Hardware",
-      body: "Expert systems & Lisp machines collapsed as commodity CMOS RISC/x86 microprocessors ('Attack of the Killer Micros', Brooks & Hennessy/Patterson) doubled performance every 18 months. Specialized vector/SIMD vendors went bankrupt or consolidated, paving the way for shared-memory RISC SMP servers and wormhole-routed MPI clusters.",
-      ids: ["cm2", "sun90", "ascired97"],
+      body: "Expert systems & 36-bit Lisp machines collapsed as commodity CMOS RISC/x86 microprocessors ('Attack of the Killer Micros', Brooks & Hennessy/Patterson) doubled performance every 18 months. Specialized symbolic/SIMD vendors went bankrupt or consolidated, paving the way for shared-memory RISC SMP servers and wormhole-routed MPI clusters.",
+      ids: ["lisp83", "cm2", "sun90", "ascired97"],
     },
     {
       years: "1993–1998",
@@ -310,10 +311,11 @@ function Dc(selectMachine) {
     {
       years: "2002–2005",
       kind: "quiet",
-      badge: "🧊 PHYSICS WALL",
-      title: "Breakdown of Dennard Scaling & The 4 GHz Pentium 4 Thermal Wall",
-      body: "For 30 years Dennard scaling (1974) kept power density constant as transistors shrank. Around 90 nm (2003–2004), subthreshold & gate-oxide quantum tunneling leakage exploded; deeply pipelined single-core clock races hit ~3.8 GHz thermal walls (cancelling 10 GHz plans) and forced the industry into Multicore CPUs, Mobile ARM DVFS, and low-wattage Petascale tori (Blue Gene).",
-      ids: ["pc00", "pc10", "arm07", "bgene"],
+      badge: "🧊 PHYSICS WALL & PIVOT",
+      title:
+        "Breakdown of Dennard Scaling (4 GHz Wall) -> Multicore, x86-64 Hypervisor Blades & C10K epoll",
+      body: "Around 90 nm (2003–2004), subthreshold & gate-oxide leakage killed 10 GHz single-core plans and forced four architectural pivots at once: Dual-Opteron x86-64 ccNUMA + hardware-assisted VMware/Xen virtualization + Linux O(1) epoll C10K servers (2004), Multicore desktops, Mobile ARM DVFS, and cool low-wattage Petascale tori (Blue Gene).",
+      ids: ["pc00", "blade04", "pc10", "arm07", "bgene"],
     },
     {
       years: "2006–2011",
@@ -336,25 +338,28 @@ function Dc(selectMachine) {
     {
       years: "2018–2021",
       kind: "quiet",
-      badge: "🧊 NISQ PLATEAU",
-      title: "The Pre-QEC NISQ Decoherence Bottleneck & Chiplet Packaging Pivot",
-      body: "Monolithic reticle limits (~858 mm²) forced multi-die 2.5D CoWoS + HBM packaging (DGX A100), while 50–100-qubit Noisy Intermediate-Scale Quantum (NISQ) processors hit exponential circuit-depth decay because physical 2-qubit gate errors (~0.5–1%) still sat near or above the surface-code threshold without logical error suppression.",
-      ids: ["aibox", "quantum"],
+      badge: "🧊 RETICLE & NISQ PIVOT",
+      title:
+        "Reticle Wall -> CoWoS + HBM2 (RIKEN Fugaku A64FX, 2020) & Pre-QEC NISQ Plateau",
+      body: "Monolithic ~858 mm² reticle limits forced 2.5D CoWoS + HBM packaging: RIKEN/Fujitsu Fugaku (2020) fused 512-bit ARM SVE with 1 TB/s on-package HBM2 and 6D TofuD to sweep all 4 global HPC crowns, while DGX A100 scaled AI chiplets and 50–100Q NISQ processors awaited below-threshold QEC.",
+      ids: ["fugaku20", "aibox", "quantum"],
     },
     {
       years: "2022–2025",
       kind: "drop",
-      badge: "🔥 EXASCALE, AI RACKS & QEC RUBICON",
+      badge: "🔥 EXASCALE, WAFER-SCALE & QEC",
       title:
-        "Frontier 1.194 ExaFLOPS · Telum z16 · DishBrain · Below-Threshold QEC · Blackwell NVL72",
-      body: "A historic multi-domain surge: ORNL Frontier breaks Exascale (2022); IBM z16 embeds 1 ms AI fraud scoring on zero-downtime RAIM mainframes (2022); DishBrain biological neurons learn Pong (2022); Harvard/QuEra shuttle 48 logical neutral-atom qubits (2023/24); Google's 15 mK superconducting surface code demonstrates exponential below-threshold error suppression (2024); Microsoft/academic labs probe Majorana tetrons & fusion photonics (2025); NVIDIA GB200 NVL72 fuses 72 GPUs over a 130 TB/s copper NVLink spine (2025).",
+        "Frontier Exascale · 300mm Wafer-Scale WSE-3 · ²⁸Si Spin-Dot & Below-Threshold QEC · Blackwell NVL72",
+      body: "A historic multi-domain surge: ORNL Frontier breaks Exascale (2022); IBM z16 embeds 1 ms AI fraud scoring (2022); DishBrain biological neurons learn Pong (2022); Cerebras stitches 4 trillion transistors across a full 300 mm wafer with 44 GB 1-cycle SRAM (2024); 300 mm CMOS foundries fabricate 1.2 K ²⁸Si spin-dot qubits while neutral-atom & 15 mK transmon surface codes cross below-threshold QEC (2024); Majorana tetrons, fusion photonics & NVIDIA GB200 NVL72 debut (2025).",
       ids: [
         "pc20",
         "zmain20",
         "bci",
         "exascale",
+        "wse24",
         "qatom",
         "qtransmon",
+        "qspin",
         "qphotonic",
         "qtopo",
         "gb200",
@@ -465,11 +470,11 @@ function Dc(selectMachine) {
     ],
     [
       "Live 3D Machines in Lab",
-      "agc66 · alto73 · ★ m6502 · altair · home80 · pc90 · pc00 · arm07 · pc10 · pc20 · aibox",
-      "★ s360 · zmain20",
-      "unix70 · vax78 · sun90 · cloud10",
-      "cdc6600 · ★ cray1 · cm2 · ascired97 · bgene · exascale · gb200",
-      "qion · quantum · qanneal · qatom · qtransmon · qphotonic · qtopo · ★ qomega",
+      "eniac46 · agc66 · alto73 · ★ m6502 · altair · home80 · lisp83 · pc90 · pc00 · arm07 · pc10 · pc20 · aibox · wse24",
+      "★ s360 · tandem77 · zmain20",
+      "unix70 · vax78 · sun90 · blade04 · cloud10",
+      "cdc6600 · ★ cray1 · systolic82 · cm2 · ascired97 · bgene · fugaku20 · exascale · gb200",
+      "qion · quantum · qanneal · qatom · qtransmon · qspin · qphotonic · qtopo · ★ qomega",
     ],
   ];
 
@@ -528,7 +533,7 @@ function Dc(selectMachine) {
     ),
   );
 
-  // ---- TAB 4: All 8 Quantum Eras & Physical Modalities Compared (Circle IV Deep Dive) ----
+  // ---- TAB 4: All 9 Quantum Eras & Physical Modalities Compared (Circle IV Deep Dive) ----
   const QMOD_ROWS = [
     [
       "qion",
@@ -576,6 +581,15 @@ function Dc(selectMachine) {
       "1st Below-Threshold Rotated Surface Code (d=3->5->7 halves ε_L by Λ=2.14)",
     ],
     [
+      "qspin",
+      "2024",
+      "²⁸Si/SiGe Foundry CMOS Quantum-Dot Spin QPU (Loss–DiVincenzo)",
+      "1.2 K Pumped-⁴He ('Hot-Qubit' + Cryo-CMOS)",
+      "50 nm gate pitch; Heisenberg J(V) S₁·S₂ √SWAP/CNOT + Co micromagnet EDSR",
+      "1,000,000× denser than transmons; T₂* ~ 36 µs (50 ppm ²⁸Si), Echo ~28 ms",
+      "Pauli Spin Blockade (PSB) RF-SET singlet-triplet readout on 300mm CMOS wafers",
+    ],
+    [
       "qphotonic",
       "2025",
       "Measurement-Based Fusion Photonic QPU (MBQC)",
@@ -610,7 +624,7 @@ function Dc(selectMachine) {
     q(
       "p",
       { class: "small" },
-      "There is NO single 'Quantum Computer' — just as early classical computing competed across relays, mercury delay lines, vacuum tubes, and silicon ICs, Circle IV models all 8 historic, contemporary, and horizon quantum computing modalities side-by-side.",
+      "There is NO single 'Quantum Computer' — just as early classical computing competed across relays, mercury delay lines, vacuum tubes, and silicon ICs, Circle IV models all 9 historic, contemporary, and horizon quantum computing modalities side-by-side.",
     ),
     q(
       "div",
@@ -654,24 +668,349 @@ function Dc(selectMachine) {
     ),
   );
 
+  // ---- TAB 5: Interactive Williams–Waterman–Patterson Roofline & Switching-Physics Lab ----
+  const ROOFLINE_ARCHS = [
+    {
+      id: "cray1",
+      label: "1976 ★ Cray-1 Vector (80 MHz)",
+      peakGflops: 0.16,
+      bwGBs: 2.56,
+      color: "#fbbf24",
+      on: true,
+    },
+    {
+      id: "blade04",
+      label: "2004 Dual-Opteron Blade (x86-64)",
+      peakGflops: 9.6,
+      bwGBs: 12.8,
+      color: "#60a5fa",
+      on: true,
+    },
+    {
+      id: "fugaku20",
+      label: "2020 Fugaku A64FX Node (SVE+HBM2)",
+      peakGflops: 3379,
+      bwGBs: 1024,
+      color: "#f87171",
+      on: true,
+    },
+    {
+      id: "exascale",
+      label: "2022 Frontier Node (4× MI250X HBM2e)",
+      peakGflops: 191000,
+      bwGBs: 13107,
+      color: "#f97316",
+      on: true,
+    },
+    {
+      id: "wse24",
+      label: "2024 Wafer-Scale WSE-3 (44GB On-Wafer SRAM!)",
+      peakGflops: 125000000,
+      bwGBs: 21000000,
+      color: "#34d399",
+      on: true,
+    },
+    {
+      id: "gb200",
+      label: "2025 Blackwell GB200 NVL72 (FP4/HBM3e)",
+      peakGflops: 1440000000,
+      bwGBs: 576000,
+      color: "#c084fc",
+      on: true,
+    },
+  ];
+
+  const SWITCH_ERAS = [
+    { id: "relay", label: "1941 Z3 Relay", fJ: 2e13, col: "#d97706" },
+    { id: "eniac46", label: "1946 ENIAC Tube", fJ: 1.5e11, col: "#f59e0b" },
+    { id: "agc66", label: "1966 Apollo RTL IC", fJ: 80000, col: "#fbbf24" },
+    { id: "m6502", label: "1975 ★ NMOS 6502", fJ: 5000, col: "#fde047" },
+    { id: "blade04", label: "2004 90nm CMOS", fJ: 8, col: "#38bdf8" },
+    { id: "gb200", label: "2025 4NP FinFET", fJ: 0.35, col: "#c084fc" },
+    { id: "photonic", label: "2017 MZI Photonic", fJ: 0.002, col: "#34d399" },
+    { id: "qomega", label: "300K Landauer kTln2", fJ: 0.00000287, col: "#f472b6" },
+  ];
+
+  let opIntensity = 2.0; // FLOP / Byte
+  const roofCanvas = q("canvas", { class: "plot", style: { height: "350px" } });
+  const roofReadout = q("div", { class: "ctable" });
+
+  const fmtPerf = (gflops) => {
+    if (gflops >= 1e6) return (gflops / 1e6).toFixed(2) + " EFLOP/s";
+    if (gflops >= 1e3) return (gflops / 1e3).toFixed(2) + " TFLOP/s";
+    if (gflops >= 1) return gflops.toFixed(2) + " GFLOP/s";
+    return (gflops * 1e3).toFixed(1) + " MFLOP/s";
+  };
+
+  const drawRoofline = () => {
+    if (activeTab !== "roofline") return;
+    const rect = roofCanvas.getBoundingClientRect();
+    if (rect.width < 20) return;
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    roofCanvas.width = Math.round(rect.width * dpr);
+    roofCanvas.height = Math.round(rect.height * dpr);
+    const ctx = roofCanvas.getContext("2d");
+    ctx.scale(dpr, dpr);
+    const W = rect.width;
+    const H = rect.height;
+    ctx.fillStyle = "#05080e";
+    ctx.fillRect(0, 0, W, H);
+
+    // Split canvas: Left 58% = Log-Log Roofline Model; Right 40% = 10^19x Switching-Energy Wall
+    const rX0 = 56;
+    const rW = Math.max(180, W * 0.56 - 68);
+    const rY0 = 28;
+    const rH = H - 64;
+    const aiMinLog = -1.5; // ~0.03 FLOP/B
+    const aiMaxLog = 3.6; // ~4000 FLOP/B
+    const pfMinLog = -2; // 0.01 GFLOP/s
+    const pfMaxLog = 9.5; // ~3 EFLOP/s
+
+    const mapX = (ai) => rX0 + ((Math.log10(ai) - aiMinLog) / (aiMaxLog - aiMinLog)) * rW;
+    const mapY = (gf) =>
+      rY0 +
+      rH -
+      ((Math.log10(Math.max(1e-3, gf)) - pfMinLog) / (pfMaxLog - pfMinLog)) * rH;
+
+    // Gridlines
+    ctx.strokeStyle = "#182436";
+    ctx.lineWidth = 1;
+    ctx.font = "10px ui-monospace, monospace";
+    ctx.fillStyle = "#8ca0b8";
+    for (let lx = -1; lx <= 3; lx++) {
+      const gx = mapX(Math.pow(10, lx));
+      ctx.beginPath();
+      ctx.moveTo(gx, rY0);
+      ctx.lineTo(gx, rY0 + rH);
+      ctx.stroke();
+      ctx.fillText(lx >= 0 ? String(Math.pow(10, lx)) : "0.1", gx - 10, rY0 + rH + 15);
+    }
+    for (let ly = -2; ly <= 9; ly += 2) {
+      const gy = mapY(Math.pow(10, ly));
+      ctx.beginPath();
+      ctx.moveTo(rX0, gy);
+      ctx.lineTo(rX0 + rW, gy);
+      ctx.stroke();
+      ctx.fillText("10^" + ly, 6, gy + 3);
+    }
+    ctx.fillStyle = "#cfe2f7";
+    ctx.font = "700 11px ui-monospace, monospace";
+    ctx.fillText(
+      "ROOFLINE: ATTAINABLE GFLOP/s vs ARITHMETIC INTENSITY (FLOP/B)",
+      rX0,
+      16,
+    );
+    ctx.fillStyle = "#8ca0b8";
+    ctx.font = "10px ui-monospace, monospace";
+    ctx.fillText(
+      "Operational Intensity (FLOP / Byte DRAM or SRAM)",
+      rX0 + rW * 0.22,
+      H - 8,
+    );
+
+    // Roofline curves: P = min(Peak, BW * AI)
+    for (const arch of ROOFLINE_ARCHS) {
+      if (!arch.on) continue;
+      const ridgeAi = arch.peakGflops / arch.bwGBs;
+      const ai0 = Math.pow(10, aiMinLog);
+      const ai1 = Math.pow(10, aiMaxLog);
+      ctx.strokeStyle = arch.color;
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      ctx.moveTo(mapX(ai0), mapY(Math.min(arch.peakGflops, arch.bwGBs * ai0)));
+      if (ridgeAi > ai0 && ridgeAi < ai1) {
+        ctx.lineTo(mapX(ridgeAi), mapY(arch.peakGflops));
+      }
+      ctx.lineTo(mapX(ai1), mapY(Math.min(arch.peakGflops, arch.bwGBs * ai1)));
+      ctx.stroke();
+
+      // Ridge point diamond + operating point dot
+      if (ridgeAi > ai0 && ridgeAi < ai1) {
+        const rx = mapX(ridgeAi);
+        const ry = mapY(arch.peakGflops);
+        ctx.fillStyle = arch.color;
+        ctx.fillRect(rx - 3, ry - 3, 6, 6);
+      }
+      const curPerf = Math.min(arch.peakGflops, arch.bwGBs * opIntensity);
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.arc(mapX(opIntensity), mapY(curPerf), 3.6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Active Operational Intensity cursor line
+    const curX = mapX(opIntensity);
+    ctx.save();
+    ctx.setLineDash([5, 4]);
+    ctx.strokeStyle = "#fde047";
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.moveTo(curX, rY0);
+    ctx.lineTo(curX, rY0 + rH);
+    ctx.stroke();
+    ctx.restore();
+    ctx.fillStyle = "#fde047";
+    ctx.font = "700 10.5px ui-monospace, monospace";
+    ctx.fillText(`AI=${opIntensity} FLOP/B`, Math.min(rX0 + rW - 86, curX + 5), rY0 + 13);
+
+    // Right Pane: Physical Gate Switching Energy E_sw = 1/2 C V^2 -> Landauer Floor (log10 fJ)
+    const sX0 = rX0 + rW + 32;
+    const sW = Math.max(120, W - sX0 - 16);
+    ctx.fillStyle = "#cfe2f7";
+    ctx.font = "700 11px ui-monospace, monospace";
+    ctx.fillText("SWITCHING ENERGY ½CV² → LANDAUER FLOOR (log₁₀ fJ)", sX0, 16);
+
+    const minLogFj = -6; // 10^-6 fJ = 10^-21 J (zJ)
+    const maxLogFj = 14; // 10^14 fJ = 100 mJ
+    const rowH = rH / SWITCH_ERAS.length;
+    SWITCH_ERAS.forEach((er, idx) => {
+      const sy = rY0 + idx * rowH + 4;
+      const frac = (Math.log10(er.fJ) - minLogFj) / (maxLogFj - minLogFj);
+      const bw = Math.max(4, frac * (sW - 118));
+      ctx.fillStyle = "#cbd5e1";
+      ctx.font = "600 10px ui-monospace, monospace";
+      ctx.fillText(er.label, sX0, sy + 12);
+      ctx.fillStyle = "#141e2e";
+      ctx.fillRect(sX0 + 116, sy + 2, Math.max(10, sW - 120), Math.max(10, rowH - 10));
+      ctx.fillStyle = er.col;
+      ctx.fillRect(sX0 + 116, sy + 2, bw, Math.max(10, rowH - 10));
+    });
+
+    // Update live numeric Roofline table underneath
+    roofReadout.innerHTML = "";
+    roofReadout.append(
+      q(
+        "table",
+        {},
+        q(
+          "tr",
+          {},
+          q("th", {}, "Architecture (Click to Open)"),
+          q("th", {}, "Peak Compute"),
+          q("th", {}, "Mem / Fabric BW"),
+          q("th", {}, "Ridge Point (Peak/BW)"),
+          q("th", {}, `Attainable @ AI=${opIntensity}`),
+          q("th", {}, "Hardware Bottleneck Regime"),
+        ),
+        ...ROOFLINE_ARCHS.map((a) => {
+          const ridge = a.peakGflops / a.bwGBs;
+          const att = Math.min(a.peakGflops, a.bwGBs * opIntensity);
+          const memBound = opIntensity < ridge * 0.99;
+          return q(
+            "tr",
+            {
+              onclick: () => openAndClose(a.id),
+              style: { opacity: a.on ? "1" : "0.45" },
+            },
+            q("td", {}, q("b", { style: { color: a.color } }, "↗ " + a.label)),
+            q("td", {}, fmtPerf(a.peakGflops)),
+            q(
+              "td",
+              {},
+              a.bwGBs >= 1e6
+                ? (a.bwGBs / 1e6).toFixed(1) + " PB/s (SRAM)"
+                : a.bwGBs >= 1e3
+                  ? (a.bwGBs / 1e3).toFixed(2) + " TB/s"
+                  : a.bwGBs.toFixed(2) + " GB/s",
+            ),
+            q("td", {}, ridge.toFixed(2) + " FLOP/B"),
+            q("td", {}, q("b", {}, fmtPerf(att))),
+            q(
+              "td",
+              {
+                style: {
+                  color: memBound ? "#fbbf24" : "#34d399",
+                  fontWeight: "700",
+                },
+              },
+              memBound
+                ? `MEMORY-WALL BOUND (${((att / a.peakGflops) * 100).toFixed(1)}% of Peak)`
+                : "COMPUTE-BOUND (100% Roof Ceiling ✓)",
+            ),
+          );
+        }),
+      ),
+    );
+  };
+
+  const aiReadoutSpan = q("b", { style: { color: "#fde047" } }, "2.00 FLOP/Byte");
+  const aiRange = q("input", {
+    type: "range",
+    min: "-1.3",
+    max: "2.7",
+    step: "0.02",
+    value: String(Math.log10(opIntensity)),
+    style: { width: "210px" },
+    oninput: (ev) => {
+      opIntensity = Number(Math.pow(10, +ev.target.value).toFixed(2));
+      aiReadoutSpan.textContent = `${opIntensity} FLOP/Byte`;
+      drawRoofline();
+    },
+  });
+
+  const setAiPreset = (val) => {
+    opIntensity = val;
+    aiRange.value = String(Math.log10(val));
+    aiReadoutSpan.textContent = `${val} FLOP/Byte`;
+    drawRoofline();
+  };
+
+  const rooflinePane = q(
+    "div",
+    { class: "atlas-scroll" },
+    q(
+      "p",
+      { class: "small" },
+      "Williams–Waterman–Patterson Roofline Model (UC Berkeley) + Landauer Switching Physics: slide Operational Arithmetic Intensity (FLOPs per Byte moved) to watch why sparse PDEs & LLM token decoding hit the Memory Wall — and why RIKEN Fugaku (on-package HBM2) and Cerebras WSE-3 (21 PB/s on-wafer SRAM, Ridge = 5.95 FLOP/B vs 2,500 FLOP/B!) shift the slanted bandwidth roof upward by orders of magnitude.",
+    ),
+    q(
+      "div",
+      { class: "row" },
+      q("span", { class: "small" }, "Operational Intensity:"),
+      aiRange,
+      aiReadoutSpan,
+      q(
+        "button",
+        { class: "chip", onclick: () => setAiPreset(0.25) },
+        "Sparse HPCG (0.25)",
+      ),
+      q(
+        "button",
+        { class: "chip", onclick: () => setAiPreset(1.6) },
+        "LLM Decode / Stencil (1.6)",
+      ),
+      q("button", { class: "chip", onclick: () => setAiPreset(32) }, "FP64 DGEMM (32)"),
+      q(
+        "button",
+        { class: "chip", onclick: () => setAiPreset(280) },
+        "FP8 Systolic / Tensor (280)",
+      ),
+    ),
+    roofCanvas,
+    roofReadout,
+  );
+
   // ---- Tab Switcher ----
   const panes = {
     quant: quantPane,
     timeline: timelinePane,
     matrix: matrixPane,
     qmod: qmodPane,
+    roofline: rooflinePane,
   };
   const tabDefs = [
-    ["quant", "📊 Quantitative Plot & Specs (40)"],
-    ["timeline", "⚡ Big-Drop Years vs. Quiet / Winter Years"],
-    ["matrix", "🏛️ Mainframe vs. Server vs. Supercomputer vs. Quantum"],
-    ["qmod", "⚛️ 8 Quantum Eras & Modalities"],
+    ["quant", "📊 Quantitative Plot & Specs (48)"],
+    ["timeline", "⚡ Big-Drop vs. Quiet / Winter Years"],
+    ["matrix", "🏛️ Mainframe vs. Server vs. Super vs. Quantum"],
+    ["qmod", "⚛️ 9 Quantum Modalities"],
+    ["roofline", "📐 Roofline & ½CV² Physics Lab"],
   ];
   const tabBody = q("div", {}, quantPane);
   const tabButtons = tabDefs.map(([k, label]) =>
     q(
       "button",
       {
+        "data-tab": k,
         class: "btn" + (k === activeTab ? " pri" : ""),
         onclick: () => {
           activeTab = k;
@@ -681,6 +1020,7 @@ function Dc(selectMachine) {
           tabBody.innerHTML = "";
           tabBody.append(panes[k]);
           if (k === "quant") requestAnimationFrame(drawPlot);
+          if (k === "roofline") requestAnimationFrame(drawRoofline);
         },
       },
       label,
@@ -697,7 +1037,7 @@ function Dc(selectMachine) {
       q(
         "h2",
         {},
-        "Computer Science & Engineering Atlas — 4 Circles · 40 Operational Machines",
+        "Computer Science & Engineering Atlas — 4 Circles · 48 Hard-Wired Operational Machines",
       ),
       q("div", { class: "row", style: { marginBottom: "8px" } }, ...tabButtons),
       tabBody,

@@ -37,7 +37,7 @@ var Ra = class ArchDiagram {
   }
 
   pulse(a, b, color = "#58c4ff", speed = 1.75) {
-    if (ArchDiagram.hook) ArchDiagram.hook(this, a, b);
+    if (ArchDiagram.hook) ArchDiagram.hook(this, a, b, color, speed);
     if (!this.nodes[a] || !this.nodes[b]) return;
     this.nodes[a].act = Math.min(1, this.nodes[a].act + 0.55);
     for (const e of this.edges) {

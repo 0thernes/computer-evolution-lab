@@ -606,3 +606,210 @@ test("v4.0 Watershed CS & Quantum Milestone Simulators (AGC 1202, Alto BitBLT, A
     `Quantum cotunneling (${slow.quantumProb}) outperforms trapped thermal SA (${slow.classicalProb}) across tall spin-glass barrier`,
   );
 });
+
+test("v5.0 Hard-Wired Operational Frontier Simulators (ENIAC, Symbolics LISP, Wafer-Scale WSE, Tandem NonStop, x86-64 Blade, Systolic Array, Fugaku SVE, 28Si Spin QPU)", () => {
+  const env = loadClassicScripts(["src/sim/hardwired-frontier-sims.js"]);
+
+  // 24. 1946 UPenn ENIAC Coaxial Plugboard & 10-Digit Ring Accumulator Engine
+  const eniac = new env.EniacPlugboardEngine();
+  for (let i = 0; i < 24; i++) eniac.step();
+  assert.ok(
+    eniac.acc[0].value > 0 && eniac.trajectory.length >= 12,
+    "ENIAC ballistic differential integration advances shell downrange via Function Table A drag",
+  );
+  eniac.toggleCord("C4");
+  assert.equal(eniac.cords[3].enabled, false, "Coax patch cord C4 unplugs cleanly");
+  eniac.loadPreset("Hard-Wired 10-Digit Fibonacci Ring Cascade");
+  for (let i = 0; i < 6; i++) eniac.step();
+  assert.equal(
+    eniac.acc[2].value,
+    21,
+    "ENIAC decade ring cascade computes exact Fibonacci F(9) = 21",
+  );
+
+  // 25. 1983 Symbolics 3600 / MIT CADR 36-Bit Hardware-Tagged LISP Machine
+  const lisp = new env.SymbolicsLispMachine();
+  assert.ok(
+    lisp.lastOutput.includes("(+ (* X"),
+    `Symbolic differentiator evaluates d/dx(x^2 + 5x): got ${lisp.lastOutput}`,
+  );
+  const mapOut = lisp.loadProgram(
+    env.LISP_PROGRAMS["CDR-Coded List & Higher-Order Mapcar"],
+  );
+  assert.equal(mapOut, "225", "CDR-coded mapcar + reduce sum-of-odd-squares equals 225");
+  assert.ok(lisp.cdrWordsSaved > 10, "2-bit CDR_NEXT/CDR_NIL compacts cons cells by 50%");
+  const gcRes = lisp.collectGarbage();
+  assert.ok(
+    gcRes.gcCycles >= 1 && gcRes.liveWords > 0,
+    "Cheney two-space ephemeral copying GC evacuates live tagged roots",
+  );
+
+  // 26. 2024 300mm Monolithic Wafer-Scale Dataflow & Spiking STDP Engine
+  const wse = new env.WaferScaleDataflowEngine();
+  for (let i = 0; i < 12; i++) wse.step();
+  assert.ok(
+    wse.waveletsRouted > 0 && wse.connectivityOk,
+    "Wafer-scale wavelet fabric steps cleanly",
+  );
+  const defRes = wse.toggleDefect(4, 4);
+  assert.equal(
+    defRes.connectivityOk,
+    true,
+    "Redundant spare fabric core reroutes around lithographic reticle defect",
+  );
+  wse.setMode("spiking");
+  for (let i = 0; i < 25; i++) wse.step();
+  assert.ok(
+    wse.spikesFired > 0 && wse.stdpUpdates > 0,
+    "Asynchronous LIF neuromorphic mode fires spikes and updates STDP weights",
+  );
+
+  // 27. 1977 Tandem NonStop-16 Share-Nothing Process Pairs + Jim Gray WAL
+  const tandem = new env.TandemNonStopCluster();
+  for (let i = 0; i < 6; i++) tandem.step();
+  assert.equal(
+    tandem.totalLedgerDollars(),
+    1000000,
+    "Initial OLTP ledger invariant = $1,000,000",
+  );
+  const crash = tandem.injectInFlightCrash();
+  assert.equal(
+    crash.invariantOk,
+    true,
+    "Jim Gray WAL UNDO rollback + Process-Pair takeover preserves exact $1,000,000 ACID invariant",
+  );
+  assert.equal(
+    tandem.processPairs[0].activeCpu,
+    1,
+    "Backup CPU 1 takes over $ATM-SW immediately",
+  );
+
+  // 28. 2004 Dual-Opteron x86-64 Hypervisor, ccNUMA & C10K epoll Blade Server
+  const blade = new env.HypervisorNumaServer();
+  const eptWalk = blade.translate2dAddress(0, 0x7f8812340);
+  assert.equal(
+    eptWalk.memRefs,
+    24,
+    "Cold 4x4 2D EPT walk performs 24 page-table references",
+  );
+  const tlbHit = blade.translate2dAddress(0, 0x7f8812340);
+  assert.equal(tlbHit.tlbHit, true, "Subsequent VPID-tagged TLB lookup hits in 1 cycle");
+  const reqEpoll = blade.c10kReqPerSec;
+  blade.setIoMode("select");
+  assert.ok(
+    reqEpoll > blade.c10kReqPerSec * 7,
+    "O(1) epoll readiness notification outperforms O(N) 10,000-FD select() scan by >7.5x",
+  );
+
+  // 29. 1982 Kung–Leiserson 2D VLSI Systolic Array
+  const sysArr = new env.SystolicArrayEngine();
+  const passOs = sysArr.runFullPass();
+  assert.equal(
+    passOs.verifiedExact,
+    true,
+    "Output-stationary 10-beat systolic wavefront matches exact C = A * B",
+  );
+  sysArr.setDataflowMode("weight_stationary");
+  const passWs = sysArr.runFullPass();
+  assert.equal(
+    passWs.verifiedExact,
+    true,
+    "TPU-style weight-stationary systolic wavefront matches exact C = A * B",
+  );
+
+  // 30. 2020 RIKEN / Fujitsu Fugaku ARM SVE + HBM2 + 6D TofuD Supercomputer
+  const fugaku = new env.FugakuSveTofuEngine();
+  fugaku.setProblemLength(29); // 29 % 8 == 5 tail elements
+  assert.equal(
+    fugaku.activeSveLanes,
+    5,
+    "ARM SVE WHILELT P0.D predicate mask activates exact 5/8 tail lanes without scalar loop",
+  );
+  const res0 = fugaku.cgResidual;
+  for (let i = 0; i < 8; i++) fugaku.step();
+  assert.ok(
+    fugaku.cgResidual < res0 * 0.05,
+    "Sparse Conjugate Gradient (HPCG) converges residual by >20x",
+  );
+
+  // 31. 2024 Loss–DiVincenzo 28Si/SiGe Quantum-Dot Spin QPU
+  const qspin = new env.SiliconSpinDotQpu();
+  qspin.setSi29Ppm(50);
+  const t2Purified = qspin.t2StarUs;
+  qspin.setSi29Ppm(46700);
+  assert.ok(
+    t2Purified > qspin.t2StarUs * 15,
+    "Isotopically purified 50 ppm 28Si boosts T2* spin coherence >15x over natural silicon",
+  );
+  qspin.setSi29Ppm(50);
+  const bell = qspin.runBellPsbDemo();
+  assert.ok(
+    bell.bellFidelity > 0.99 && bell.psbSingletProb < 0.01,
+    "Triplet Bell |Phi+> is Pauli-Spin-Blocked from tunneling into (0,2) singlet",
+  );
+  const sing = qspin.prepareSingletPair();
+  assert.ok(
+    sing.singletProb > 0.99,
+    "Antisymmetric singlet |Psi-> achieves >99% Pauli-Spin-Blockade tunneling",
+  );
+});
+
+test("Universal HardWiredNetlistSolver verifies exact Boolean & physical switching behavior across all 8 hardware families", () => {
+  const env = loadClassicScripts([
+    "src/core/dom-ui.js",
+    "src/sim/core-simulators.js",
+    "src/sim/riscv-modern-pc.js",
+    "src/sim/enterprise-hpc-quantum-sims.js",
+    "src/sim/hardwired-frontier-sims.js",
+    "src/layers/layer-stack.js",
+    "src/layers/layers-expansion.js",
+    "src/layers/hardwired-gate-engine.js",
+  ]);
+
+  assert.equal(typeof env.HardWiredNetlistSolver, "function");
+  assert.equal(env._c.length, 6, "Hardware stack expanded to 6 rungs");
+  assert.equal(env.Cc.length, 5, "Software stack expanded to 5 rungs");
+  assert.equal(env.p0.length, 48, "Primary-source spec table covers all 48 machines");
+
+  const all48Ids = env.p0.map((r) => r.id);
+  const familiesSeen = new Set();
+  for (const id of all48Ids) {
+    assert.ok(env.qy[id], `Layer definition missing for ${id}`);
+    assert.equal(env.qy[id].hw.length, 6, `${id} must have 6 HW rungs`);
+    assert.equal(env.qy[id].sw.length, 5, `${id} must have 5 SW rungs`);
+
+    const fam = env.HardWiredNetlistSolver.familyFor(id);
+    familiesSeen.add(fam.key);
+    // Exhaustively verify all 16 [A, B, CIN, MODE] pin states across classical & reversible quantum families
+    for (let mask = 0; mask < 16; mask++) {
+      const A = mask & 1;
+      const B = (mask >> 1) & 1;
+      const CIN = (mask >> 2) & 1;
+      const MODE = (mask >> 3) & 1;
+      const snap = env.HardWiredNetlistSolver.solve(id, [A, B, CIN, MODE]);
+      const bEff = B ^ MODE;
+      const expectedSum = A ^ bEff ^ CIN;
+      const expectedCout = (A & bEff) | ((A ^ bEff) & CIN);
+      assert.equal(snap.gates.length, 6, `${id} gate netlist has 6 topological gates`);
+      assert.equal(snap.outputs.SUM, expectedSum, `${id} SUM mismatch for mask ${mask}`);
+      assert.equal(
+        snap.outputs.COUT,
+        expectedCout,
+        `${id} COUT mismatch for mask ${mask}`,
+      );
+      assert.ok(
+        Number.isFinite(snap.critDelayPs) &&
+          snap.critDelayPs > 0 &&
+          Number.isFinite(snap.totalEnergyFj) &&
+          snap.totalEnergyFj > 0 &&
+          env.HardWiredNetlistSolver.formatDelay(snap.critDelayPs).length > 0,
+        `${id} physical delay & switching energy are positive and finite`,
+      );
+    }
+  }
+  assert.equal(
+    familiesSeen.size,
+    8,
+    `Expected all 8 physical switching families to be represented across 48 machines, got ${familiesSeen.size}`,
+  );
+});

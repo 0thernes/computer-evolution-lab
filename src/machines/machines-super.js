@@ -2762,3 +2762,887 @@ function makeMachineAsciRed97() {
   };
   return machine;
 }
+
+// ============================================================================
+// KUNG-LEISERSON 2D VLSI SYSTOLIC ARRAY (1982, systolic82)
+// ============================================================================
+function makeMachineSystolic82() {
+  const sim = new SystolicArrayEngine();
+  let running = true;
+  let stepAcc = 0;
+  let mon = null;
+  let peLeds = [];
+  let statsUi = null;
+
+  function drawSystolicMonitor() {
+    if (!mon) return;
+    const c = mon.ctx;
+    const W = 1024,
+      H = 768;
+    c.fillStyle = "#060b14";
+    c.fillRect(0, 0, W, H);
+
+    c.fillStyle = sim.dataflowMode === "output_stationary" ? "#1e3a8a" : "#581c87";
+    c.fillRect(16, 14, W - 32, 52);
+    c.fillStyle = "#f8fafc";
+    c.font = '700 19px "JetBrains Mono", monospace';
+    c.fillText(
+      `1982 KUNG-LEISERSON 4×4 VLSI SYSTOLIC ARRAY · BEAT t=${sim.cycle}/10 · ${sim.dataflowMode.toUpperCase()}`,
+      26,
+      47,
+    );
+
+    // Left: Live 4x4 Processing Element (PE) Grid with Diagonal Skewed Wavefront Highlight
+    c.fillStyle = "#0b1424";
+    c.fillRect(20, 82, 524, 456);
+    c.strokeStyle = "#38bdf8";
+    c.lineWidth = 2;
+    c.strokeRect(20, 82, 524, 456);
+    c.fillStyle = "#7dd3fc";
+    c.font = '700 15px "JetBrains Mono", monospace';
+    c.fillText("4×4 HARD-WIRED MAC GRID (a_in -> EAST, b_in -> SOUTH)", 36, 110);
+
+    const pitch = 114;
+    const ox = 52;
+    const oy = 132;
+    for (let r = 0; r < 4; r++) {
+      for (let col = 0; col < 4; col++) {
+        const pe = sim.pes[r * 4 + col];
+        const px = ox + col * pitch;
+        const py = oy + r * pitch;
+        c.fillStyle = pe.active ? "rgba(56, 189, 248, 0.26)" : "#111c2e";
+        c.fillRect(px, py, 102, 92);
+        c.strokeStyle = pe.active ? "#fde047" : "#334155";
+        c.lineWidth = pe.active ? 3 : 1.5;
+        c.strokeRect(px, py, 102, 92);
+
+        c.fillStyle = pe.active ? "#fde047" : "#94a3b8";
+        c.font = '700 12.5px "JetBrains Mono", monospace';
+        c.fillText(`PE[${r},${col}]`, px + 8, py + 20);
+        c.fillStyle = "#cbd5e1";
+        c.font = '600 12px "JetBrains Mono", monospace';
+        c.fillText(`a=${pe.aIn} b=${pe.bIn}`, px + 8, py + 44);
+        c.fillStyle = "#34d399";
+        c.font = '700 15px "JetBrains Mono", monospace';
+        c.fillText(`C=${sim.outC[r][col]}`, px + 8, py + 74);
+      }
+    }
+
+    // Right: Input Matrices A, B & Exact Reference Verification C = A x B
+    c.fillStyle = "#0b1424";
+    c.fillRect(560, 82, 444, 456);
+    c.strokeStyle = "#34d399";
+    c.lineWidth = 2;
+    c.strokeRect(560, 82, 444, 456);
+    c.fillStyle = "#6ee7b7";
+    c.font = '700 15px "JetBrains Mono", monospace';
+    c.fillText("EXACT MATRIX VERIFICATION: C = A × B", 578, 110);
+
+    const drawSmallMat = (title, M, mx, my, col) => {
+      c.fillStyle = col;
+      c.font = '700 13.5px "JetBrains Mono", monospace';
+      c.fillText(title, mx, my);
+      c.font = '600 13.5px "JetBrains Mono", monospace';
+      for (let i = 0; i < 4; i++) {
+        const rowStr = M[i].map((v) => String(v).padStart(4, " ")).join(" ");
+        c.fillStyle = "#e2e8f0";
+        c.fillText(`[ ${rowStr} ]`, mx, my + 24 + i * 22);
+      }
+    };
+    drawSmallMat("Stream Matrix A (West Skew):", sim.A, 578, 142, "#38bdf8");
+    drawSmallMat("Stream Matrix B (North Skew):", sim.B, 578, 272, "#fbbf24");
+    drawSmallMat("Computed Systolic Output C:", sim.outC, 578, 402, "#34d399");
+
+    // Bottom: Why Every Modern AI Tensor Core & Google TPU Uses Kung-Leiserson Systolic Dataflow!
+    c.fillStyle = "#0b1424";
+    c.fillRect(20, 554, W - 40, 194);
+    c.strokeStyle = "#fbbf24";
+    c.strokeRect(20, 554, W - 40, 194);
+    c.fillStyle = "#fde047";
+    c.font = '700 15.5px "JetBrains Mono", monospace';
+    c.fillText(
+      `MEMORY BANDWIDTH REUSE: ${sim.reuseFactor.toFixed(1)}× (32 SRAM Boundary Reads -> 64 MACs / 128 Ops · ${sim.verifiedExact ? "EXACT C=A×B ✓" : "WAVEFRONT IN FLIGHT"})`,
+      36,
+      584,
+    );
+    c.fillStyle = "#cbd5e1";
+    c.font = '500 14px "JetBrains Mono", monospace';
+    c.fillText(
+      "• H.T. Kung & Charles Leiserson (CMU/MIT) proved von Neumann CPUs waste >80% energy fetching",
+      36,
+      620,
+    );
+    c.fillText(
+      "  instructions and shuttling intermediate sums back and forth to global register files.",
+      36,
+      646,
+    );
+    c.fillText(
+      "• Pumping operands rhythmically from PE to neighbor PE like blood through arterial valves ('systolic')",
+      36,
+      678,
+    );
+    c.fillText(
+      "  achieves O(N) compute-to-bandwidth scaling — the exact blueprint of Google TPU MXUs & Tensor Cores!",
+      36,
+      704,
+    );
+
+    mon.tex.needsUpdate = true;
+  }
+
+  const machine = {
+    id: "systolic82",
+    era: "1982",
+    short: "VLSI Systolic Array",
+    name: "Kung–Leiserson 2D VLSI Systolic Array (CMU Warp Ancestor of TPUs)",
+    group: "super",
+    view0: 0.36,
+    blurb:
+      "Formulated by H.T. Kung and Charles E. Leiserson (featured in Mead & Conway's VLSI revolution and built into CMU's Warp supercomputer): a hard-wired 2D grid of identical Multiply-Accumulate (MAC) cells pumps skewed matrix wavefronts neighbor-to-neighbor on every heartbeat with zero instruction fetch and O(N) memory reuse — directly inspiring modern Google TPU Matrix Multiply Units and GPU Tensor Cores.",
+    diagram: {
+      nodes: [
+        { id: "west", label: "Skewed Row FIFO A", x: 0.16, y: 0.52, color: "#38bdf8" },
+        { id: "north", label: "Skewed Col FIFO B", x: 0.5, y: 0.16, color: "#fbbf24" },
+        {
+          id: "grid",
+          label: "4×4 Hard-Wired PE Grid",
+          x: 0.5,
+          y: 0.52,
+          color: "#34d399",
+        },
+        {
+          id: "clk",
+          label: "Global Systolic Heartbeat",
+          x: 0.2,
+          y: 0.84,
+          color: "#c08cff",
+        },
+        { id: "out", label: "Accumulator Drain C", x: 0.84, y: 0.52, color: "#f97316" },
+      ],
+      edges: [
+        ["west", "grid", "a[i, t-i]"],
+        ["north", "grid", "b[t-j, j]"],
+        ["clk", "grid", "1-Cycle MAC"],
+        ["grid", "out", "C = A × B"],
+      ],
+    },
+    build(kit) {
+      peLeds = [];
+
+      // 1. OPEN-LID VLSI SYSTOLIC ARRAY ACCELERATOR BOARD & 4x4 PE DIE SHOWCASE (Left)
+      const board = kit.group([-0.5, 0.32, 0.04], {
+        rot: [0.38, 0.16, 0],
+        name: "CMU Warp / VLSI Systolic Array VMEbus Accelerator Board",
+        info: "Multi-layer controlled-impedance PCB carrying skewed West/North SRAM delay FIFOs feeding a 4×4 VLSI Systolic MAC array.",
+      });
+      // Display stand legs
+      kit.box(0.92, 0.04, 0.48, U.darkAnodized(0x18202c), [-0.5, 0.02, 0.04], {});
+      kit.box(0.05, 0.34, 0.05, U.steel(), [-0.82, 0.17, -0.08], {});
+      kit.box(0.05, 0.34, 0.05, U.steel(), [-0.18, 0.17, -0.08], {});
+
+      // Main Emerald VMEbus Accelerator PCB + Gold Backplane Edge Connectors
+      kit.box(1.06, 0.02, 0.78, U.pcb(0x165e3b), [0, 0, 0], {}, board);
+      kit.box(0.84, 0.024, 0.045, U.gold(), [0, 0, -0.38], {}, board);
+
+      // Removable Quartz Inspection Window Lid over the VLSI Ceramic Package (shell: true!)
+      kit.box(
+        0.64,
+        0.05,
+        0.64,
+        U.glass(0xdbeafe, 0.2),
+        [0.05, 0.08, 0.02],
+        {
+          shell: true,
+          name: "Sapphire Die Inspection Window",
+          explode: [0, 0.32, 0],
+        },
+        board,
+      );
+
+      // Purple-Alumina Ceramic PGA Package Carrier + Gold Bond Frame
+      const pkg = kit.box(
+        0.62,
+        0.032,
+        0.62,
+        U.mosCeramic(),
+        [0.05, 0.024, 0.02],
+        {
+          name: "Pin-Grid-Array (PGA) VLSI Systolic Package",
+          info: "Houses the 16 hard-wired Processing Elements (PEs) interconnected strictly by short nearest-neighbor East/South metal buses.",
+        },
+        board,
+      );
+      kit.box(0.52, 0.008, 0.52, U.siliconDie(), [0, 0.02, 0], {}, pkg);
+
+      // 4x4 Physical 3D Processing Element (PE) Macrocells + East/South Dataflow Wave Bridges!
+      for (let r = 0; r < 4; r++) {
+        for (let c = 0; c < 4; c++) {
+          const px = -0.165 + c * 0.11;
+          const pz = -0.165 + r * 0.11;
+          const peBox = kit.box(
+            0.078,
+            0.026,
+            0.078,
+            U.led(0x38bdf8),
+            [px, 0.034, pz],
+            {
+              name: `Systolic Processing Element PE[${r}, ${c}]`,
+              info: "Hard-wired 1-cycle Multiply-Accumulate cell: C[r,c] += A_west * B_north; latches and forwards A->East and B->South with zero instruction decode.",
+              live: () => {
+                const pe = sim.pes[r * 4 + c];
+                return `PE[${r},${c}]: a=${pe.aIn}, b=${pe.bIn} -> acc=${sim.outC[r][c]}`;
+              },
+              explode: [0, 0.14 + (r + c) * 0.02, 0],
+            },
+            pkg,
+          );
+          peLeds.push(peBox);
+          if (c < 3) {
+            kit.box(0.034, 0.008, 0.012, U.gold(), [px + 0.055, 0.03, pz], {}, pkg);
+          }
+          if (r < 3) {
+            kit.box(0.012, 0.008, 0.034, U.copper(), [px, 0.03, pz + 0.055], {}, pkg);
+          }
+        }
+      }
+
+      // West & North Skew SRAM FIFO Chips
+      for (let k = 0; k < 4; k++) {
+        kit.box(
+          0.08,
+          0.022,
+          0.05,
+          U.chip(),
+          [-0.38, 0.02, -0.14 + k * 0.11],
+          { name: `West Row-Skew SRAM FIFO #${k}` },
+          board,
+        );
+        kit.box(
+          0.05,
+          0.022,
+          0.08,
+          U.chip(),
+          [-0.11 + k * 0.11, 0.02, -0.33],
+          { name: `North Col-Skew SRAM FIFO #${k}` },
+          board,
+        );
+      }
+
+      // 2. SYSTOLIC WAVEFRONT VERIFICATION MONITOR (Right)
+      mon = buildMonitor3D(kit, [0.84, 0.56, 0.14], {
+        w: 0.94,
+        h: 0.7,
+        rot: [0, -0.32, 0],
+        name: "Systolic Diagonal Wavefront & Matrix Analyzer",
+        explode: [0.38, 0, 0.18],
+      });
+      kit.box(1.02, 0.56, 0.5, U.darkAnodized(0x111722), [0.84, 0.28, 0.14], {
+        rot: [0, -0.32, 0],
+      });
+
+      sim.step();
+      drawSystolicMonitor();
+    },
+
+    ui(el, ctx) {
+      const syncStats = () => {
+        if (!statsUi) return;
+        statsUi.set("beat", `Cycle ${sim.cycle} / 10 (3N - 2)`);
+        statsUi.set(
+          "flow",
+          sim.dataflowMode === "output_stationary"
+            ? "Output-Stationary"
+            : "Weight-Stationary",
+        );
+        statsUi.set("macs", `${sim.totalMacs} hard-wired MACs`);
+        statsUi.set("reuse", `${sim.reuseFactor.toFixed(1)}× SRAM BW Amplification`);
+        statsUi.set(
+          "ver",
+          sim.verifiedExact ? "EXACT C == A×B ✓" : `Row0=[${sim.outC[0].join(",")}]`,
+        );
+        statsUi.set("fetch", "0 Instruction Fetches (Pure Dataflow)");
+      };
+
+      const runBtn = Fe(
+        running ? "⏸ Pause" : "▶ Run",
+        () => {
+          running = !running;
+          runBtn.textContent = running ? "⏸ Pause" : "▶ Run";
+        },
+        "pri",
+      );
+
+      statsUi = Pt([
+        ["beat", "Wavefront Beat"],
+        ["flow", "PE Dataflow"],
+        ["macs", "Compute Total"],
+        ["reuse", "Operand Reuse"],
+        ["ver", "Matrix Check"],
+        ["fetch", "Von Neumann Tax"],
+      ]);
+
+      el.append(
+        Ie(
+          "Kung–Leiserson 4×4 VLSI Systolic Wavefront Controls",
+          q(
+            "div",
+            { class: "row" },
+            runBtn,
+            Fe("Step 1 Beat", () => {
+              running = false;
+              runBtn.textContent = "▶ Run";
+              sim.step();
+              hi("clock");
+              if (ctx.diagram) {
+                ctx.diagram.pulse("west", "grid", "#38bdf8");
+                ctx.diagram.pulse("north", "grid", "#fbbf24");
+                ctx.diagram.pulse("grid", "out", "#f97316");
+              }
+              drawSystolicMonitor();
+              syncStats();
+            }),
+            Fe(
+              "Complete 10-Beat Pass",
+              () => {
+                sim.runFullPass();
+                hi("bell");
+                drawSystolicMonitor();
+                syncStats();
+              },
+              "pri",
+            ),
+          ),
+          q(
+            "div",
+            { class: "row" },
+            Fe("Output-Stationary", () => {
+              sim.setDataflowMode("output_stationary");
+              sim.step();
+              hi("switch");
+              drawSystolicMonitor();
+              syncStats();
+            }),
+            Fe("Weight-Stationary (TPU)", () => {
+              sim.setDataflowMode("weight_stationary");
+              sim.step();
+              hi("switch");
+              drawSystolicMonitor();
+              syncStats();
+            }),
+          ),
+          q(
+            "div",
+            { class: "row" },
+            st(
+              sim.presetNames.map((n) => [n, n]),
+              sim.presetName,
+              (val) => {
+                sim.loadPreset(val);
+                sim.step();
+                hi("toggle");
+                drawSystolicMonitor();
+                syncStats();
+              },
+            ),
+          ),
+          statsUi,
+        ),
+      );
+      machine._syncStats = syncStats;
+      syncStats();
+    },
+
+    update(dt, _t, ctx) {
+      if (running) {
+        stepAcc += dt * 2.6;
+        while (stepAcc >= 1) {
+          stepAcc -= 1;
+          sim.step();
+          if (ctx.diagram) {
+            ctx.diagram.pulse("west", "grid", "#38bdf8");
+            ctx.diagram.pulse("north", "grid", "#fbbf24");
+            if (sim.cycle === 10) ctx.diagram.pulse("grid", "out", "#34d399");
+          }
+          drawSystolicMonitor();
+          if (machine._syncStats) machine._syncStats();
+        }
+      }
+      peLeds.forEach((mesh, idx) => {
+        const pe = sim.pes[idx];
+        if (!pe) return;
+        mesh.material.emissive.setHex(pe.active ? 0xfbbf24 : 0x0ea5e9);
+        mesh.material.emissiveIntensity = pe.active ? 1.75 : 0.14;
+      });
+    },
+
+    isRunning: () => running,
+    sim,
+    test() {
+      const s = new SystolicArrayEngine();
+      const os = s.runFullPass();
+      s.setDataflowMode("weight_stationary");
+      const ws = s.runFullPass();
+      return {
+        ok: os.verifiedExact === true && ws.verifiedExact === true,
+        c00: os.outC[0][0],
+      };
+    },
+  };
+  return machine;
+}
+
+// ============================================================================
+// RIKEN / FUJITSU FUGAKU A64FX SVE & 6D TOFUD SUPERCOMPUTER (2020, fugaku20)
+// ============================================================================
+function makeMachineFugaku20() {
+  const sim = new FugakuSveTofuEngine();
+  let running = true;
+  let stepAcc = 0;
+  let mon = null;
+  let tofuLeds = [];
+  let statsUi = null;
+
+  function drawFugakuMonitor() {
+    if (!mon) return;
+    const c = mon.ctx;
+    const W = 1024,
+      H = 768;
+    c.fillStyle = "#08070d";
+    c.fillRect(0, 0, W, H);
+
+    // Fugaku Crimson Banner
+    c.fillStyle = "#7f1d1d";
+    c.fillRect(16, 14, W - 32, 52);
+    c.fillStyle = "#f8fafc";
+    c.font = '700 19px "JetBrains Mono", monospace';
+    c.fillText(
+      `2020 RIKEN FUGAKU (A64FX) · 512-BIT ARM SVE + HBM2 · ${sim.systemPetaflops} PFLOPS (${sim.workload.toUpperCase()})`,
+      26,
+      47,
+    );
+
+    // Top-Left: 512-Bit ARM SVE Predicated Vector Register Z0 & P0 Mask (Zero Tail Loop!)
+    c.fillStyle = "#111422";
+    c.fillRect(20, 82, 520, 324);
+    c.strokeStyle = "#f87171";
+    c.lineWidth = 2;
+    c.strokeRect(20, 82, 520, 324);
+    c.fillStyle = "#fca5a5";
+    c.font = '700 15px "JetBrains Mono", monospace';
+    c.fillText(
+      `ARM SVE 512b PREDICATION (N=${sim.problemLen} -> ${sim.activeSveLanes}/8 Tail Lanes Active)`,
+      34,
+      110,
+    );
+
+    for (let l = 0; l < 8; l++) {
+      const lx = 34 + l * 61;
+      const on = sim.predicateMask[l] === 1;
+      c.fillStyle = on ? "rgba(52, 211, 153, 0.24)" : "rgba(71, 85, 105, 0.22)";
+      c.fillRect(lx, 132, 55, 114);
+      c.strokeStyle = on ? "#34d399" : "#475569";
+      c.strokeRect(lx, 132, 55, 114);
+      c.fillStyle = on ? "#fde047" : "#64748b";
+      c.font = '700 12px "JetBrains Mono", monospace';
+      c.fillText(`P0[${l}]=${on ? 1 : 0}`, lx + 4, 156);
+      c.fillStyle = on ? "#f8fafc" : "#64748b";
+      c.fillText(on ? `${sim.zVecOut[l]}` : "MASK", lx + 5, 196);
+      c.fillStyle = "#94a3b8";
+      c.fillText(`FP64`, lx + 10, 232);
+    }
+    c.fillStyle = "#cbd5e1";
+    c.font = '500 13.5px "JetBrains Mono", monospace';
+    c.fillText(
+      "WHILELT P0.D, X_idx, X_N eliminates scalar cleanup loops & Vector-Length",
+      34,
+      284,
+    );
+    c.fillText(
+      "Agnostic (VLA) binaries run unmodified from 128b to 2048b SIMD widths!",
+      34,
+      308,
+    );
+    c.fillStyle = "#6ee7b7";
+    c.font = '700 14px "JetBrains Mono", monospace';
+    c.fillText(
+      `HBM2 Stream Bandwidth: ${sim.achievedHbmGBs} GB/s / 1,024 GB/s (4× CMGs)`,
+      34,
+      346,
+    );
+    c.fillStyle = "#94a3b8";
+    c.fillText("48 Compute + 4 OS Assistant Cores -> Zero OS Jitter!", 34, 378);
+
+    // Top-Right: 6D TofuD Interconnect Torus (X, Y, Z, A, B, C)
+    c.fillStyle = "#111422";
+    c.fillRect(556, 82, 448, 324);
+    c.strokeStyle = "#38bdf8";
+    c.strokeRect(556, 82, 448, 324);
+    c.fillStyle = "#7dd3fc";
+    c.font = '700 15px "JetBrains Mono", monospace';
+    c.fillText("6D TOFUD TORUS ROUTER (X, Y, Z, A, B, C)", 572, 110);
+
+    const axes = ["X (12)", "Y (8)", "Z (8)", "A (2)", "B (3)", "C (2)"];
+    axes.forEach((ax, d) => {
+      const ay = 140 + d * 34;
+      c.fillStyle = "#94a3b8";
+      c.font = '600 13.5px "JetBrains Mono", monospace';
+      c.fillText(
+        `Axis ${ax.padEnd(7)}: ${sim.srcCoord[d]} -> ${sim.dstCoord[d]}  (Torus Δ=${sim.axisDeltas[d]} hops)`,
+        574,
+        ay,
+      );
+    });
+    c.fillStyle = sim.linkFault ? "#fbbf24" : "#34d399";
+    c.font = '700 14px "JetBrains Mono", monospace';
+    c.fillText(
+      `Total 6D Route: ${sim.tofuHops} Hops · ${sim.activeRails}/6 Active Injection Rails`,
+      574,
+      356,
+    );
+    c.fillStyle = "#cbd5e1";
+    c.font = '600 13px "JetBrains Mono", monospace';
+    c.fillText(
+      sim.linkFault
+        ? "FAULT DETOUR: Orthogonal B/C torus bypass engaged ✓"
+        : "158,976 Nodes · 28 Gbps × 10 Ports/Node",
+      574,
+      384,
+    );
+
+    // Bottom: Sparse Conjugate-Gradient (HPCG) Convergence & Quadruple-Crown Architecture
+    c.fillStyle = "#111422";
+    c.fillRect(20, 422, W - 40, 324);
+    c.strokeStyle = "#34d399";
+    c.strokeRect(20, 422, W - 40, 324);
+    c.fillStyle = "#6ee7b7";
+    c.font = '700 16px "JetBrains Mono", monospace';
+    c.fillText(
+      `LIVE SPARSE CONJUGATE-GRADIENT (HPCG): Iter #${sim.cgIter} · ||r||_2 = ${sim.cgResidual.toExponential(3)}`,
+      36,
+      454,
+    );
+
+    // Plot solution vector x[0..7] bars
+    for (let i = 0; i < 8; i++) {
+      const bx = 42 + i * 116;
+      const val = sim.cgX[i];
+      const bh = Math.min(130, Math.max(6, Math.round(Math.abs(val) * 52)));
+      c.fillStyle = "#1e293b";
+      c.fillRect(bx, 480, 92, 136);
+      c.fillStyle = "#38bdf8";
+      c.fillRect(bx, 616 - bh, 92, bh);
+      c.fillStyle = "#f8fafc";
+      c.font = '700 13px "JetBrains Mono", monospace';
+      c.fillText(`x[${i}]=${val.toFixed(2)}`, bx + 8, 638);
+    }
+
+    c.fillStyle = "#fde047";
+    c.font = '700 14px "JetBrains Mono", monospace';
+    c.fillText(
+      `Roofline Arithmetic Intensity = ${sim.arithmeticIntensity} FLOP/Byte · Quadruple #1 Sweep (TOP500, HPCG, HPL-AI, Graph500)`,
+      38,
+      678,
+    );
+    c.fillStyle = "#cbd5e1";
+    c.font = '500 13.5px "JetBrains Mono", monospace';
+    c.fillText(
+      "Putting 32 GB of 1,024 GB/s HBM2 directly on a pure-CPU CoWoS interposer gave real-world sparse PDEs",
+      38,
+      708,
+    );
+    c.fillText(
+      "GPU-class memory bandwidth without PCIe offload latency — powering COVID-19 aerosol & tsunami simulations.",
+      38,
+      730,
+    );
+
+    mon.tex.needsUpdate = true;
+  }
+
+  const machine = {
+    id: "fugaku20",
+    era: "2020",
+    short: "Fugaku A64FX SVE",
+    name: "RIKEN / Fujitsu Fugaku Supercomputer (ARM SVE + HBM2 + 6D TofuD)",
+    group: "super",
+    view0: -0.24,
+    blurb:
+      "Co-designed by Satoshi Matsuoka (RIKEN) and Fujitsu: Fugaku became the first ARM-based #1 supercomputer and the first in history to sweep TOP500 (442 PFLOPS), Sparse HPCG (16 PFLOPS), HPL-AI (2.0 EFLOPS), and Graph500 simultaneously — uniting 512-bit predicated ARM SVE, 4× on-package HBM2 stacks (1 TB/s per CPU!), OS-jitter assistant cores, and a fault-tolerant 6D TofuD torus.",
+    diagram: {
+      nodes: [
+        { id: "sve", label: "48× ARM SVE 512b Cores", x: 0.5, y: 0.46, color: "#f87171" },
+        { id: "hbm", label: "4× CMG HBM2 (1 TB/s)", x: 0.2, y: 0.24, color: "#34d399" },
+        { id: "os4", label: "4× OS Assistant Cores", x: 0.8, y: 0.24, color: "#fbbf24" },
+        { id: "tofu", label: "6D TofuD Torus Router", x: 0.5, y: 0.84, color: "#38bdf8" },
+      ],
+      edges: [
+        ["hbm", "sve", "1024 GB/s"],
+        ["os4", "sve", "Zero Jitter"],
+        ["sve", "tofu", "6-Rail RDMA"],
+      ],
+    },
+    build(kit) {
+      tofuLeds = [];
+
+      // 1. ICONIC FUGAKU CRIMSON & OBSIDIAN WATER-COOLED CABINET + CUTAWAY A64FX CoWoS DIE (Left)
+      const rack = kit.group([-0.54, 0, -0.06], {
+        name: "RIKEN Fugaku Water-Cooled Compute Rack (384 A64FX Nodes)",
+        info: "Faceted crimson-and-white Japanese Mount Fuji ('Fugaku') industrial design housing 192 dual-node water-cooled BoBs interconnected by 6D TofuD cables.",
+      });
+      // Open-front crimson & obsidian Fugaku rack exposing 8 water-cooled A64FX shelves + copper risers!
+      kit.box(0.88, 2.04, 0.1, U.darkAnodized(0x161821), [0, 1.02, -0.42], {}, rack);
+      kit.box(0.92, 0.08, 0.94, U.plastic(0x881337, 0.34), [0, 2.02, 0], {}, rack);
+      kit.box(0.92, 0.08, 0.94, U.darkAnodized(0x161821), [0, 0.04, 0], {}, rack);
+      kit.box(0.06, 1.92, 0.92, U.plastic(0x7f1d1d, 0.36), [-0.43, 1.03, 0], {}, rack);
+      kit.box(0.06, 1.92, 0.92, U.plastic(0x7f1d1d, 0.36), [0.43, 1.03, 0], {}, rack);
+      kit.cyl(
+        0.024,
+        0.024,
+        1.84,
+        U.copper(),
+        [-0.36, 1.02, 0.36],
+        { name: "Fugaku Warm-Water Supply Manifold" },
+        rack,
+      );
+      kit.cyl(
+        0.024,
+        0.024,
+        1.84,
+        U.steel(),
+        [0.36, 1.02, 0.36],
+        { name: "Fugaku Return Coolant Manifold" },
+        rack,
+      );
+      // Faceted crimson-tinted glass Mount Fuji front door (shell: true for cutaway!)
+      kit.box(
+        0.82,
+        1.92,
+        0.024,
+        U.glass(0xfecdd3, 0.1),
+        [0, 1.03, 0.46],
+        {
+          shell: true,
+          name: "Crimson Faceted 'Mount Fuji' Acoustic Rack Door",
+          explode: [0, 0, 0.48],
+        },
+        rack,
+      );
+
+      // Internal stack of 8 Dual-Node Water-Cooled Compute Shelves + TofuD LEDs
+      for (let s = 0; s < 8; s++) {
+        const sy = 0.26 + s * 0.21;
+        const blade = kit.box(
+          0.76,
+          0.12,
+          0.78,
+          U.metal(0x28303d, 0.4),
+          [0, sy, 0],
+          { name: `Fugaku Dual-A64FX Coldplate Shelf #${s + 1}` },
+          rack,
+        );
+        kit.box(0.7, 0.022, 0.04, U.copper(), [0, 0.05, 0.36], {}, blade);
+        const led = kit.sphere(0.013, U.led(0x38bdf8), [0.3, 0, 0.4], {}, blade);
+        tofuLeds.push(led);
+      }
+
+      // FOREGROUND HERO MAGNIFIED A64FX + 4x HBM2 CoWoS SILICON INTERPOSER MODULE!
+      const hero = kit.group(
+        [0.02, 0.24, 0.66],
+        {
+          rot: [0.35, 0, 0],
+          name: "Fujitsu A64FX 7nm CoWoS Interposer Package (4 CMGs + 4× HBM2)",
+          info: "Monolithic 48+4 core ARMv8.2-A SVE silicon die flanked on 4 corners by 8 GB HBM2 stacks delivering 1,024 GB/s aggregate bandwidth.",
+          live: () =>
+            `Workload=${sim.workload.toUpperCase()} · SVE=${sim.activeSveLanes}/8 lanes · CG ||r||=${sim.cgResidual.toExponential(2)}`,
+          explode: [0, 0.16, 0.38],
+        },
+        rack,
+      );
+      kit.box(0.56, 0.025, 0.56, U.pcb(0x14532d), [0, 0, 0], {}, hero);
+      kit.box(
+        0.42,
+        0.012,
+        0.42,
+        U.siliconDie(0xcbd5e1),
+        [0, 0.018, 0],
+        { name: "CoWoS Silicon Interposer" },
+        hero,
+      );
+      kit.box(
+        0.24,
+        0.022,
+        0.24,
+        U.siliconDie(0x93c5fd),
+        [0, 0.032, 0],
+        { name: "A64FX 48+4 Core 512b SVE Compute Die" },
+        hero,
+      );
+      for (const [hx, hz, id] of [
+        [-0.14, -0.14, 0],
+        [0.14, -0.14, 1],
+        [-0.14, 0.14, 2],
+        [0.14, 0.14, 3],
+      ]) {
+        kit.box(
+          0.085,
+          0.024,
+          0.095,
+          U.gold(),
+          [hx, 0.033, hz],
+          { name: `CMG #${id} 8 GB HBM2 Stack (256 GB/s)` },
+          hero,
+        );
+      }
+
+      // 2. SVE PREDICATION & 6D TOFUD MONITOR (Right)
+      mon = buildMonitor3D(kit, [0.86, 0.6, 0.16], {
+        w: 0.96,
+        h: 0.72,
+        rot: [0, -0.32, 0],
+        name: "Fugaku SVE Predicate, 6D TofuD & Sparse HPCG Console",
+        explode: [0.38, 0, 0.18],
+      });
+      kit.box(1.04, 0.6, 0.52, U.darkAnodized(0x14131c), [0.86, 0.3, 0.16], {
+        rot: [0, -0.32, 0],
+      });
+
+      drawFugakuMonitor();
+    },
+
+    ui(el, ctx) {
+      const syncStats = () => {
+        if (!statsUi) return;
+        statsUi.set(
+          "wk",
+          `${sim.workload.toUpperCase()} (${sim.systemPetaflops} PFLOPS)`,
+        );
+        statsUi.set(
+          "sve",
+          `P0=${Array.from(sim.predicateMask).join("")} (${sim.activeSveLanes}/8)`,
+        );
+        statsUi.set("hbm", `${sim.achievedHbmGBs} / 1,024 GB/s (4 CMGs)`);
+        statsUi.set(
+          "cg",
+          `Iter ${sim.cgIter} · ||r||=${sim.cgResidual.toExponential(2)}`,
+        );
+        statsUi.set("tofu", `${sim.tofuHops} hops (${sim.activeRails}/6 rails)`);
+        statsUi.set("ai", `${sim.arithmeticIntensity} FLOP/Byte`);
+      };
+
+      const runBtn = Fe(
+        running ? "⏸ Pause" : "▶ Run",
+        () => {
+          running = !running;
+          runBtn.textContent = running ? "⏸ Pause" : "▶ Run";
+        },
+        "pri",
+      );
+
+      statsUi = Pt([
+        ["wk", "Benchmark Kernel"],
+        ["sve", "512b SVE Mask"],
+        ["hbm", "HBM2 Bandwidth"],
+        ["cg", "Sparse CG Residual"],
+        ["tofu", "6D TofuD Torus"],
+        ["ai", "Roofline AI"],
+      ]);
+
+      el.append(
+        Ie(
+          "Fugaku A64FX 512b SVE Predication, HBM2 & 6D TofuD Controls",
+          q(
+            "div",
+            { class: "row" },
+            runBtn,
+            Fe(
+              "Sparse HPCG (Memory-Bound)",
+              () => {
+                sim.setWorkload("hpcg");
+                hi("clock");
+                if (ctx.diagram) ctx.diagram.pulse("hbm", "sve", "#34d399");
+                drawFugakuMonitor();
+                syncStats();
+              },
+              "pri",
+            ),
+            Fe(
+              "Dense HPL (442 PFLOPS)",
+              () => {
+                sim.setWorkload("hpl");
+                hi("clock");
+                if (ctx.diagram) ctx.diagram.pulse("sve", "tofu", "#f87171");
+                drawFugakuMonitor();
+                syncStats();
+              },
+              "pri",
+            ),
+          ),
+          We(
+            "Array Loop Length N (Watch SVE WHILELT Tail Mask P0!)",
+            9,
+            64,
+            1,
+            sim.problemLen,
+            (v) => {
+              sim.setProblemLength(v);
+              drawFugakuMonitor();
+              syncStats();
+            },
+            (v) => `N = ${v}`,
+          ),
+          q(
+            "div",
+            { class: "row" },
+            Fe("Inject / Heal 6D TofuD Link Fault", () => {
+              sim.toggleTofuFault();
+              hi("switch");
+              if (ctx.diagram) ctx.diagram.pulse("sve", "tofu", "#fbbf24");
+              drawFugakuMonitor();
+              syncStats();
+            }),
+          ),
+          statsUi,
+        ),
+      );
+      machine._syncStats = syncStats;
+      syncStats();
+    },
+
+    update(dt, t, ctx) {
+      if (running) {
+        stepAcc += dt * 3.0;
+        while (stepAcc >= 1) {
+          stepAcc -= 1;
+          sim.step();
+          if (ctx.diagram) {
+            ctx.diagram.pulse("hbm", "sve", "#34d399");
+            ctx.diagram.pulse("os4", "sve", "#fbbf24");
+            ctx.diagram.pulse("sve", "tofu", "#38bdf8");
+          }
+          drawFugakuMonitor();
+          if (machine._syncStats) machine._syncStats();
+        }
+      }
+      tofuLeds.forEach((led, idx) => {
+        led.material.emissive.setHex(sim.linkFault && idx === 3 ? 0xfbbf24 : 0x38bdf8);
+        led.material.emissiveIntensity =
+          0.5 + 1.1 * Math.abs(Math.sin(t * 5 + idx * 0.7));
+      });
+    },
+
+    isRunning: () => running,
+    sim,
+    test() {
+      const f = new FugakuSveTofuEngine();
+      const r0 = f.cgResidual;
+      for (let i = 0; i < 6; i++) f.step();
+      f.setProblemLength(29);
+      return {
+        ok: f.cgResidual < r0 * 0.05 && f.activeSveLanes === 5 && f.tofuHops > 0,
+        residual: f.cgResidual,
+      };
+    },
+  };
+  return machine;
+}

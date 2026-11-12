@@ -335,18 +335,41 @@ var CrossSectionSlicer = class {
     this.flip = false;
     this.plane = new wn(new N(-1, 0, 0), 0.2);
 
-    // Translucent laser guide frame showing the active slice plane
+    // Anti-aliased CAD laser-reticle slice guide plane
     this.guide = new ft();
     this.guide.visible = false;
+    this.guideUniforms = {
+      uAspect: { value: new ye(1, 1) },
+    };
     const fill = new B(
       new mt(1, 1),
-      new xt({
-        color: 0x38bdf8,
+      new ci({
         transparent: true,
-        opacity: 0.055,
-        side: fi,
         depthWrite: false,
-        toneMapped: false,
+        side: fi,
+        uniforms: this.guideUniforms,
+        vertexShader: `
+          varying vec2 vUv;
+          void main() {
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          }
+        `,
+        fragmentShader: `
+          varying vec2 vUv;
+          uniform vec2 uAspect;
+          void main() {
+            vec2 p = (vUv - 0.5) * uAspect;
+            vec2 edge = abs(vUv - 0.5);
+            float rim = smoothstep(0.492, 0.499, max(edge.x, edge.y));
+            vec2 g = abs(fract(p * 8.0 - 0.5) - 0.5) / max(fwidth(p * 8.0), vec2(1e-4));
+            float tick = 1.0 - smoothstep(0.35, 1.25, min(g.x, g.y));
+            float crossH = 1.0 - smoothstep(0.0015, 0.0045, min(abs(vUv.x - 0.5), abs(vUv.y - 0.5)));
+            float alpha = clamp(0.045 + rim * 0.55 + tick * 0.14 + crossH * 0.18, 0.0, 0.68);
+            vec3 col = mix(vec3(0.14, 0.52, 0.78), vec3(0.32, 0.76, 0.96), clamp(rim + tick * 0.5, 0.0, 1.0));
+            gl_FragColor = vec4(col, alpha);
+          }
+        `,
       }),
     );
     const borderPts = [
@@ -450,6 +473,9 @@ var CrossSectionSlicer = class {
       this.guide.position.set(center.x, center.y, pz);
       this.guide.rotation.set(0, 0, 0);
       this.guide.scale.set(size.x * 1.08, size.y * 1.08, 1);
+    }
+    if (this.guideUniforms) {
+      this.guideUniforms.uAspect.value.set(this.guide.scale.x, this.guide.scale.y);
     }
     this.guide.visible = true;
   }

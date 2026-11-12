@@ -156,7 +156,7 @@ for (const [rel, { txt }] of jsContents) {
     definedConstructors.add(m[1]);
   }
   for (const m of txt.matchAll(
-    /\b([A-Za-z_$][A-Za-z0-9_$]*)\s*=\s*(?:THREE[A-Za-z0-9_.]*|window\.[A-Za-z0-9_.]*|class\b|function\b)/g,
+    /\b([A-Za-z_$][A-Za-z0-9_$]*)\s*=\s*(?:THREE[A-Za-z0-9_.]*|window\.[A-Za-z0-9_.]*|class\b|function\b|\([^)]*\)\s*=>)/g,
   )) {
     definedConstructors.add(m[1]);
   }
@@ -176,6 +176,12 @@ for (const [rel, { lines }] of jsContents) {
         issues.push(
           `${rel}:${idx + 1}: Potentially undefined constructor 'new ${ctor}(...)'`,
         );
+      }
+    }
+    for (const m of clean.matchAll(/(?<!\.)\b(build[A-Z][A-Za-z0-9_]*)\s*\(/g)) {
+      const fn = m[1];
+      if (!definedConstructors.has(fn)) {
+        issues.push(`${rel}:${idx + 1}: Undefined global builder '${fn}(...)'`);
       }
     }
   });

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
   "label": "coverage",
-  "message": "40/40 machines & 360/360 layers",
+  "message": "48/48 machines · 528/528 rungs (1,584 sub-lenses)",
   "color": "brightgreen"
 }

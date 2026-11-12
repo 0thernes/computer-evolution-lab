@@ -18,21 +18,30 @@ var At = (i, e = 2) => (i >>> 0).toString(16).toUpperCase().padStart(e, "0"),
     "Boards & modules",
     "Chips & devices",
     "Logic & circuits",
+    "Hard-wired gate netlist",
     "Physics & signals",
   ],
-  Cc = ["Application / program", "OS / monitor", "ISA / microcode", "Bits & voltages"],
+  Cc = [
+    "Application / program",
+    "OS / monitor",
+    "ISA / microcode",
+    "Bits & voltages",
+    "Cycle timing & eye diagram",
+  ],
   By = [
     { cut: 0, exp: 0 },
     { cut: 1, exp: 0.25 },
-    { cut: 1, exp: 0.5 },
+    { cut: 1, exp: 0.45 },
     { cut: 1, exp: 0.55 },
-    { cut: 1, exp: 0.7 },
+    { cut: 1, exp: 0.65 },
+    { cut: 1, exp: 0.78 },
   ],
   zy = [
     { cut: 0, exp: 0 },
     { cut: 1, exp: 0.15 },
     { cut: 1, exp: 0.35 },
     { cut: 1, exp: 0.5 },
+    { cut: 1, exp: 0.62 },
   ],
   qy = {
     m6502: {
@@ -4246,6 +4255,9 @@ ${l(o.pc >> 8)}`,
         (this.data = qy[e.id]),
         (this.stack = "hw"),
         (this.idx = -1),
+        (this.subLens = 0),
+        (this.manualPins = null),
+        (this._gateHitBoxes = []),
         (this.probe = null),
         (this.lastProbe = 0),
         (this.el = this.build()));
@@ -4256,61 +4268,148 @@ ${l(o.pc >> 8)}`,
     names() {
       return this.stack === "hw" ? _c : Cc;
     }
+    setLens(lensIdx) {
+      this.subLens = Math.max(0, Math.min(2, lensIdx | 0));
+      if (this.lensBtns) {
+        this.lensBtns.forEach((b, k) => b.classList.toggle("on", k === this.subLens));
+      }
+      if (this.idx >= 0) this.draw(0, !0);
+    }
+    toggleInputPin(pinIdx, liveFallbackMask = 5) {
+      if (this.manualPins === null) {
+        this.manualPins = [
+          liveFallbackMask & 1,
+          (liveFallbackMask >>> 1) & 1,
+          (liveFallbackMask >>> 2) & 1,
+          (liveFallbackMask >>> 3) & 1,
+        ];
+      }
+      const p = pinIdx & 3;
+      this.manualPins[p] = this.manualPins[p] ? 0 : 1;
+      if (this.pinModeBtn) {
+        this.pinModeBtn.textContent = "🖐 Manual Pins (Reset->Live)";
+        this.pinModeBtn.classList.add("on");
+      }
+      if (typeof hi === "function") hi("switch");
+      if (this.idx >= 0) this.draw(0, !0);
+      return this.manualPins.slice();
+    }
     build() {
-      return (
-        (this.tabs = ["hw", "sw"].map((e) =>
-          q(
-            "button",
-            {
-              class: "btn",
-              onclick: () => this.set(e, this.stack === e ? Math.max(0, this.idx) : 0),
-            },
-            e === "hw" ? "⚙ Hardware stack" : "⌨ Software stack",
-          ),
-        )),
-        (this.ladder = q("div", { class: "ladder" })),
-        (this.range = q("input", {
-          type: "range",
-          min: 0,
-          max: 4,
-          step: 1,
-          value: 0,
-          "aria-label": "abstraction depth",
-          oninput: (e) => this.set(this.stack, +e.target.value),
-        })),
-        (this.desc = q("div", { class: "ldesc" })),
-        (this.canvas = q("canvas", { class: "plot lviz" })),
-        (this.chips = q("div", { class: "lchips" })),
-        (this.off = q(
+      this.tabs = ["hw", "sw"].map((e) =>
+        q(
           "button",
           {
             class: "btn",
-            title: "Leave layer view (restore normal 3D view)",
-            onclick: () => this.set(this.stack, -1),
+            onclick: () => this.set(e, this.stack === e ? Math.max(0, this.idx) : 0),
           },
-          "× off",
-        )),
+          e === "hw" ? "⚙ Hardware (6)" : "⌨ Software (5)",
+        ),
+      );
+      this.ladder = q("div", { class: "ladder" });
+      this.range = q("input", {
+        type: "range",
+        min: 0,
+        max: 5,
+        step: 1,
+        value: 0,
+        "aria-label": "abstraction depth",
+        oninput: (e) => this.set(this.stack, +e.target.value),
+      });
+      this.desc = q("div", { class: "ldesc" });
+      this.lensBtns = [
+        ["◈ Rung View", 0],
+        ["⚡ Gate Bench", 1],
+        ["🔬 Signal Eye", 2],
+      ].map(([lbl, k]) =>
+        q(
+          "button",
+          {
+            class: "btn" + (k === 0 ? " on" : ""),
+            style: "font-size:11px;padding:3px 7px",
+            onclick: () => this.setLens(k),
+          },
+          lbl,
+        ),
+      );
+      this.pinModeBtn = q(
+        "button",
+        {
+          class: "btn",
+          style: "font-size:11px;padding:3px 7px",
+          title: "Toggle between live simulator bus coupling and manual pin clicking",
+          onclick: () => {
+            if (this.manualPins !== null) {
+              this.manualPins = null;
+              this.pinModeBtn.textContent = "🔗 Live Bus";
+              this.pinModeBtn.classList.remove("on");
+            } else {
+              this.manualPins = [1, 0, 1, 0];
+              this.pinModeBtn.textContent = "🖐 Manual Pins (Reset->Live)";
+              this.pinModeBtn.classList.add("on");
+            }
+            if (typeof hi === "function") hi("toggle");
+            if (this.idx >= 0) this.draw(0, !0);
+          },
+        },
+        "🔗 Live Bus",
+      );
+      this.lensBar = q(
+        "div",
+        { class: "row", style: "display:none;margin:4px 0 6px;gap:4px;flex-wrap:wrap" },
+        ...this.lensBtns,
+        this.pinModeBtn,
+      );
+      this.canvas = q("canvas", {
+        class: "plot lviz",
+        style: "cursor:pointer",
+        onpointerdown: (ev) => {
+          if (!this._gateHitBoxes || !this._gateHitBoxes.length) return;
+          const rect = this.canvas.getBoundingClientRect();
+          if (!rect.width || !rect.height) return;
+          const dpr = Math.min(2, window.devicePixelRatio || 1);
+          const logW = this.canvas.width / dpr;
+          const logH = this.canvas.height / dpr;
+          const mx = ((ev.clientX - rect.left) / rect.width) * logW;
+          const my = ((ev.clientY - rect.top) / rect.height) * logH;
+          for (const hb of this._gateHitBoxes) {
+            if (mx >= hb.x && mx <= hb.x + hb.w && my >= hb.y && my <= hb.y + hb.h) {
+              this.toggleInputPin(hb.pin, hb.liveMask || 5);
+              break;
+            }
+          }
+        },
+      });
+      this.chips = q("div", { class: "lchips" });
+      this.off = q(
+        "button",
+        {
+          class: "btn",
+          title: "Leave layer view (restore normal 3D view)",
+          onclick: () => this.set(this.stack, -1),
+        },
+        "× off",
+      );
+      return q(
+        "div",
+        { class: "box layers" },
         q(
           "div",
-          { class: "box layers" },
-          q(
-            "div",
-            { class: "sec-t" },
-            "Abstraction layers: peel the machine level by level  ([ ] keys)",
-          ),
-          q("div", { class: "row" }, ...this.tabs, this.off),
-          this.ladder,
-          q(
-            "div",
-            { class: "ctl lrange" },
-            q("span", {}, "depth"),
-            this.range,
-            q("span", { class: "v" }, ""),
-          ),
-          this.desc,
-          this.canvas,
-          this.chips,
-        )
+          { class: "sec-t" },
+          "11-Rung Layers + Sub-Lenses: peel down to hard-wired gates ([ ] keys)",
+        ),
+        q("div", { class: "row" }, ...this.tabs, this.off),
+        this.ladder,
+        q(
+          "div",
+          { class: "ctl lrange" },
+          q("span", {}, "depth"),
+          this.range,
+          q("span", { class: "v" }, ""),
+        ),
+        this.desc,
+        this.lensBar,
+        this.canvas,
+        this.chips,
       );
     }
     set(e, t) {
@@ -4339,16 +4438,19 @@ ${l(o.pc >> 8)}`,
         (this.range.parentElement.querySelector(".v").textContent =
           this.idx < 0 ? "off" : this.idx),
         (this.canvas.style.display = this.idx < 0 ? "none" : ""),
+        (this.lensBar.style.display = this.idx < 0 ? "none" : "flex"),
         this.idx < 0)
       ) {
         ((this.desc.textContent =
-          "Pick a level: the 3D model, highlights and the live visual follow it. Hardware goes from the whole system down to physics; software from the program down to bits and voltages."),
+          "Pick any of the 11 primary levels (6 Hardware + 5 Software) and switch between 3 sub-layer lenses (Rung View, Interactive Hard-Wired Gate Bench, and Signal Eye Scope)."),
           (this.chips.innerHTML = ""),
           this.api.apply(null));
         return;
       }
       let s = n[this.idx];
-      this.desc.innerHTML = `<b>${this.names()[this.idx]}.</b> ${s.t}`;
+      const namesArr = this.names();
+      const rTitle = namesArr[this.idx] || `Level ${this.idx}`;
+      this.desc.innerHTML = `<b>${rTitle}.</b> ${s.t}`;
       let r = this.m.kit.parts.filter(
         (l) =>
           l.userData.part &&
@@ -4367,7 +4469,10 @@ ${l(o.pc >> 8)}`,
             q("button", { class: "chip", onclick: () => this.api.focus(l) }, c),
           ));
       }
-      let a = (e === "hw" ? By : zy)[this.idx];
+      const cfgArr = e === "hw" ? By : zy;
+      let a = cfgArr[Math.min(this.idx, cfgArr.length - 1)];
+      const activeViz =
+        this.subLens === 1 ? "hardwiredgate" : this.subLens === 2 ? "sigeye" : s.viz;
       (this.api.apply({
         cut: a.cut,
         exp: a.exp,
@@ -4375,7 +4480,7 @@ ${l(o.pc >> 8)}`,
         color: e === "hw" ? 16757575 : 11898111,
         fly: this.idx >= 2,
       }),
-        Ic[s.viz] && this.draw(0, !0));
+        Ic[activeViz] && this.draw(0, !0));
     }
     step(e) {
       this.set(
@@ -4396,6 +4501,9 @@ ${l(o.pc >> 8)}`,
         }
         this.lastProbe = s;
       }
+      const vizName =
+        this.subLens === 1 ? "hardwiredgate" : this.subLens === 2 ? "sigeye" : n.viz;
+      if (vizName !== "hardwiredgate") this._gateHitBoxes = [];
       let r = yt(this.canvas),
         o = this.canvas.width,
         a = this.canvas.height,
@@ -4406,17 +4514,21 @@ ${l(o.pc >> 8)}`,
         r.save(),
         r.scale(l, l));
       try {
-        Ic[n.viz].call(this, r, o / l, a / l, e, this.probe || {}, n, this.m);
+        const fn = Ic[vizName] || Ic[n.viz];
+        if (fn) fn.call(this, r, o / l, a / l, e, this.probe || {}, n, this.m);
       } catch (c) {
         ((r.fillStyle = Z.bad),
           (r.font = Ce(12)),
           r.fillText("viz error: " + c.message, 10, 20),
-          this._warned || (console.warn("viz", this.m.id, n.viz, c), (this._warned = 1)));
+          this._warned ||
+            (console.warn("viz", this.m.id, vizName, c), (this._warned = 1)));
       }
       (r.restore(), (this.drawn = !0));
     }
     selfCheck() {
       let e = [];
+      const prevLens = this.subLens;
+      this.subLens = 0;
       for (let t of ["hw", "sw"])
         (t === "hw" ? this.data.hw : this.data.sw).forEach((s, r) => {
           (this.set(t, r), this.draw(1, !0));
@@ -4440,6 +4552,7 @@ ${l(o.pc >> 8)}`,
             lit: l,
           });
         });
+      this.subLens = prevLens;
       return (this.set("hw", -1), e);
     }
   };

@@ -714,7 +714,11 @@ table.mem td {
   color: var(--acc2);
 }
 .lviz {
-  height: 210px;
+  width: 100%;
+  height: 236px;
+  display: block;
+  border-radius: 7px;
+  border: 1px solid #1d293a;
 }
 .lchips,
 .ltags {

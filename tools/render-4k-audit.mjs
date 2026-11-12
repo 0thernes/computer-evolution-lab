@@ -56,6 +56,14 @@ const SHOTS = [
   { name: "41-ascired97-mpp-4k", id: "ascired97", preset: "iso", cutaway: true },
   { name: "42-qion-trapped-ion-4k", id: "qion", preset: "iso", cutaway: true },
   { name: "43-qanneal-ising-4k", id: "qanneal", preset: "iso", cutaway: true },
+  { name: "44-eniac46-plugboard-4k", id: "eniac46", preset: "iso", cutaway: true },
+  { name: "45-lisp83-symbolics-4k", id: "lisp83", preset: "iso", cutaway: true },
+  { name: "46-wse24-wafer-scale-4k", id: "wse24", preset: "iso", cutaway: true },
+  { name: "47-tandem77-nonstop-4k", id: "tandem77", preset: "iso", cutaway: true },
+  { name: "48-blade04-hypervisor-4k", id: "blade04", preset: "iso", cutaway: true },
+  { name: "49-systolic82-vlsi-4k", id: "systolic82", preset: "iso", cutaway: true },
+  { name: "50-fugaku20-sve-4k", id: "fugaku20", preset: "iso", cutaway: true },
+  { name: "51-qspin-silicon-dot-4k", id: "qspin", preset: "iso", cutaway: true },
 ];
 
 const srv = await startServer(0);
@@ -82,22 +90,49 @@ try {
   });
   await new Promise((r) => setTimeout(r, 150));
 
-  for (const id of ["pc20", "m6502", "alife"]) {
+  for (const id of ["pc20", "eniac46", "wse24"]) {
     await session.evalValue(`(() => {
       LAB.select(${JSON.stringify(id)});
       for (let i = 0; i < 20; i++) {
         LAB.active.update(0.025, i * 0.025, { diagram: LAB.active.diag, openCard: () => {} });
         for (const a of LAB.active.kit.anims) a(0.025, i * 0.025);
       }
+      if (${JSON.stringify(id)} === "eniac46" && LAB.active._layers) {
+        LAB.active._layers.set("hw", 3);
+        LAB.active._layers.setLens(1);
+        LAB.active._layers.draw(1.0, true);
+      }
       LAB.fx.render();
       return true;
     })()`);
-    await new Promise((r) => setTimeout(r, 120));
+    await new Promise((r) => setTimeout(r, 140));
     const shot = await session.send("Page.captureScreenshot", { format: "png" });
     const uiPath = path.join(outDir, `ui-${id}-1920x1080.png`);
     fs.writeFileSync(uiPath, Buffer.from(shot.data, "base64"));
     console.log(`  ✓ Full UI capture saved: ui-${id}-1920x1080.png`);
   }
+
+  // Also capture 1920x1080 UI shot of Tab 5 (Roofline & 1/2 CV^2 Physics Lab) in the CS Atlas!
+  await session.evalValue(`(() => {
+    LAB.select("hub");
+    LAB.openCompare();
+    const btn = document.querySelector('.overlay button[data-tab="roofline"]');
+    if (btn) btn.click();
+    return true;
+  })()`);
+  await new Promise((r) => setTimeout(r, 180));
+  {
+    const shot = await session.send("Page.captureScreenshot", { format: "png" });
+    fs.writeFileSync(
+      path.join(outDir, "ui-atlas-roofline-1920x1080.png"),
+      Buffer.from(shot.data, "base64"),
+    );
+    console.log("  ✓ Full UI capture saved: ui-atlas-roofline-1920x1080.png");
+  }
+  await session.evalValue(`(() => {
+    document.querySelectorAll(".overlay").forEach((o) => o.remove());
+    return true;
+  })()`);
 
   // Switch #gl viewport to clean 3840x2160 full-bleed studio render mode for 4K hardware inspection
   await session.send("Emulation.setDeviceMetricsOverride", {

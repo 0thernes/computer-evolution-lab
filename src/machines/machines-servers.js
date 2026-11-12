@@ -2850,3 +2850,898 @@ function makeMachineVax78() {
   };
   return machine;
 }
+
+// ============================================================================
+// TANDEM NONSTOP-16 SHARE-NOTHING FAULT-TOLERANT CLUSTER (1977, tandem77)
+// ============================================================================
+function makeMachineTandem77() {
+  const sim = new TandemNonStopCluster();
+  let running = true;
+  let stepAcc = 0;
+  let mon = null;
+  let cpuLeds = [];
+  let busRails = {};
+  let diskLeds = [];
+  let statsUi = null;
+
+  function drawTandemConsole() {
+    if (!mon) return;
+    const c = mon.ctx;
+    const W = 1024,
+      H = 768;
+    c.fillStyle = "#060c14";
+    c.fillRect(0, 0, W, H);
+
+    c.fillStyle = sim.invariantOk ? "#0c4a6e" : "#7f1d1d";
+    c.fillRect(16, 14, W - 32, 52);
+    c.fillStyle = "#f8fafc";
+    c.font = '700 19px "JetBrains Mono", monospace';
+    c.fillText(
+      `1977 TANDEM NONSTOP-16 · GUARDIAN OS + TMF WAL · LEDGER=$${sim.totalLedgerDollars().toLocaleString()} (${sim.invariantOk ? "ACID EXACT ✓" : "ERROR"})`,
+      26,
+      47,
+    );
+
+    // Top-Left: 4 Share-Nothing CPU Blades + Dual Dynabus X/Y + Process Pairs
+    c.fillStyle = "#0b1424";
+    c.fillRect(20, 82, 540, 392);
+    c.strokeStyle = "#38bdf8";
+    c.lineWidth = 2;
+    c.strokeRect(20, 82, 540, 392);
+    c.fillStyle = "#7dd3fc";
+    c.font = '700 16px "JetBrains Mono", monospace';
+    c.fillText("SHARE-NOTHING CPUs & DUAL DYNABUS X/Y", 36, 112);
+
+    // Draw Dynabus X and Y rails
+    c.strokeStyle = sim.dynabus.X ? "#fbbf24" : "#7f1d1d";
+    c.lineWidth = 5;
+    c.beginPath();
+    c.moveTo(46, 142);
+    c.lineTo(534, 142);
+    c.stroke();
+    c.fillStyle = sim.dynabus.X ? "#fde047" : "#f87171";
+    c.font = '700 12px "JetBrains Mono", monospace';
+    c.fillText(
+      `DYNABUS-X (${sim.dynabus.X ? "UP" : "SEVERED"} · ${sim.dynabus.msgsX} msgs)`,
+      48,
+      134,
+    );
+
+    c.strokeStyle = sim.dynabus.Y ? "#38bdf8" : "#7f1d1d";
+    c.beginPath();
+    c.moveTo(46, 172);
+    c.lineTo(534, 172);
+    c.stroke();
+    c.fillStyle = sim.dynabus.Y ? "#7dd3fc" : "#f87171";
+    c.fillText(
+      `DYNABUS-Y (${sim.dynabus.Y ? "UP" : "SEVERED"} · ${sim.dynabus.msgsY} msgs)`,
+      48,
+      164,
+    );
+
+    sim.cpus.forEach((cpu, idx) => {
+      const cx = 44 + idx * 124;
+      const cy = 194;
+      c.fillStyle = cpu.online ? "#112238" : "#450a0a";
+      c.fillRect(cx, cy, 112, 128);
+      c.strokeStyle = cpu.online ? "#34d399" : "#ef4444";
+      c.lineWidth = 2;
+      c.strokeRect(cx, cy, 112, 128);
+      c.fillStyle = "#f8fafc";
+      c.font = '700 15px "JetBrains Mono", monospace';
+      c.fillText(cpu.name, cx + 12, cy + 26);
+      c.fillStyle = cpu.online ? "#6ee7b7" : "#fca5a5";
+      c.font = '600 12.5px "JetBrains Mono", monospace';
+      c.fillText(cpu.online ? "ONLINE ✓" : "CRASHED!", cx + 12, cy + 50);
+      c.fillStyle = "#cbd5e1";
+      c.fillText(`HB: ${cpu.heartbeats}`, cx + 12, cy + 74);
+      c.fillText("Priv RAM", cx + 12, cy + 98);
+    });
+
+    // Process Pairs Status Strip
+    c.fillStyle = "#fde047";
+    c.font = '700 14px "JetBrains Mono", monospace';
+    c.fillText("NONSTOP PROCESS PAIRS (PRIMARY -> PASSIVE BACKUP):", 36, 352);
+    sim.processPairs.forEach((pp, idx) => {
+      const py = 376 + idx * 23;
+      const failedOver = pp.activeCpu !== pp.primaryCpu;
+      c.fillStyle = failedOver ? "#fbbf24" : "#86efac";
+      c.font = '600 13.5px "JetBrains Mono", monospace';
+      c.fillText(
+        `${pp.svc.padEnd(9)} Active=CPU${pp.activeCpu} (Pri=CPU${pp.primaryCpu}/Bak=CPU${pp.backupCpu}) · Ckpt=${pp.checkpoints} · Takeovers=${pp.failovers}`,
+        38,
+        py,
+      );
+    });
+
+    // Top-Right: Jim Gray Write-Ahead Log (WAL) & Mirrored RAID-1 Disks
+    c.fillStyle = "#0b1424";
+    c.fillRect(576, 82, 428, 392);
+    c.strokeStyle = "#fbbf24";
+    c.lineWidth = 2;
+    c.strokeRect(576, 82, 428, 392);
+    c.fillStyle = "#fcd34d";
+    c.font = '700 16px "JetBrains Mono", monospace';
+    c.fillText("JIM GRAY WRITE-AHEAD LOG (WAL)", 592, 112);
+
+    sim.wal.slice(0, 8).forEach((entry, idx) => {
+      const wy = 140 + idx * 34;
+      const isUndo = entry.state.includes("UNDO");
+      c.fillStyle = isUndo ? "rgba(239, 68, 68, 0.2)" : "rgba(52, 211, 153, 0.14)";
+      c.fillRect(592, wy - 18, 396, 28);
+      c.fillStyle = isUndo ? "#fca5a5" : "#6ee7b7";
+      c.font = '600 13px "JetBrains Mono", monospace';
+      c.fillText(
+        `LSN ${entry.lsn} [${entry.state}] A${entry.from}->A${entry.to} $${entry.dollars}`,
+        600,
+        wy,
+      );
+    });
+
+    sim.disks.forEach((d, idx) => {
+      const dy = 418 + idx * 24;
+      c.fillStyle = d.online ? "#38bdf8" : "#f87171";
+      c.font = '700 13px "JetBrains Mono", monospace';
+      c.fillText(
+        `${d.name}: ${d.online ? `SYNC LSN=${d.lsn}` : "OFFLINE (MIRROR SERVING)"}`,
+        592,
+        dy,
+      );
+    });
+
+    // Bottom: 8 ACID Bank Account Balances ($1,000,000.00 Conservation Law)
+    c.fillStyle = "#0b1424";
+    c.fillRect(20, 490, W - 40, 258);
+    c.strokeStyle = "#34d399";
+    c.strokeRect(20, 490, W - 40, 258);
+    c.fillStyle = "#6ee7b7";
+    c.font = '700 16px "JetBrains Mono", monospace';
+    c.fillText(
+      `8 OLTP ATM LEDGER ACCOUNTS · COMMITS=${sim.committedTx} · WAL ROLLBACKS=${sim.rolledBackTx}`,
+      36,
+      520,
+    );
+    for (let a = 0; a < 8; a++) {
+      const ax = 38 + (a % 4) * 240;
+      const ay = 544 + Math.floor(a / 4) * 86;
+      c.fillStyle = "#111c2e";
+      c.fillRect(ax, ay, 222, 68);
+      c.strokeStyle = "#1e3a5f";
+      c.strokeRect(ax, ay, 222, 68);
+      c.fillStyle = "#94a3b8";
+      c.font = '600 13px "JetBrains Mono", monospace';
+      c.fillText(`ACCT #00${a + 1}`, ax + 12, ay + 24);
+      c.fillStyle = "#f8fafc";
+      c.font = '700 17px "JetBrains Mono", monospace';
+      c.fillText(`$${(sim.accounts[a] / 100).toLocaleString()}`, ax + 12, ay + 52);
+    }
+
+    mon.tex.needsUpdate = true;
+  }
+
+  const machine = {
+    id: "tandem77",
+    era: "1977",
+    short: "Tandem NonStop",
+    name: "Tandem NonStop-16 Share-Nothing Fault-Tolerant Cluster",
+    group: "servers",
+    view0: -0.24,
+    blurb:
+      "Designed by Jimmy Treybig, Mike Green, and Jim Gray (Turing Award): Tandem NonStop pioneered share-nothing fault tolerance for global ATMs, stock exchanges, and 911 dispatch. No single hardware failure can crash a transaction — 4 independent CPUs communicate over dual Dynabus X/Y rails using Primary/Backup Process Pairs, dual-ported RAID-1 mirrors, and Write-Ahead Logging (WAL) ACID recovery.",
+    diagram: {
+      nodes: [
+        { id: "cpu01", label: "CPU 0 & 1 Blades", x: 0.2, y: 0.24, color: "#34d399" },
+        { id: "cpu23", label: "CPU 2 & 3 Blades", x: 0.8, y: 0.24, color: "#34d399" },
+        { id: "busx", label: "Dynabus X & Y", x: 0.5, y: 0.48, color: "#fbbf24" },
+        { id: "raid1", label: "Mirrored Disks A/B", x: 0.26, y: 0.8, color: "#38bdf8" },
+        { id: "wal", label: "Jim Gray TMF WAL", x: 0.76, y: 0.8, color: "#c08cff" },
+      ],
+      edges: [
+        ["cpu01", "busx", "I'm Alive HB"],
+        ["cpu23", "busx", "Ckpt Delta"],
+        ["busx", "raid1", "Dual-Port"],
+        ["busx", "wal", "LSN Flush"],
+      ],
+    },
+    build(kit) {
+      cpuLeds = [];
+      diskLeds = [];
+
+      // 1. TANDEM NONSTOP-16 DUAL-BAY CABINET (Left)
+      const cab = kit.group([-0.52, 0, -0.04], {
+        name: "Tandem NonStop-16 Modular Cabinet",
+        info: "Houses 4 independent share-nothing processor modules (each with private RAM and DC PSU), dual Dynabus X/Y backplanes, and dual-ported mirrored storage.",
+      });
+      // Open-front 5-walled Tandem Blue modular bay + crystal-clear inspection door (shell: true)
+      kit.box(1.12, 1.68, 0.08, U.darkAnodized(0x141b26), [0, 0.84, -0.35], {}, cab);
+      kit.box(1.14, 0.08, 0.78, U.metal(0x23486e, 0.38), [0, 1.66, 0], {}, cab);
+      kit.box(1.14, 0.08, 0.78, U.metal(0x23486e, 0.38), [0, 0.04, 0], {}, cab);
+      kit.box(0.06, 1.56, 0.76, U.metal(0x23486e, 0.4), [-0.54, 0.85, 0], {}, cab);
+      kit.box(0.06, 1.56, 0.76, U.metal(0x23486e, 0.4), [0.54, 0.85, 0], {}, cab);
+      kit.box(1.02, 0.035, 0.68, U.darkAnodized(0x1e293b), [0, 0.76, -0.02], {}, cab);
+      kit.box(
+        1.06,
+        1.58,
+        0.024,
+        U.glass(0xdbeafe, 0.09),
+        [0, 0.85, 0.38],
+        {
+          shell: true,
+          name: "Tandem Blue Acoustic Cabinet Shell",
+          explode: [0, 0, 0.45],
+        },
+        cab,
+      );
+
+      // Dual Independent Backplane Busbars: Dynabus X (Gold/Amber) & Dynabus Y (Cyan)
+      busRails.X = kit.box(
+        0.96,
+        0.034,
+        0.034,
+        U.glow(0xfbbf24, 1.45),
+        [0, 0.82, 0.31],
+        {
+          name: "Dynabus X Interprocessor Bus Rail",
+          info: "Independent 13 MB/s packet bus carrying Process-Pair checkpoint deltas; electrically isolated from Dynabus Y.",
+          explode: [0, 0.22, -0.32],
+        },
+        cab,
+      );
+      busRails.Y = kit.box(
+        0.96,
+        0.034,
+        0.034,
+        U.glow(0x38bdf8, 1.45),
+        [0, 0.71, 0.31],
+        {
+          name: "Dynabus Y Interprocessor Bus Rail",
+          info: "Redundant second interprocessor bus: survives complete short or controller failure on Dynabus X.",
+          explode: [0, 0.16, -0.32],
+        },
+        cab,
+      );
+
+      // 4 Hot-Swappable Share-Nothing CPU Blades (CPU 0..3)
+      for (let i = 0; i < 4; i++) {
+        const bx = -0.34 + i * 0.226;
+        const blade = kit.group(
+          [bx, 1.14, 0.04],
+          {
+            name: `NonStop CPU Module ${i} (Share-Nothing Private RAM)`,
+            info: "Independent 16-bit stack/register processor with dedicated power supply and ECC memory — impossible for a wild pointer on CPU i to corrupt CPU j!",
+            live: () =>
+              `CPU ${i}: ${sim.cpus[i].online ? "ONLINE ✓" : "FAULTED"} · Heartbeats=${sim.cpus[i].heartbeats}`,
+            explode: [0, 0.2, 0.34],
+          },
+          cab,
+        );
+        kit.box(0.18, 0.62, 0.52, U.metal(0xcfd6df, 0.38), [0, 0, 0], {}, blade);
+        kit.box(0.016, 0.56, 0.46, U.pcb(0x185c37), [0.04, 0, 0], {}, blade);
+        const led = kit.sphere(0.014, U.led(0x34d399), [0, 0.24, 0.27], {}, blade);
+        cpuLeds.push(led);
+      }
+
+      // Lower Mirrored RAID-1 Dual-Ported Disk Volumes ($DATA-A Primary & $DATA-B Mirror)
+      for (let d = 0; d < 2; d++) {
+        const dx = -0.24 + d * 0.48;
+        const dBox = kit.group(
+          [dx, 0.4, 0.04],
+          {
+            name: sim.disks[d].name,
+            info: "Dual-ported mirrored disk volume connected to two independent I/O controllers; serves reads concurrently and survives complete drive loss.",
+            explode: [0, -0.14, 0.34],
+          },
+          cab,
+        );
+        kit.box(0.42, 0.44, 0.56, U.plastic(0xd8d2c5, 0.45), [0, 0, 0], {}, dBox);
+        kit.cyl(0.14, 0.14, 0.05, U.alu(), [0, 0.04, 0.04], {}, dBox);
+        const dLed = kit.sphere(0.014, U.led(0x38bdf8), [-0.14, 0.15, 0.29], {}, dBox);
+        diskLeds.push(dLed);
+      }
+
+      // 2. TANDEM 6530 OLTP BANKING TERMINAL CRT (Right)
+      mon = buildMonitor3D(kit, [0.84, 0.56, 0.18], {
+        crt: true,
+        w: 0.88,
+        h: 0.66,
+        color: 0xd4cec0,
+        rot: [0, -0.32, 0],
+        name: "Tandem 6530 NonStop Guardian & TMF WAL Console",
+        explode: [0.38, 0, 0.2],
+      });
+      kit.box(1.06, 0.56, 0.62, U.wood(), [0.84, 0.28, 0.18], { rot: [0, -0.32, 0] });
+
+      drawTandemConsole();
+    },
+
+    ui(el, ctx) {
+      const syncStats = () => {
+        if (!statsUi) return;
+        const upCpus = sim.cpus.filter((c) => c.online).length;
+        statsUi.set("cpus", `${upCpus}/4 CPUs Online`);
+        statsUi.set(
+          "bus",
+          `X:${sim.dynabus.X ? "UP" : "CUT"} · Y:${sim.dynabus.Y ? "UP" : "CUT"}`,
+        );
+        statsUi.set("ledger", `$${sim.totalLedgerDollars().toLocaleString()} (Exact)`);
+        statsUi.set("tx", `${sim.committedTx} COMMIT / ${sim.rolledBackTx} UNDO`);
+        statsUi.set(
+          "pair",
+          `$ATM->CPU${sim.processPairs[0].activeCpu} (${sim.processPairs[0].failovers} failovers)`,
+        );
+        statsUi.set("avail", "99.999% Five-Nines");
+      };
+
+      const runBtn = Fe(
+        running ? "⏸ Pause" : "▶ Run",
+        () => {
+          running = !running;
+          runBtn.textContent = running ? "⏸ Pause" : "▶ Run";
+        },
+        "pri",
+      );
+
+      statsUi = Pt([
+        ["cpus", "Share-Nothing"],
+        ["bus", "Dual Dynabus"],
+        ["ledger", "ACID Invariant"],
+        ["tx", "TMF WAL Log"],
+        ["pair", "Process Pair 0"],
+        ["avail", "RAS Class"],
+      ]);
+
+      el.append(
+        Ie(
+          "Tandem NonStop Process-Pairs, Dynabus X/Y & WAL Fault Injection",
+          q(
+            "div",
+            { class: "row" },
+            runBtn,
+            Fe(
+              "💥 Crash Mid-Tx (WAL UNDO!)",
+              () => {
+                sim.injectInFlightCrash();
+                hi("bell");
+                if (ctx.diagram) ctx.diagram.pulse("cpu01", "wal", "#ef4444");
+                drawTandemConsole();
+                syncStats();
+              },
+              "pri",
+            ),
+          ),
+          q(
+            "div",
+            { class: "row" },
+            ...[0, 1, 2, 3].map((idx) =>
+              Fe(`Kill/Heal CPU${idx}`, () => {
+                sim.toggleCpuFault(idx);
+                hi("toggle");
+                drawTandemConsole();
+                syncStats();
+              }),
+            ),
+          ),
+          q(
+            "div",
+            { class: "row" },
+            Fe("Cut/Heal Dynabus X", () => {
+              sim.toggleBusFault("X");
+              hi("switch");
+              drawTandemConsole();
+              syncStats();
+            }),
+            Fe("Cut/Heal Dynabus Y", () => {
+              sim.toggleBusFault("Y");
+              hi("switch");
+              drawTandemConsole();
+              syncStats();
+            }),
+            Fe("Pull/Heal Disk A", () => {
+              sim.toggleDiskFault(0);
+              hi("seek");
+              drawTandemConsole();
+              syncStats();
+            }),
+          ),
+          statsUi,
+        ),
+      );
+      machine._syncStats = syncStats;
+      syncStats();
+    },
+
+    update(dt, t, ctx) {
+      if (running) {
+        stepAcc += dt * 3.5;
+        while (stepAcc >= 1) {
+          stepAcc -= 1;
+          sim.step();
+          if (ctx.diagram) {
+            ctx.diagram.pulse("cpu01", "busx", "#fbbf24");
+            ctx.diagram.pulse("busx", "wal", "#c08cff");
+            ctx.diagram.pulse("busx", "raid1", "#38bdf8");
+          }
+          drawTandemConsole();
+          if (machine._syncStats) machine._syncStats();
+        }
+      }
+      cpuLeds.forEach((led, idx) => {
+        const up = sim.cpus[idx].online;
+        led.material.color.setHex(up ? 0x34d399 : 0xef4444);
+        led.material.emissive.setHex(up ? 0x34d399 : 0xef4444);
+        led.material.emissiveIntensity = up ? 1.2 + 0.3 * Math.sin(t * 6 + idx) : 1.8;
+      });
+      if (busRails.X) busRails.X.material.emissiveIntensity = sim.dynabus.X ? 1.2 : 0.08;
+      if (busRails.Y) busRails.Y.material.emissiveIntensity = sim.dynabus.Y ? 1.2 : 0.08;
+      diskLeds.forEach((led, idx) => {
+        const up = sim.disks[idx].online;
+        led.material.emissive.setHex(up ? 0x38bdf8 : 0xef4444);
+        led.material.emissiveIntensity = up ? 1.3 : 1.7;
+      });
+    },
+
+    isRunning: () => running,
+    sim,
+    test() {
+      const t = new TandemNonStopCluster();
+      for (let i = 0; i < 5; i++) t.step();
+      const crash = t.injectInFlightCrash();
+      t.toggleBusFault("X");
+      t.toggleDiskFault(0);
+      for (let i = 0; i < 4; i++) t.step();
+      return {
+        ok:
+          crash.invariantOk &&
+          t.invariantOk &&
+          t.totalLedgerDollars() === 1000000 &&
+          t.processPairs[0].activeCpu === 1,
+        total: t.totalLedgerDollars(),
+      };
+    },
+  };
+  return machine;
+}
+
+// ============================================================================
+// DUAL-OPTERON x86-64 HYPERVISOR, ccNUMA & C10K BLADE SERVER (2004, blade04)
+// ============================================================================
+function makeMachineBlade04() {
+  const sim = new HypervisorNumaServer();
+  let running = true;
+  let stepAcc = 0;
+  let mon = null;
+  let vmBars = [];
+  let statsUi = null;
+
+  function drawBladeConsole() {
+    if (!mon) return;
+    const c = mon.ctx;
+    const W = 1024,
+      H = 768;
+    c.fillStyle = "#060a12";
+    c.fillRect(0, 0, W, H);
+
+    c.fillStyle = sim.vmmMode === "ept_vtx" ? "#0f4c81" : "#7c2d12";
+    c.fillRect(16, 14, W - 32, 52);
+    c.fillStyle = "#f8fafc";
+    c.font = '700 19px "JetBrains Mono", monospace';
+    c.fillText(
+      `2004 x86-64 BLADE HYPERVISOR · VMM=${sim.vmmMode === "ept_vtx" ? "AMD-V/VT-x + 2D EPT" : "TRAP-AND-EMULATE"} · I/O=${sim.ioMode.toUpperCase()}`,
+      26,
+      47,
+    );
+
+    // Top-Left: Dual-Socket Opteron ccNUMA Topology & HyperTransport Interconnect
+    c.fillStyle = "#0b1322";
+    c.fillRect(20, 82, 500, 340);
+    c.strokeStyle = "#38bdf8";
+    c.lineWidth = 2;
+    c.strokeRect(20, 82, 500, 340);
+    c.fillStyle = "#7dd3fc";
+    c.font = '700 15px "JetBrains Mono", monospace';
+    c.fillText("DUAL-OPTERON ccNUMA + INTEGRATED DDR CONTROLLERS", 36, 110);
+
+    sim.nodes.forEach((nd, idx) => {
+      const nx = 38 + idx * 242;
+      c.fillStyle = "#111f36";
+      c.fillRect(nx, 130, 222, 168);
+      c.strokeStyle = idx === 0 ? "#34d399" : "#38bdf8";
+      c.strokeRect(nx, 130, 222, 168);
+      c.fillStyle = "#f8fafc";
+      c.font = '700 14px "JetBrains Mono", monospace';
+      c.fillText(nd.name, nx + 10, 156);
+      c.fillStyle = "#86efac";
+      c.font = '600 13px "JetBrains Mono", monospace';
+      c.fillText(`Local 65ns Hits: ${nd.localHits}`, nx + 10, 188);
+      c.fillStyle = "#fbbf24";
+      c.fillText(`Remote 112ns HT: ${nd.remoteHops}`, nx + 10, 214);
+      c.fillStyle = "#cbd5e1";
+      c.fillText("8 GB Reg-ECC DDR", nx + 10, 244);
+      c.fillText(`Cores: [${nd.cores.join(",")}]`, nx + 10, 272);
+    });
+    c.fillStyle = "#fde047";
+    c.font = '700 14px "JetBrains Mono", monospace';
+    c.fillText(
+      `Avg Memory Latency: ${sim.avgMemLatencyNs} ns (${sim.numaBalancing ? "NUMA Affinity PINNED ✓" : "Cross-Socket HT Hop!"})`,
+      38,
+      336,
+    );
+    c.fillStyle = "#94a3b8";
+    c.font = '600 13px "JetBrains Mono", monospace';
+    c.fillText(
+      `2D Page Walk: TLB Hits=${sim.tlbHits} · 24-Ref Cold Walks=${sim.tlb2dWalks}`,
+      38,
+      368,
+    );
+    c.fillText(`VM-Exits=${sim.vmExits} (~${sim.avgExitCycles} cyc/exit)`, 38, 396);
+
+    // Top-Right: 4 Isolated Guest VMs + KSM & Balloon Memory Overcommit
+    c.fillStyle = "#0b1322";
+    c.fillRect(536, 82, 468, 340);
+    c.strokeStyle = "#c084fc";
+    c.strokeRect(536, 82, 468, 340);
+    c.fillStyle = "#d8b4fe";
+    c.font = '700 15px "JetBrains Mono", monospace';
+    c.fillText(
+      `4 GUEST VMs · ${sim.overcommitRatio}x RAM OVERCOMMIT (KSM + BALLOON)`,
+      552,
+      110,
+    );
+
+    sim.vms.forEach((vm, idx) => {
+      const vy = 132 + idx * 54;
+      c.fillStyle = "#141e33";
+      c.fillRect(552, vy, 436, 44);
+      c.fillStyle = "#f8fafc";
+      c.font = '700 13.5px "JetBrains Mono", monospace';
+      c.fillText(
+        `${vm.name.padEnd(18)} VPID=0x${vm.vpid.toString(16)}  Node${vm.runNode}  ${vm.allocMB}MB`,
+        562,
+        vy + 27,
+      );
+    });
+    c.fillStyle = "#6ee7b7";
+    c.font = '600 13.5px "JetBrains Mono", monospace';
+    c.fillText(
+      `KSM Dedup Saved: ${sim.ksmSavedMB} MB · Virtio Balloon: ${sim.balloonReclaimedMB} MB`,
+      552,
+      368,
+    );
+    c.fillStyle = "#cbd5e1";
+    c.fillText(
+      `Host Physical Used: ${sim.effectiveHostRamMB} MB / ${sim.totalHostRamMB} MB (24,576 MB Logical)`,
+      552,
+      396,
+    );
+
+    // Bottom: Dan Kegel's C10K Problem — O(1) epoll Readiness vs O(N) select() Linear Scan!
+    c.fillStyle = "#0b1322";
+    c.fillRect(20, 438, W - 40, 308);
+    c.strokeStyle = "#34d399";
+    c.strokeRect(20, 438, W - 40, 308);
+    c.fillStyle = "#6ee7b7";
+    c.font = '700 16px "JetBrains Mono", monospace';
+    c.fillText(
+      `THE C10K CONCURRENCY BREAKTHROUGH (10,000 TCP SOCKETS · ${sim.activeSockets} READY/TICK)`,
+      36,
+      468,
+    );
+
+    // Throughput comparison bars
+    const epollBarW = Math.min(620, Math.round((sim.c10kReqPerSec / 160000) * 620));
+    c.fillStyle = "#94a3b8";
+    c.font = '700 14px "JetBrains Mono", monospace';
+    c.fillText(`Active ${sim.ioMode.toUpperCase()} Throughput:`, 38, 514);
+    c.fillStyle = "#1e293b";
+    c.fillRect(280, 494, 640, 30);
+    c.fillStyle = sim.ioMode === "epoll" ? "#34d399" : "#f97316";
+    c.fillRect(280, 494, epollBarW, 30);
+    c.fillStyle = "#f8fafc";
+    c.fillText(`${sim.c10kReqPerSec.toLocaleString()} HTTP req/s`, 292, 515);
+
+    c.fillStyle = "#cbd5e1";
+    c.font = '600 14px "JetBrains Mono", monospace';
+    c.fillText(
+      `Kernel FD Table Scans / Event Tick: ${sim.descriptorScansPerTick.toLocaleString()} (${sim.ioMode === "epoll" ? "O(k) RB-tree ready list!" : "O(N) 10,000-bit linear scan!"})`,
+      38,
+      564,
+    );
+    c.fillStyle = "#94a3b8";
+    c.font = '500 13.5px "JetBrains Mono", monospace';
+    c.fillText(
+      "• AMD Opteron (2003/2004) brought 64-bit x86-64 flat addressing + integrated DDR controller + HyperTransport",
+      38,
+      610,
+    );
+    c.fillText(
+      "  ccNUMA to commodity 1U/blade servers, breaking the 4 GB 32-bit PAE ceiling.",
+      38,
+      636,
+    );
+    c.fillText(
+      "• VMware/Xen/KVM virtualization + Linux 2.6 O(1) scheduler & epoll/kqueue turned single-OS Pizza Boxes",
+      38,
+      668,
+    );
+    c.fillText(
+      "  into multi-tenant elastic cloud hosts handling >10,000 simultaneous keep-alive connections.",
+      38,
+      694,
+    );
+
+    mon.tex.needsUpdate = true;
+  }
+
+  const machine = {
+    id: "blade04",
+    era: "2004",
+    short: "x86-64 VMM Blade",
+    name: "Dual-Opteron x86-64 Hypervisor, ccNUMA & C10K Blade Server",
+    group: "servers",
+    view0: -0.22,
+    blurb:
+      "The 2004 inflection point between 1990s SMP UNIX boxes and modern hyperscale clouds: AMD64/x86-64 Dual-Opteron blades eliminated the 4 GB 32-bit barrier and front-side bus bottleneck with point-to-point HyperTransport ccNUMA, hardware-assisted virtualization (VT-x / AMD-V + 2D Nested Page Tables) consolidated 4+ OSes per blade, and Linux 2.6 O(1) epoll shattered the C10K 10,000-socket barrier.",
+    diagram: {
+      nodes: [
+        { id: "n0", label: "Opteron Node 0 + DDR", x: 0.22, y: 0.24, color: "#34d399" },
+        { id: "n1", label: "Opteron Node 1 + DDR", x: 0.78, y: 0.24, color: "#38bdf8" },
+        { id: "ht", label: "Coherent HyperTransport", x: 0.5, y: 0.24, color: "#fbbf24" },
+        { id: "ept", label: "Hypervisor + 2D EPT", x: 0.32, y: 0.68, color: "#c08cff" },
+        {
+          id: "epoll",
+          label: "C10K epoll Zero-Copy NIC",
+          x: 0.74,
+          y: 0.68,
+          color: "#f97316",
+        },
+      ],
+      edges: [
+        ["n0", "ht", "6.4 GB/s cHT"],
+        ["ht", "n1", "ccNUMA Probe"],
+        ["n0", "ept", "gVA->gPA->hPA"],
+        ["ept", "epoll", "Virtio-Net"],
+      ],
+    },
+    build(kit) {
+      vmBars = [];
+
+      // 1. 7U BLADE CENTER CHASSIS + EXTRACTED DUAL-OPTERON COMPUTE BLADE (Left)
+      const enc = kit.group([-0.5, 0, -0.02], {
+        name: "7U Modular Datacenter Blade Enclosure",
+        info: "High-density blade chassis sharing midplane Gigabit Ethernet switches, KVM management module, and N+1 hot-plug blowers across 8 vertical server blades.",
+      });
+      // Open-front 7U BladeCenter enclosure exposing all 6 docked vertical compute blades!
+      kit.box(1.08, 1.14, 0.08, U.darkAnodized(0x181e28), [0, 0.57, -0.48], {}, enc);
+      kit.box(1.1, 0.07, 0.88, U.darkAnodized(0x1e2634), [0, 1.11, -0.08], {}, enc);
+      kit.box(1.1, 0.07, 0.88, U.darkAnodized(0x1e2634), [0, 0.035, -0.08], {}, enc);
+      kit.box(0.06, 1.04, 0.86, U.darkAnodized(0x181e28), [-0.51, 0.57, -0.08], {}, enc);
+      kit.box(0.06, 1.04, 0.86, U.darkAnodized(0x181e28), [0.51, 0.57, -0.08], {}, enc);
+      kit.box(
+        1.02,
+        1.02,
+        0.02,
+        U.glass(0xdbeafe, 0.08),
+        [0, 0.57, 0.35],
+        {
+          shell: true,
+          name: "7U Anodized Steel Blade Chassis Shroud",
+          explode: [0, 0.2, 0.42],
+        },
+        enc,
+      );
+
+      // 6 Docked Vertical Server Blades inside enclosure + LED utilization bars
+      for (let b = 0; b < 6; b++) {
+        const bx = -0.38 + b * 0.12;
+        const sl = kit.box(
+          0.095,
+          0.92,
+          0.72,
+          U.metal(0x2a3240, 0.4),
+          [bx, 0.54, -0.06],
+          {
+            name: `Modular x86-64 Server Blade Slot #${b + 1}`,
+          },
+          enc,
+        );
+        const led = kit.box(
+          0.03,
+          0.18,
+          0.02,
+          U.led(b < 4 ? 0x34d399 : 0x38bdf8),
+          [0, 0.28, 0.37],
+          {},
+          sl,
+        );
+        vmBars.push(led);
+      }
+
+      // PULLED-OUT CUTAWAY HERO BLADE ON INSPECTION STAND (Front-Left — exposes Dual Opteron ccNUMA PCB!)
+      const hero = kit.group(
+        [0.02, 0.14, 0.56],
+        {
+          name: "Extracted Dual-Opteron 250 x86-64 Compute Blade",
+          info: "Exposes the two Socket 940 AMD Opteron 64-bit CPUs, coherent HyperTransport traces, 8 Registered ECC DDR DIMMs (4 per NUMA node), and dual GbE NICs.",
+          live: () =>
+            `VMM=${sim.vmmMode} · AvgLat=${sim.avgMemLatencyNs}ns · C10K=${sim.c10kReqPerSec.toLocaleString()} req/s`,
+          explode: [0, 0.18, 0.42],
+        },
+        enc,
+      );
+      kit.box(0.88, 0.03, 0.56, U.steel(), [0, 0, 0], {}, hero);
+      kit.box(0.84, 0.016, 0.52, U.pcb(0x165b38), [0, 0.024, 0], {}, hero);
+
+      // Socket 0 & Socket 1 Copper Finned Heatsinks + Per-Node Registered ECC DDR Banks!
+      for (let s = 0; s < 2; s++) {
+        const sx = -0.2 + s * 0.4;
+        vn(
+          kit,
+          0.18,
+          0.18,
+          0.075,
+          [sx, 0.032, -0.02],
+          {
+            base: U.copper(),
+            mat: U.copper(),
+            name: `Socket ${s} AMD Opteron 250 (x86-64 + Integrated IMC)`,
+            info: `NUMA Node ${s}: on-die DDR memory controller achieves 65 ns local latency; accesses to Socket ${1 - s} traverse 6.4 GB/s coherent HyperTransport in 112 ns.`,
+          },
+          hero,
+        );
+        for (let d = 0; d < 4; d++) {
+          ps(
+            kit,
+            [sx, 0.032, 0.12 + d * 0.032],
+            {
+              len: 0.22,
+              h: 0.048,
+              name: `Node ${s} Registered ECC DDR DIMM #${d + 1}`,
+            },
+            hero,
+          );
+        }
+      }
+      // Rear Hot-Plug Cooling Blowers
+      ni(kit, 0.065, [-0.26, 0.09, -0.24], { speed: 18 }, hero);
+      ni(kit, 0.065, [0.26, 0.09, -0.24], { speed: 18 }, hero);
+
+      // 2. HYPERVISOR & C10K NOC CONSOLE MONITOR (Right)
+      mon = buildMonitor3D(kit, [0.88, 0.58, 0.16], {
+        w: 0.94,
+        h: 0.7,
+        rot: [0, -0.32, 0],
+        name: "x86-64 Hypervisor 2D-EPT & C10K epoll Telemetry Display",
+        explode: [0.38, 0, 0.2],
+      });
+      kit.box(1.02, 0.58, 0.52, U.darkAnodized(0x121824), [0.88, 0.29, 0.16], {
+        rot: [0, -0.32, 0],
+      });
+
+      drawBladeConsole();
+    },
+
+    ui(el, ctx) {
+      const syncStats = () => {
+        if (!statsUi) return;
+        statsUi.set(
+          "vmm",
+          sim.vmmMode === "ept_vtx" ? "VT-x/AMD-V + 2D EPT" : "Trap-and-Emulate",
+        );
+        statsUi.set(
+          "numa",
+          `${sim.avgMemLatencyNs} ns (${sim.numaBalancing ? "Pinned" : "Remote HT"})`,
+        );
+        statsUi.set("ram", `${sim.overcommitRatio}× (KSM saved ${sim.ksmSavedMB} MB)`);
+        statsUi.set("tlb", `${sim.tlbHits} hits / ${sim.tlb2dWalks} 24-ref walks`);
+        statsUi.set(
+          "io",
+          `${sim.ioMode.toUpperCase()} (${sim.descriptorScansPerTick} FD scans)`,
+        );
+        statsUi.set("rps", `${sim.c10kReqPerSec.toLocaleString()} req/s`);
+      };
+
+      const runBtn = Fe(
+        running ? "⏸ Pause" : "▶ Run",
+        () => {
+          running = !running;
+          runBtn.textContent = running ? "⏸ Pause" : "▶ Run";
+        },
+        "pri",
+      );
+
+      statsUi = Pt([
+        ["vmm", "Virtualization"],
+        ["numa", "ccNUMA Latency"],
+        ["ram", "RAM Overcommit"],
+        ["tlb", "2D Nested PTs"],
+        ["io", "C10K Event Loop"],
+        ["rps", "HTTP Throughput"],
+      ]);
+
+      el.append(
+        Ie(
+          "x86-64 Hardware Virtualization, ccNUMA & C10K epoll Controls",
+          q(
+            "div",
+            { class: "row" },
+            runBtn,
+            Fe(
+              "Toggle VT-x/EPT vs Trap-Emulate",
+              () => {
+                sim.setVmmMode(sim.vmmMode === "ept_vtx" ? "trap_emulate" : "ept_vtx");
+                hi("switch");
+                if (ctx.diagram) ctx.diagram.pulse("n0", "ept", "#c08cff");
+                drawBladeConsole();
+                syncStats();
+              },
+              "pri",
+            ),
+            Fe(
+              "Toggle O(1) epoll vs O(N) select",
+              () => {
+                sim.setIoMode(sim.ioMode === "epoll" ? "select" : "epoll");
+                hi("toggle");
+                if (ctx.diagram) ctx.diagram.pulse("ept", "epoll", "#f97316");
+                drawBladeConsole();
+                syncStats();
+              },
+              "pri",
+            ),
+          ),
+          q(
+            "div",
+            { class: "row" },
+            Fe("Toggle ccNUMA Scheduler Pinning", () => {
+              sim.numaBalancing = !sim.numaBalancing;
+              sim.step();
+              hi("clock");
+              if (ctx.diagram) ctx.diagram.pulse("n0", "ht", "#fbbf24");
+              drawBladeConsole();
+              syncStats();
+            }),
+          ),
+          statsUi,
+        ),
+      );
+      machine._syncStats = syncStats;
+      syncStats();
+    },
+
+    update(dt, t, ctx) {
+      if (running) {
+        stepAcc += dt * 3.5;
+        while (stepAcc >= 1) {
+          stepAcc -= 1;
+          sim.step();
+          if (ctx.diagram) {
+            ctx.diagram.pulse("n0", "ht", "#34d399");
+            ctx.diagram.pulse("ht", "n1", "#38bdf8");
+            ctx.diagram.pulse("ept", "epoll", "#f97316");
+          }
+          drawBladeConsole();
+          if (machine._syncStats) machine._syncStats();
+        }
+      }
+      vmBars.forEach((bar, idx) => {
+        bar.material.emissiveIntensity =
+          0.4 + 1.1 * Math.abs(Math.sin(t * 4.5 + idx * 0.8));
+      });
+    },
+
+    isRunning: () => running,
+    sim,
+    test() {
+      const h = new HypervisorNumaServer();
+      const eptRps = h.step().c10kReqPerSec;
+      h.setVmmMode("trap_emulate");
+      h.setIoMode("select");
+      const selRps = h.step().c10kReqPerSec;
+      return {
+        ok: eptRps > selRps * 5 && h.overcommitRatio > 1.2,
+        eptRps,
+        selRps,
+      };
+    },
+  };
+  return machine;
+}

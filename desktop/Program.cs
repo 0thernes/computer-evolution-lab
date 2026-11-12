@@ -566,14 +566,14 @@ internal sealed class LabWindow : Form
             }
 
             string pc20Check = await _webView.CoreWebView2.ExecuteScriptAsync(
-                "(() => { for (const id of ['pc20', 'agc66', 's360', 'vax78', 'cdc6600', 'cray1', 'qion', 'qomega']) { LAB.select(id); for (let i = 0; i < 6; i++) { LAB.active.update(0.016, i * 0.016, { diagram: LAB.active.diag, openCard: () => {} }); } } LAB.fx.render(); return { active: LAB.active.id, parts: LAB.active.kit.parts.length, machines: LAB.machines.length, webgl2: !!LAB.renderer.capabilities.isWebGL2 }; })()"
+                "(() => { for (const id of ['pc20', 'eniac46', 'lisp83', 'wse24', 's360', 'tandem77', 'blade04', 'cray1', 'systolic82', 'fugaku20', 'qspin', 'qomega']) { LAB.select(id); for (let i = 0; i < 5; i++) { LAB.active.update(0.016, i * 0.016, { diagram: LAB.active.diag, openCard: () => {} }); } } LAB.fx.render(); return { active: LAB.active.id, parts: LAB.active.kit.parts.length, machines: LAB.machines.length, webgl2: !!LAB.renderer.capabilities.isWebGL2 }; })()"
             );
 
-            if (!pc20Check.Contains("\"machines\":40", StringComparison.Ordinal))
+            if (!pc20Check.Contains("\"machines\":48", StringComparison.Ordinal))
             {
                 File.WriteAllText(
                     reportPath,
-                    $"VERIFY_FAIL: Expected 40 machines in UI check, got {pc20Check}",
+                    $"VERIFY_FAIL: Expected 48 machines in UI check, got {pc20Check}",
                     Encoding.UTF8
                 );
                 VerifyExitCode = 8;

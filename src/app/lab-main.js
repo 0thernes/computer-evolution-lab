@@ -86,38 +86,45 @@
   const fx = new Qu(renderer, scene, camera, keyLight);
   const slicer = new CrossSectionSlicer(renderer, scene);
 
-  // ---- 2. Instantiate All 40 Functional Machines Across 4 Grand Circles ----
+  // ---- 2. Instantiate All 48 Functional Machines Across 4 Grand Circles ----
   const factories = [
     zm,
     qm,
     Wm,
+    makeMachineEniac46,
     Xm,
     Zm,
+    Km,
     makeMachineAgc66,
     makeMachineAlto73,
-    Km,
     Jm,
     o1,
     l1,
-    makeMachineArm07,
+    makeMachineLisp83,
     c1,
     d1,
+    makeMachineArm07,
     p1,
     M1,
     g1,
+    makeMachineWse24,
     S1,
     A1,
     makeMachineS360,
     makeMachineUnix70,
+    makeMachineTandem77,
     makeMachineVax78,
     makeMachineSun90,
+    makeMachineBlade04,
     makeMachineCloud10,
     makeMachineZmain20,
     makeMachineCdc6600,
     makeMachineCray1,
+    makeMachineSystolic82,
     makeMachineCm2,
     makeMachineAsciRed97,
     makeMachineBgene,
+    makeMachineFugaku20,
     makeMachineExascale,
     makeMachineGb200,
     makeMachineQion,
@@ -125,11 +132,12 @@
     makeMachineQanneal,
     makeMachineQatom,
     makeMachineQtransmon,
+    makeMachineQspin,
     makeMachineQphotonic,
     makeMachineQtopo,
     makeMachineQomega,
   ];
-  const frontierSet = new Set(["m6502", "bci", "photonic", "alife"]);
+  const frontierSet = new Set(["m6502", "wse24", "bci", "photonic", "alife"]);
   const capitalSet = new Set(["m6502", "s360", "cray1", "qomega"]);
   const machines = [];
   const diagCanvas = $("#diag");
@@ -202,8 +210,238 @@
 
   const byId = Object.fromEntries(machines.map((m) => [m.id, m]));
 
-  // Wire 2D architecture diagram pulses to authentic hardware acoustic SFX
-  Ra.hook = (diag, fromId, toId) => {
+  const PLAZAS = {
+    c1: {
+      cx: 0,
+      cz: -7.4,
+      innerR: 4.5,
+      outerR: 10.3,
+      hex: 0xffb347,
+      css: "#ffb347",
+      title: "CIRCLE I · PERSONAL, WORKSTATION & BIO/WAFER",
+      sub: "★ Capital Centerpiece: 1975 MOS 6502 ($25 Microprocessor)",
+      camPos: [0, 19.2, 12.2],
+      camTarget: [0, 0, -7.4],
+    },
+    c2: {
+      cx: -19.2,
+      cz: 6.2,
+      innerR: 0,
+      outerR: 5.7,
+      hex: 0x38bdf8,
+      css: "#38bdf8",
+      title: "CIRCLE II · MAINFRAMES & ENTERPRISE SERVERS",
+      sub: "★ Capital Centerpiece: 1964 IBM System/360 (8-Bit Byte & Channels)",
+      camPos: [-19.2, 13.0, 19.2],
+      camTarget: [-19.2, 0, 6.2],
+    },
+    c3: {
+      cx: 19.2,
+      cz: 6.2,
+      innerR: 0,
+      outerR: 6.0,
+      hex: 0xf97316,
+      css: "#f97316",
+      title: "CIRCLE III · SUPERCOMPUTERS (SYSTOLIC → SVE → EXASCALE → AI)",
+      sub: "★ Capital Centerpiece: 1976 Cray-1 Vector (80 MHz Chaining)",
+      camPos: [19.2, 13.2, 19.6],
+      camTarget: [19.2, 0, 6.2],
+    },
+    c4: {
+      cx: 0,
+      cz: 16.8,
+      innerR: 0,
+      outerR: 6.1,
+      hex: 0xc084fc,
+      css: "#c084fc",
+      title: "CIRCLE IV · THE AGE OF QUANTUM COMPUTERS (9 MODALITIES)",
+      sub: "★ Capital Centerpiece: 2045+ OMEGA-Q Fault-Tolerant Horizon",
+      camPos: [0, 13.5, 30.2],
+      camTarget: [0, 0, 16.8],
+    },
+  };
+
+  // ---- 2b. Live 3D Hardware Bus Wave-Packet Engine (Synced to 2D ArchDiagram Pulses) ----
+  const busPulses = (() => {
+    const group = new ft();
+    group.userData.keep = true;
+    scene.add(group);
+
+    const sphereGeo = new THREE.SphereGeometry(0.024, 12, 10);
+    const pool = [];
+    for (let i = 0; i < 32; i++) {
+      const mat = new xt({
+        color: 0x38bdf8,
+        transparent: true,
+        opacity: 0.88,
+        depthWrite: false,
+      });
+      const mesh = new B(sphereGeo, mat);
+      mesh.visible = false;
+      mesh.userData.keep = true;
+      group.add(mesh);
+      pool.push({
+        mesh,
+        active: false,
+        t: 0,
+        speed: 1.9,
+        p0: new N(),
+        p1: new N(),
+        ctrl: new N(),
+        baseScale: 1,
+      });
+    }
+
+    const ensurePartLocalCenter = (part) => {
+      if (!part.userData._locCtr) {
+        part.updateWorldMatrix(true, true);
+        const box = new li().setFromObject(part);
+        const wc = box.isEmpty() ? new N() : box.getCenter(new N());
+        part.userData._locCtr = part.worldToLocal(wc.clone());
+      }
+      return part.userData._locCtr.clone().applyMatrix4(part.matrixWorld);
+    };
+
+    const resolveMachineNodeMap = (m) => {
+      if (m._busNodeParts) return m._busNodeParts;
+      const nonShell = m.kit.parts.filter(
+        (p) => p.userData.part && !p.userData.part.shell,
+      );
+      const candidates = nonShell.length ? nonShell : m.kit.parts;
+      const map = {};
+      const nodes = Object.values(m.diag.nodes);
+      const used = new Set();
+
+      for (const nd of nodes) {
+        const tokens = String(nd.id + " " + (nd.label || ""))
+          .toLowerCase()
+          .split(/[^a-z0-9]+/)
+          .filter((w) => w.length >= 3);
+        let best = null;
+        let bestScore = 0;
+        for (const p of candidates) {
+          const nm = String(p.userData.part?.name || "").toLowerCase();
+          let score = 0;
+          for (const tk of tokens) {
+            if (nm.includes(tk)) score += tk.length >= 4 ? 3 : 2;
+          }
+          if (score > 0 && !used.has(p)) score += 1;
+          if (score > bestScore) {
+            bestScore = score;
+            best = p;
+          }
+        }
+        if (!best && candidates.length) {
+          const idx =
+            Math.round(
+              ((nd.x ?? 0.5) * 0.65 + (nd.y ?? 0.5) * 0.35) * (candidates.length - 1) +
+                Object.keys(map).length,
+            ) % candidates.length;
+          best = candidates[idx];
+        }
+        if (best) {
+          map[nd.id] = best;
+          used.add(best);
+        }
+      }
+      m._busNodeParts = map;
+      return map;
+    };
+
+    const hubNodePlaza = (nodeId) => {
+      if (nodeId === "s360" || nodeId === "zmain20") return PLAZAS.c2;
+      if (nodeId === "cray1" || nodeId === "gb200") return PLAZAS.c3;
+      if (nodeId === "qomega" || nodeId === "qtransmon") return PLAZAS.c4;
+      return PLAZAS.c1;
+    };
+
+    let spawnedTotal = 0;
+    const tmpCol = new Ae();
+
+    return {
+      group,
+      get spawned() {
+        return spawnedTotal;
+      },
+      clear() {
+        for (const slot of pool) {
+          slot.active = false;
+          slot.mesh.visible = false;
+        }
+      },
+      spawn(p0, p1, hexStr = "#58c4ff", arcLift = 0.24, scale = 1, speed = 1.85) {
+        const slot = pool.find((s) => !s.active);
+        if (!slot) return;
+        slot.active = true;
+        slot.t = 0;
+        slot.speed = speed;
+        slot.baseScale = scale;
+        slot.p0.copy(p0);
+        slot.p1.copy(p1);
+        slot.ctrl.copy(p0).add(p1).multiplyScalar(0.5);
+        slot.ctrl.y = Math.max(p0.y, p1.y) + arcLift;
+        tmpCol.set(hexStr || "#58c4ff").multiplyScalar(0.76);
+        slot.mesh.material.color.copy(tmpCol);
+        slot.mesh.position.copy(p0);
+        slot.mesh.scale.setScalar(scale);
+        slot.mesh.visible = true;
+        spawnedTotal++;
+      },
+      onDiagramPulse(diag, fromId, toId, colStr) {
+        if (activeMachine && diag === activeMachine.diag) {
+          const map = resolveMachineNodeMap(activeMachine);
+          const pA = map[fromId];
+          const pB = map[toId];
+          if (!pA || !pB) return;
+          activeMachine.holder.updateMatrixWorld(true);
+          const wA = ensurePartLocalCenter(pA);
+          const wB = ensurePartLocalCenter(pB);
+          if (wA.distanceToSquared(wB) < 0.002) {
+            wB.x += 0.28;
+            wB.z += 0.16;
+          }
+          this.spawn(wA, wB, colStr, 0.24, 1.0, 1.95);
+        } else if (!activeMachine && hubDiagram && diag === hubDiagram) {
+          const plA = hubNodePlaza(fromId);
+          const plB = hubNodePlaza(toId);
+          if (plA === plB) return;
+          this.spawn(
+            new N(plA.cx, 0.35, plA.cz),
+            new N(plB.cx, 0.35, plB.cz),
+            colStr,
+            1.65,
+            3.6,
+            1.15,
+          );
+        }
+      },
+      update(dt) {
+        for (const slot of pool) {
+          if (!slot.active) continue;
+          slot.t += dt * slot.speed;
+          if (slot.t >= 1) {
+            slot.active = false;
+            slot.mesh.visible = false;
+            continue;
+          }
+          const u = slot.t;
+          const inv = 1 - u;
+          slot.mesh.position.set(
+            inv * inv * slot.p0.x + 2 * inv * u * slot.ctrl.x + u * u * slot.p1.x,
+            inv * inv * slot.p0.y + 2 * inv * u * slot.ctrl.y + u * u * slot.p1.y,
+            inv * inv * slot.p0.z + 2 * inv * u * slot.ctrl.z + u * u * slot.p1.z,
+          );
+          const env = Math.sin(u * Math.PI);
+          slot.mesh.scale.setScalar(slot.baseScale * (0.55 + 0.65 * env));
+          slot.mesh.material.opacity = 0.25 + 0.65 * env;
+        }
+      },
+    };
+  })();
+
+  // Wire 2D architecture diagram pulses to BOTH 3D hardware wave-packets AND authentic hardware acoustic SFX
+  Ra.hook = (diag, fromId, toId, colStr) => {
+    busPulses.onDiagramPulse(diag, fromId, toId, colStr);
     if (!activeMachine || diag !== activeMachine.diag || !Ut.ok) return;
     const sfxSpec = Qy(activeMachine.id, fromId, toId);
     if (sfxSpec) hi(sfxSpec[0], sfxSpec[1]);
@@ -221,57 +459,6 @@
   const superCircle = machines.filter((m) => m.group === "super");
   const quantumCircle = machines.filter((m) => m.group === "quantum");
 
-  const PLAZAS = {
-    c1: {
-      cx: 0,
-      cz: -7.0,
-      innerR: 4.2,
-      outerR: 9.5,
-      hex: 0xffb347,
-      css: "#ffb347",
-      title: "CIRCLE I · PERSONAL, WORKSTATION & BIO/OPTICAL",
-      sub: "★ Capital Centerpiece: 1975 MOS 6502 ($25 Microprocessor)",
-      camPos: [0, 18.2, 11.2],
-      camTarget: [0, 0, -7.0],
-    },
-    c2: {
-      cx: -18.2,
-      cz: 5.8,
-      innerR: 0,
-      outerR: 5.3,
-      hex: 0x38bdf8,
-      css: "#38bdf8",
-      title: "CIRCLE II · MAINFRAMES & ENTERPRISE SERVERS",
-      sub: "★ Capital Centerpiece: 1964 IBM System/360 (8-Bit Byte & Channels)",
-      camPos: [-18.2, 12.6, 18.4],
-      camTarget: [-18.2, 0, 5.8],
-    },
-    c3: {
-      cx: 18.2,
-      cz: 5.8,
-      innerR: 0,
-      outerR: 5.5,
-      hex: 0xf97316,
-      css: "#f97316",
-      title: "CIRCLE III · SUPERCOMPUTERS (SCOREBOARD → EXASCALE → AI)",
-      sub: "★ Capital Centerpiece: 1976 Cray-1 Vector (80 MHz Chaining)",
-      camPos: [18.2, 12.8, 18.6],
-      camTarget: [18.2, 0, 5.8],
-    },
-    c4: {
-      cx: 0,
-      cz: 15.8,
-      innerR: 0,
-      outerR: 5.8,
-      hex: 0xc084fc,
-      css: "#c084fc",
-      title: "CIRCLE IV · THE AGE OF QUANTUM COMPUTERS",
-      sub: "★ Capital Centerpiece: 2045+ OMEGA-Q Fault-Tolerant Horizon",
-      camPos: [0, 13.0, 29.0],
-      camTarget: [0, 0, 15.8],
-    },
-  };
-
   // ---- 3. 4-Plaza Hub Campus Pedestals, FloorPlaques & Light Bridges ----
   const hubStage = new ft();
   scene.add(hubStage);
@@ -286,12 +473,12 @@
       c.lineWidth = 6;
       c.strokeRect(8, 8, 1008, 184);
       c.fillStyle = accentCss;
-      c.font = "700 38px Inter, system-ui, sans-serif";
+      c.font = "700 35px Inter, system-ui, sans-serif";
       c.textAlign = "center";
-      c.fillText(title, 512, 86);
+      c.fillText(title, 512, 86, 956);
       c.fillStyle = "#e2ecf7";
-      c.font = "600 27px ui-monospace, Menlo, Consolas, monospace";
-      c.fillText(sub, 512, 146);
+      c.font = "600 26px ui-monospace, Menlo, Consolas, monospace";
+      c.fillText(sub, 512, 146, 956);
       surf.tex.needsUpdate = true;
       const plaque = new B(
         new mt(5.4, 1.05),
@@ -533,7 +720,7 @@
       });
     }
     if (key === "all" || !PLAZAS[key]) {
-      flyCamera(new N(0, 33, 35), new N(0, 0, 3.2), dur);
+      flyCamera(new N(0, 35, 37.5), new N(0, 0, 3.4), dur);
     } else {
       const p = PLAZAS[key];
       flyCamera(new N(...p.camPos), new N(...p.camTarget), dur);
@@ -670,6 +857,7 @@
 
   function selectMachine(id) {
     if (activeMachine && activeMachine.leave) activeMachine.leave();
+    busPulses.clear();
     stopTour();
     closePartCard();
     hoveredObj = null;
@@ -690,14 +878,14 @@
     if (id === "hub") {
       activeMachine = null;
       if (plazaNavEl) plazaNavEl.hidden = false;
-      keyLight.position.set(14.5, 28.0, 18.5);
+      keyLight.position.set(14.5, 29.0, 19.5);
       Object.assign(keyLight.shadow.camera, {
-        left: -27.5,
-        right: 27.5,
-        top: 27.5,
-        bottom: -27.5,
+        left: -29.5,
+        right: 29.5,
+        top: 29.5,
+        bottom: -29.5,
         near: 2,
-        far: 98,
+        far: 104,
       });
       keyLight.shadow.radius = 3.0;
       keyLight.shadow.bias = -0.00035;
@@ -711,12 +899,12 @@
       Ut.setMachine("hub");
       syncAudioUi();
       controls.minDistance = 1.4;
-      controls.maxDistance = 98;
+      controls.maxDistance = 104;
       flyToPlaza("all", 0);
-      $("#p-era").textContent = "4-Circle Campus · 41 Live 3D Scenes";
+      $("#p-era").textContent = `4-Circle Campus · ${machines.length + 1} Live 3D Scenes`;
       $("#p-title").textContent = "Computer Evolution Lab";
       (($("#p-blurb").textContent =
-        `${machines.length} operational computers across 4 Grand Circles + this campus = ${machines.length + 1} live 3D scenes. Circle I surrounds the ★ 1975 MOS 6502 with 1936–2020s machines (including Apollo AGC/DSKY, Xerox PARC Alto & Mobile ARM SoC) plus DishBrain neurons, nanophotonics & DNA logic. Circle II surrounds the ★ 1964 IBM System/360 with UNIX PDP-11/70, VAX-11/780 32-bit Virtual Memory, SPARC MESI/RAID-5 SMP, Warehouse Raft Cloud & Telum Zero-Downtime Mainframes. Circle III surrounds the ★ 1976 Cray-1 Vector supercomputer with CDC 6600 Scoreboard, 65,536-PE CM-2, ASCI Red TeraFLOPS Mesh, Blue Gene 3D Torus, Frontier Exascale & Blackwell NVL72 AI Rack. Circle IV surrounds the ★ OMEGA-Q Fault-Tolerant Horizon QPU with Trapped-Ion Paul QCCD, NMR, Flux-Qubit Annealing, Neutral-Atom Tweezers, 15 mK Surface-Code Transmons, Fusion Photonics & Majorana Braiding.`),
+        `${machines.length} hard-wired operational computers across 4 Grand Circles + this campus = ${machines.length + 1} live 3D scenes (${machines.length * 11} primary layers · ${machines.length * 33} interactive sub-lenses). Circle I surrounds the ★ 1975 MOS 6502 with 1936–2024 machines (including 1946 ENIAC Plugboard, Apollo AGC, Xerox Alto, 36-bit Symbolics LISP, Mobile ARM & 300mm Wafer-Scale WSE) plus DishBrain, nanophotonics & DNA logic. Circle II surrounds the ★ 1964 IBM System/360 with UNIX PDP-11/70, Tandem NonStop WAL, VAX-11/780, SPARC SMP, x86-64 Hypervisor/C10K Blade, Raft Cloud & Telum z16. Circle III surrounds the ★ 1976 Cray-1 Vector supercomputer with CDC 6600, VLSI Systolic Array, CM-2, ASCI Red, Blue Gene, RIKEN Fugaku ARM SVE, Frontier Exascale & Blackwell NVL72. Circle IV surrounds the ★ OMEGA-Q Horizon QPU with all 9 Quantum Modalities (Trapped Ion, NMR, Flux Annealer, Neutral Atom, 15mK Transmon, ²⁸Si CMOS Spin-Dot, Fusion Photonic, Majorana Tetron & Fault-Tolerant Horizon).`),
         buildHubDiagram());
       muiEl.append(buildHubCards());
       if (sharedCtx.diagram && diagCanvas) {
@@ -1853,7 +2041,7 @@
     ["[ / ]", "Step abstraction layer down / up"],
     ["\\", "Switch Hardware ↔ Software layer stack"],
     ["← / →", "Previous / next era machine"],
-    ["H", "Return to the 41-scene 4-Circle Hub Campus"],
+    ["H", "Return to the 49-scene 4-Circle Hub Campus"],
     ["Esc", "Close part card / modal / tour"],
   ];
 
@@ -2100,6 +2288,7 @@
       const dctx = yt(diagCanvas);
       activeDiag.draw(dctx, diagCanvas.width, diagCanvas.height, dt);
     }
+    busPulses.update(dt);
     if (!activeMachine && hubDiagram && hubDiagram._edges && Math.random() < dt * 3.5) {
       const edge =
         hubDiagram._edges[Math.floor(Math.random() * hubDiagram._edges.length)];
@@ -2181,6 +2370,7 @@
     renderer,
     fx,
     slicer,
+    busPulses,
     flyToObjects,
     flyCamera,
     flyToPlaza,

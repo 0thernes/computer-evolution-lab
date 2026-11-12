@@ -220,6 +220,25 @@ function Dy(pcbMesh, seed = 1) {
     bodyInst.castShadow = true;
     pcbMesh.add(bodyInst, topInst);
   }
+
+  // Shielded ferrite VRM power inductors + HC-49 brushed quartz crystal oscillator can on larger horizontal PCBs
+  const nVrm = Math.min(6, Math.floor(lenA * lenB * 18));
+  if (nVrm >= 2 && thinAxis === 1) {
+    const vrmInst = new ut(chamferBox(1, 1, 1, 0.08, 1), U.darkAnodized(0x232932), nVrm);
+    for (let v = 0; v < nVrm; v++) {
+      const vx = (-0.36 + (v / Math.max(1, nVrm - 1)) * 0.72) * lenA;
+      const vz = lenB * 0.33;
+      dummy.position.set(vx, thick * 0.5 + 0.0055, vz);
+      dummy.rotation.set(0, 0, 0);
+      dummy.scale.set(0.015, 0.011, 0.015);
+      dummy.updateMatrix();
+      vrmInst.setMatrixAt(v, dummy.matrix);
+    }
+    vrmInst.castShadow = true;
+    const xtal = new B(chamferBox(0.018, 0.007, 0.008, 0.0018, 1), U.steel());
+    xtal.position.set(-lenA * 0.38, thick * 0.5 + 0.0035, -lenB * 0.31);
+    pcbMesh.add(vrmInst, xtal);
+  }
   return count;
 }
 

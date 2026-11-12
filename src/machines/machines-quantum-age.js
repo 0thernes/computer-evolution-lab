@@ -3371,3 +3371,547 @@ function makeMachineQanneal() {
   };
   return machine;
 }
+
+// ============================================================================
+// LOSS-DIVINCENZO 28Si/SiGe QUANTUM-DOT SPIN QPU (1998/2024, qspin)
+// ============================================================================
+function makeMachineQspin() {
+  const sim = new SiliconSpinDotQpu();
+  let running = true;
+  let stepAcc = 0;
+  let mon = null;
+  let spinArrows = [];
+  let barrierGlows = [];
+  let statsUi = null;
+
+  function drawSpinMonitor() {
+    if (!mon) return;
+    const c = mon.ctx;
+    const W = 1024,
+      H = 768;
+    c.fillStyle = "#050914";
+    c.fillRect(0, 0, W, H);
+
+    c.fillStyle = sim.si29Ppm <= 800 ? "#1e3a8a" : "#7c2d12";
+    c.fillRect(16, 14, W - 32, 52);
+    c.fillStyle = "#f8fafc";
+    c.font = '700 19px "JetBrains Mono", monospace';
+    c.fillText(
+      `²⁸Si/SiGe CMOS SPIN QPU (1.2 K HOT-CRYO) · ²⁹Si=${sim.si29Ppm} ppm · T2*=${sim.t2StarUs} µs · F_2Q=${(sim.twoQubitFidelity * 100).toFixed(2)}%`,
+      24,
+      47,
+    );
+
+    // Top-Left: 4 Quantum Dots (Q0..Q3) Reduced Bloch Vectors & J-Barrier Exchange Coupling
+    c.fillStyle = "#0b1324";
+    c.fillRect(20, 82, 516, 336);
+    c.strokeStyle = "#38bdf8";
+    c.lineWidth = 2;
+    c.strokeRect(20, 82, 516, 336);
+    c.fillStyle = "#7dd3fc";
+    c.font = '700 15px "JetBrains Mono", monospace';
+    c.fillText("4-ELECTRON ²⁸Si QUANTUM WELL + EDSR BLOCH SPINS", 36, 110);
+
+    sim.bloch.forEach((bv, qIdx) => {
+      const cx = 92 + qIdx * 116;
+      const cy = 206;
+      c.strokeStyle = "#334155";
+      c.lineWidth = 2;
+      c.beginPath();
+      c.arc(cx, cy, 44, 0, Math.PI * 2);
+      c.stroke();
+
+      // Bloch projection arrow (bx, -bz)
+      const ax = cx + bv.x * 38;
+      const ay = cy - bv.z * 38;
+      c.strokeStyle = "#fde047";
+      c.lineWidth = 3.5;
+      c.beginPath();
+      c.moveTo(cx, cy);
+      c.lineTo(ax, ay);
+      c.stroke();
+      c.fillStyle = "#38bdf8";
+      c.beginPath();
+      c.arc(ax, ay, 5.5, 0, Math.PI * 2);
+      c.fill();
+
+      c.fillStyle = "#f8fafc";
+      c.font = '700 13px "JetBrains Mono", monospace';
+      c.fillText(`DOT Q${qIdx}`, cx - 24, 272);
+      c.fillStyle = "#94a3b8";
+      c.font = '600 11.5px "JetBrains Mono", monospace';
+      c.fillText(`⟨Z⟩=${bv.z.toFixed(2)}`, cx - 30, 292);
+
+      if (qIdx < 3) {
+        c.fillStyle = "#f472b6";
+        c.fillText(`J${qIdx}${qIdx + 1}`, cx + 48, 210);
+      }
+    });
+
+    c.fillStyle = "#a7f3d0";
+    c.font = '600 13px "JetBrains Mono", monospace';
+    c.fillText(
+      `Last Gate: ${sim.gateLog[sim.gateLog.length - 1] || "Init |0000⟩"}`,
+      36,
+      340,
+    );
+    c.fillStyle = "#cbd5e1";
+    c.fillText(
+      "50 nm CMOS gate pitch = 1,000,000× denser than superconducting transmons!",
+      36,
+      370,
+    );
+    c.fillText(
+      "Operates at 1.2 K pumped-⁴He alongside co-packaged Cryo-CMOS control.",
+      36,
+      396,
+    );
+
+    // Top-Right: Pauli Spin Blockade (PSB) Singlet-Triplet Readout & 16-State Probabilities
+    c.fillStyle = "#0b1324";
+    c.fillRect(552, 82, 452, 336);
+    c.strokeStyle = "#f472b6";
+    c.strokeRect(552, 82, 452, 336);
+    c.fillStyle = "#f9a8d4";
+    c.font = '700 15px "JetBrains Mono", monospace';
+    c.fillText("PAULI SPIN BLOCKADE (PSB) RF-SET READOUT", 568, 110);
+
+    // Singlet vs Blocked Triplet bars
+    c.fillStyle = "#94a3b8";
+    c.font = '600 13.5px "JetBrains Mono", monospace';
+    c.fillText("Singlet |S(0,2)⟩ Tunnel Allowed:", 568, 148);
+    c.fillStyle = "#1e293b";
+    c.fillRect(568, 158, 412, 26);
+    c.fillStyle = "#34d399";
+    c.fillRect(568, 158, Math.round(412 * sim.psbSingletProb), 26);
+    c.fillStyle = "#f8fafc";
+    c.fillText(`${(sim.psbSingletProb * 100).toFixed(1)}%`, 578, 177);
+
+    c.fillStyle = "#94a3b8";
+    c.fillText("Triplet |T+,T0,T-⟩ Pauli-Blocked:", 568, 214);
+    c.fillStyle = "#1e293b";
+    c.fillRect(568, 224, 412, 26);
+    c.fillStyle = "#f97316";
+    c.fillRect(568, 224, Math.round(412 * sim.psbBlockedTripletProb), 26);
+    c.fillStyle = "#f8fafc";
+    c.fillText(`${(sim.psbBlockedTripletProb * 100).toFixed(1)}%`, 578, 243);
+
+    c.fillStyle = "#fde047";
+    c.font = '700 14px "JetBrains Mono", monospace';
+    c.fillText(
+      `Bell |Φ+⟩ Fidelity: ${(sim.bellPhiPlusProb * 100).toFixed(2)}% · Hahn T2 = ${sim.t2HahnMs} ms`,
+      568,
+      288,
+    );
+    c.fillStyle = "#cbd5e1";
+    c.font = '500 13px "JetBrains Mono", monospace';
+    c.fillText("Pauli Exclusion forbids two parallel spins from", 568, 322);
+    c.fillText("occupying the same ground orbital (0,2) — converting", 568, 346);
+    c.fillText("femto-eV spin state into macroscopic RF-SET charge!", 568, 370);
+
+    // Bottom: 16-Basis Statevector Histogram |0000> .. |1111>
+    c.fillStyle = "#0b1324";
+    c.fillRect(20, 434, W - 40, 312);
+    c.strokeStyle = "#34d399";
+    c.strokeRect(20, 434, W - 40, 312);
+    c.fillStyle = "#6ee7b7";
+    c.font = '700 16px "JetBrains Mono", monospace';
+    c.fillText(
+      "EXACT 4-SPIN STATEVECTOR AMPLITUDE PROBABILITIES |ψ(Q3 Q2 Q1 Q0)⟩²",
+      36,
+      464,
+    );
+
+    for (let i = 0; i < 16; i++) {
+      const bx = 38 + i * 59;
+      const p = sim.probs[i];
+      const bh = Math.round(p * 190);
+      c.fillStyle = "#162033";
+      c.fillRect(bx, 486, 48, 194);
+      c.fillStyle = p > 0.05 ? "#38bdf8" : "#334155";
+      c.fillRect(bx, 680 - bh, 48, bh);
+      c.fillStyle = "#cbd5e1";
+      c.font = '600 11px "JetBrains Mono", monospace';
+      c.fillText(i.toString(2).padStart(4, "0"), bx + 8, 702);
+      if (p > 0.02) {
+        c.fillStyle = "#fde047";
+        c.fillText(`${(p * 100).toFixed(0)}%`, bx + 10, 672 - bh);
+      }
+    }
+    c.fillStyle = "#94a3b8";
+    c.font = '600 13px "JetBrains Mono", monospace';
+    c.fillText(
+      "Loss–DiVincenzo Exchange Hamiltonian: H_ex(t) = J(V_barrier) S_1 · S_2  ->  Native √SWAP & Exact CNOT!",
+      38,
+      732,
+    );
+
+    mon.tex.needsUpdate = true;
+  }
+
+  const machine = {
+    id: "qspin",
+    era: "2024",
+    short: "Si Spin-Dot QPU",
+    name: "²⁸Si/SiGe Foundry CMOS Quantum-Dot Spin Processor (Loss–DiVincenzo)",
+    group: "quantum",
+    view0: 0.36,
+    blurb:
+      "Proposed by Daniel Loss & David DiVincenzo (1998) and fabricated on 300 mm EUV CMOS wafer lines (Intel Tunnel Falls / QuTech / UNSW Diraq): single-electron spins confined in isotopically purified ²⁸Si/SiGe quantum wells (~50 nm pitch — 1,000,000× smaller than transmons!) execute EDSR rotations via cobalt micromagnets, Heisenberg exchange √SWAP/CNOT gates via voltage-pulsed barriers, and Pauli Spin Blockade readout at 'hot' 1.2 K.",
+    diagram: {
+      nodes: [
+        { id: "cmos", label: "1.2K Cryo-CMOS ASIC", x: 0.18, y: 0.26, color: "#fbbf24" },
+        { id: "edsr", label: "Co Micromagnet EDSR", x: 0.5, y: 0.18, color: "#c08cff" },
+        { id: "dots", label: "²⁸Si/SiGe 4-Spin Well", x: 0.5, y: 0.54, color: "#38bdf8" },
+        { id: "jgate", label: "J-Barrier √SWAP/CNOT", x: 0.22, y: 0.8, color: "#f472b6" },
+        { id: "psb", label: "RF-SET Pauli Readout", x: 0.82, y: 0.76, color: "#34d399" },
+      ],
+      edges: [
+        ["cmos", "jgate", "mV Pulse"],
+        ["edsr", "dots", "B-Slosh Rx/Ry"],
+        ["jgate", "dots", "J(t) S1·S2"],
+        ["dots", "psb", "Singlet (0,2)"],
+      ],
+    },
+    build(kit) {
+      spinArrows = [];
+      barrierGlows = [];
+
+      // 1. 1.2K PUMPED-4He CRYO-WAFER STAGE & MAGNIFIED 28Si/SiGe HETEROSTRUCTURE (Left)
+      const stage = kit.group([-0.5, 0, 0], {
+        name: "1.2 K 'Hot-Qubit' Cryo-CMOS & ²⁸Si/SiGe Spin QPU Stage",
+        info: "Operates at 1.2 Kelvin (100× higher cooling power than 15 mK dilution refrigerators), allowing classical cryo-CMOS DAC/ADC multiplexers right beside the quantum-dot array.",
+      });
+      // Outer radiation shield dome (shell: true for cutaway!)
+      kit.cyl(
+        0.74,
+        0.74,
+        1.48,
+        U.glass(0xbae6fd, 0.16),
+        [0, 0.78, 0],
+        {
+          shell: true,
+          name: "1.2 K Pumped-Helium Optical/RF Shield",
+          explode: [0, 0.42, 0],
+        },
+        stage,
+      );
+      kit.cyl(0.76, 0.78, 0.08, U.cryoGold(), [0, 0.04, 0], {}, stage);
+      kit.cyl(
+        0.68,
+        0.68,
+        0.04,
+        U.copper(),
+        [0, 0.52, 0],
+        { name: "1.2 K Cold-Plate Flange" },
+        stage,
+      );
+
+      // 300 mm EUV Foundry Wafer Carrier Disc on 1.2 K Stage!
+      kit.cyl(
+        0.54,
+        0.54,
+        0.014,
+        U.wafer(0xe0f2fe),
+        [0, 0.55, 0],
+        {
+          name: "300 mm EUV Foundry ²⁸Si/SiGe Spin-Qubit Wafer",
+          info: "Manufactured using standard high-volume 300 mm CMOS gate-all-around / FinFET lithography tools.",
+        },
+        stage,
+      );
+
+      // Magnified Cutaway 28Si/SiGe Quantum-Well Heterostructure Pedestal above Wafer!
+      const hetero = kit.group(
+        [0, 0.86, 0.04],
+        {
+          name: "Cutaway ²⁸Si/SiGe Quantum-Dot Heterostructure & Cobalt Micromagnet",
+          info: "Shows strained isotopically purified ²⁸Si quantum well, 4 plunger gates (P0..P3), 3 exchange barrier gates (J01..J23), cobalt EDSR micromagnet, and RF-SET charge sensor.",
+          live: () =>
+            `²⁹Si=${sim.si29Ppm} ppm · T2*=${sim.t2StarUs} µs · F_2Q=${(sim.twoQubitFidelity * 100).toFixed(2)}%`,
+          explode: [0, 0.24, 0.2],
+        },
+        stage,
+      );
+      // SiGe bottom buffer + Glowing cyan strained 28Si 2DEG quantum well + SiGe spacer
+      kit.box(
+        0.86,
+        0.08,
+        0.44,
+        U.siliconDie(0x64748b),
+        [0, -0.06, 0],
+        { name: "Relaxed Si₀.₇Ge₀.₃ Buffer" },
+        hetero,
+      );
+      kit.box(
+        0.86,
+        0.028,
+        0.44,
+        U.glow(0x0ea5e9, 0.65),
+        [0, 0.0, 0],
+        { name: "Isotopically Purified ²⁸Si Strained Quantum Well (8 nm)" },
+        hetero,
+      );
+
+      // Cobalt Micromagnet Horseshoe behind the 4 dots for EDSR!
+      kit.box(
+        0.82,
+        0.055,
+        0.09,
+        U.metal(0x475569, 0.28),
+        [0, 0.08, -0.14],
+        {
+          name: "On-Chip Cobalt Micromagnet (Sloshing-Field EDSR)",
+          info: "Creates a strong transverse magnetic gradient dBx/dz so oscillating gate voltage sloshes the electron wavepacket to drive fast GHz spin rotations without microwave heating.",
+        },
+        hetero,
+      );
+
+      // 4 Plunger Gates + 4 Confined Electron Spin Wavepackets + Spin Arrows + 3 J-Barrier Gates!
+      for (let q = 0; q < 4; q++) {
+        const qx = -0.27 + q * 0.18;
+        kit.cyl(
+          0.036,
+          0.036,
+          0.09,
+          U.gold(),
+          [qx, 0.085, 0.02],
+          { name: `Plunger Gate Electrode P${q}` },
+          hetero,
+        );
+        const spinPivot = kit.group([qx, 0.015, 0.02], {}, hetero);
+        kit.sphere(
+          0.032,
+          U.glow(0x38bdf8, 1.5),
+          [0, 0, 0],
+          { name: `Confined Electron Spin Qubit Q${q}` },
+          spinPivot,
+        );
+        kit.cyl(0.006, 0.006, 0.095, U.glow(0xfde047, 1.6), [0, 0.035, 0], {}, spinPivot);
+        spinArrows.push(spinPivot);
+
+        if (q < 3) {
+          const jGate = kit.box(
+            0.028,
+            0.075,
+            0.06,
+            U.led(0xf472b6),
+            [qx + 0.09, 0.075, 0.02],
+            {
+              name: `Exchange Barrier Gate J${q}${q + 1}`,
+              info: "Voltage pulse lowers potential barrier between adjacent dots, turning on Heisenberg exchange J(V) S_i·S_j for √SWAP and CNOT.",
+            },
+            hetero,
+          );
+          barrierGlows.push(jGate);
+        }
+      }
+
+      // Adjacent RF-SET Singlet-Triplet Charge Sensor + Co-Packaged 1.2K Cryo-CMOS ASIC
+      kit.box(
+        0.16,
+        0.04,
+        0.12,
+        U.glow(0x34d399, 1.1),
+        [0.0, 0.06, 0.16],
+        {
+          name: "RF Single-Electron Transistor (RF-SET) PSB Readout Sensor",
+          info: "Detects single-electron (1,1)->(0,2) singlet charge movement in microseconds via RF reflectometry.",
+        },
+        hetero,
+      );
+      kit.box(
+        0.26,
+        0.022,
+        0.22,
+        U.siliconDie(0xfde68a),
+        [-0.28, 0.57, 0.24],
+        {
+          name: "Co-Packaged 1.2 K Cryo-CMOS Control Multiplexer ASIC",
+          info: "Generates sub-nanosecond gate pulses right on the 1.2 K stage, replacing thousands of room-temperature coax cables.",
+        },
+        stage,
+      );
+
+      // 2. SPIN STATEVECTOR & PSB HOLO-CONSOLE (Right)
+      mon = buildMonitor3D(kit, [0.88, 0.6, 0.16], {
+        w: 0.96,
+        h: 0.72,
+        rot: [0, -0.32, 0],
+        name: "²⁸Si Spin-Dot Statevector & Pauli-Blockade Analyzer",
+        explode: [0.38, 0, 0.18],
+      });
+      kit.box(1.04, 0.6, 0.52, U.darkAnodized(0x0f1626), [0.88, 0.3, 0.16], {
+        rot: [0, -0.32, 0],
+      });
+
+      drawSpinMonitor();
+    },
+
+    ui(el, ctx) {
+      const syncStats = () => {
+        if (!statsUi) return;
+        statsUi.set("iso", `²⁹Si = ${sim.si29Ppm} ppm (1.2 K)`);
+        statsUi.set("t2", `T2* = ${sim.t2StarUs} µs · Echo ${sim.t2HahnMs} ms`);
+        statsUi.set("fid", `F_2Q = ${(sim.twoQubitFidelity * 100).toFixed(2)}%`);
+        statsUi.set("bell", `|Φ+⟩ = ${(sim.bellPhiPlusProb * 100).toFixed(1)}%`);
+        statsUi.set(
+          "psb",
+          `Singlet ${(sim.psbSingletProb * 100).toFixed(1)}% / Block ${(sim.psbBlockedTripletProb * 100).toFixed(1)}%`,
+        );
+        statsUi.set("gate", sim.gateLog[sim.gateLog.length - 1] || "Idle");
+      };
+
+      const runBtn = Fe(
+        running ? "⏸ Pause" : "▶ Run",
+        () => {
+          running = !running;
+          runBtn.textContent = running ? "⏸ Pause" : "▶ Run";
+        },
+        "pri",
+      );
+
+      statsUi = Pt([
+        ["iso", "Isotopic Purity"],
+        ["t2", "Spin Coherence"],
+        ["fid", "Exchange Fidelity"],
+        ["bell", "Bell Entanglement"],
+        ["psb", "PSB RF-SET Readout"],
+        ["gate", "Last Pulse"],
+      ]);
+
+      el.append(
+        Ie(
+          "Loss–DiVincenzo ²⁸Si Spin-Dot EDSR, √SWAP & Pauli Spin Blockade",
+          q(
+            "div",
+            { class: "row" },
+            runBtn,
+            Fe(
+              "Bell |Φ+⟩ (Triplet Blocked)",
+              () => {
+                sim.runBellPsbDemo();
+                hi("rf");
+                if (ctx.diagram) {
+                  ctx.diagram.pulse("edsr", "dots", "#c08cff");
+                  ctx.diagram.pulse("jgate", "dots", "#f472b6");
+                  ctx.diagram.pulse("dots", "psb", "#34d399");
+                }
+                drawSpinMonitor();
+                syncStats();
+              },
+              "pri",
+            ),
+            Fe(
+              "Singlet |Ψ-⟩ (100% PSB Tunnel!)",
+              () => {
+                sim.prepareSingletPair();
+                hi("photon");
+                if (ctx.diagram) ctx.diagram.pulse("dots", "psb", "#34d399");
+                drawSpinMonitor();
+                syncStats();
+              },
+              "pri",
+            ),
+            Fe("4-Spin GHZ", () => {
+              sim.runFourSpinGhz();
+              hi("fid");
+              drawSpinMonitor();
+              syncStats();
+            }),
+          ),
+          q(
+            "div",
+            { class: "row" },
+            Fe("EDSR H(Q0)", () => {
+              sim.applyHadamard(0);
+              hi("rf");
+              drawSpinMonitor();
+              syncStats();
+            }),
+            Fe("J-Pulse √SWAP(Q0,Q1)", () => {
+              sim.applyExchange(0, 1, Math.PI / 2, "√SWAP");
+              hi("stim");
+              drawSpinMonitor();
+              syncStats();
+            }),
+            Fe("Exchange-CNOT(Q0->Q1)", () => {
+              sim.applyCnotViaExchange(0, 1);
+              hi("fid");
+              drawSpinMonitor();
+              syncStats();
+            }),
+            Fe("Reset |0000⟩", () => {
+              sim.resetState();
+              hi("switch");
+              drawSpinMonitor();
+              syncStats();
+            }),
+          ),
+          We(
+            "Residual ²⁹Si Nuclear-Spin Impurity (50 ppm Purified ²⁸Si vs 46,700 ppm Natural Si)",
+            50,
+            46700,
+            50,
+            sim.si29Ppm,
+            (v) => {
+              sim.setSi29Ppm(v);
+              drawSpinMonitor();
+              syncStats();
+            },
+            (v) => `${v} ppm`,
+          ),
+          statsUi,
+        ),
+      );
+      machine._syncStats = syncStats;
+      syncStats();
+    },
+
+    update(dt, t, ctx) {
+      if (running) {
+        stepAcc += dt * 2.0;
+        while (stepAcc >= 1) {
+          stepAcc -= 1;
+          sim.step();
+          if (ctx.diagram) {
+            ctx.diagram.pulse("cmos", "jgate", "#fbbf24");
+            ctx.diagram.pulse("edsr", "dots", "#c08cff");
+            ctx.diagram.pulse("dots", "psb", "#34d399");
+          }
+          drawSpinMonitor();
+          if (machine._syncStats) machine._syncStats();
+        }
+      }
+      // Orient 3D spin vectors directly from exact reduced Bloch vectors!
+      spinArrows.forEach((piv, q) => {
+        const bv = sim.bloch[q];
+        if (!bv) return;
+        piv.rotation.z = -Math.atan2(bv.x, bv.z + 0.001) * 0.65;
+        piv.rotation.x = bv.y * 0.55 + Math.sin(t * 3 + q) * 0.08;
+      });
+      barrierGlows.forEach((jg, idx) => {
+        jg.material.emissiveIntensity = 0.5 + 1.1 * Math.abs(Math.sin(t * 5 + idx));
+      });
+    },
+
+    isRunning: () => running,
+    sim,
+    test() {
+      const qs = new SiliconSpinDotQpu();
+      const bell = qs.runBellPsbDemo();
+      const sing = qs.prepareSingletPair();
+      const ghz = qs.runFourSpinGhz();
+      return {
+        ok:
+          bell.bellFidelity > 0.99 &&
+          bell.psbSingletProb < 0.01 &&
+          sing.singletProb > 0.99 &&
+          ghz.ghzCoherence > 0.99,
+        bellFidelity: bell.bellFidelity,
+        singletProb: sing.singletProb,
+      };
+    },
+  };
+  return machine;
+}
