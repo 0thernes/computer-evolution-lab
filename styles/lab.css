@@ -1145,6 +1145,20 @@ a:focus-visible {
     min-height: 44px;
     min-width: 44px;
   }
+  input[type="range"],
+  input[type="text"],
+  input[type="number"],
+  input:not([type]),
+  textarea {
+    min-height: 44px;
+  }
+  input[type="checkbox"],
+  input[type="radio"] {
+    width: 44px;
+    height: 44px;
+    margin: 0 4px;
+    accent-color: #38bdf8;
+  }
   #timeline button {
     padding: 8px 12px;
     font-size: 13px;
