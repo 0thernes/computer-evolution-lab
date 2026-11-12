@@ -1,4 +1,8 @@
-// 4K HDR 16-bit MSAA Post-Processing, Calibrated Studio Environment, Metric Shader Floor, & 3D Cross-Section Slicer
+// Post-processing, studio environment, metric floor and cross-section slicer.
+// FX chain (ported from v6 js/fx.js): scene -> GTAO ambient occlusion (high+) -> bloom with a high
+// threshold so only HDR emitters glow (medium+) -> close-up depth of field (high+) -> ACES/sRGB
+// output -> lens sharpen/vignette -> SMAA (medium+). Rendering uses a half-float HDR target with
+// MSAA where the tier asks for it.
 
 var zs = {
   low: {
@@ -6,37 +10,54 @@ var zs = {
     shadows: false,
     smap: 512,
     bloom: false,
+    ao: false,
+    dof: false,
+    aa: false,
     samples: 0,
-    label: "Low (fast)",
+    label: "Low (no post-processing)",
   },
   medium: {
     pr: 1.25,
     shadows: true,
     smap: 1024,
     bloom: true,
-    samples: 2,
-    label: "Medium (HDR + 2× MSAA)",
+    ao: false,
+    dof: false,
+    aa: true,
+    samples: 0,
+    label: "Medium (HDR bloom + SMAA)",
   },
   high: {
     pr: 2,
     shadows: true,
-    smap: 4096,
+    smap: 2048,
     bloom: true,
+    ao: true,
+    dof: true,
+    aa: true,
     samples: 4,
-    label: "High (HDR + 4× MSAA + 4K shadows)",
+    label: "High (GTAO + bloom + DoF + 4× MSAA + SMAA)",
   },
   ultra: {
     pr: 4,
+    supersample: true,
     shadows: true,
     smap: 4096,
     bloom: true,
+    ao: true,
+    dof: true,
+    aa: true,
     samples: 4,
-    label: "Ultra (Native 4K Supersampled + 4× MSAA)",
+    label: "Ultra (supersampled up to 4K pixels, 4K shadows, full post)",
   },
 };
 
+// Largest drawing buffer Ultra may supersample to (one 3840x2160 frame of pixels).
+var STUDIO_MAX_SUPERSAMPLE_PIXELS = 3840 * 2160;
+
 var Qu = class StudioFX {
   constructor(renderer, scene, camera, sunLight) {
+    const A = window.THREE_ADDONS;
     this.r = renderer;
     this.scene = scene;
     this.camera = camera;
@@ -47,33 +68,56 @@ var Qu = class StudioFX {
     this.onChange = null;
     this.w = 1;
     this.h = 1;
+    this.focus = 99;
 
     const isGL2 = !!(renderer.capabilities && renderer.capabilities.isWebGL2);
-    const maxSamples = isGL2 ? Math.min(4, renderer.capabilities.maxSamples || 4) : 0;
-    this.maxSamples = maxSamples;
+    this.maxSamples = isGL2 ? Math.min(4, renderer.capabilities.maxSamples || 4) : 0;
 
-    const rt = new kt(512, 512, {
-      type: Oi, // THREE.HalfFloatType (16-bit linear HDR — zero 8-bit white clipping)
-      samples: maxSamples,
-    });
-    rt.texture.name = "StudioFX.HDR_MSAA";
-
+    const rt = new kt(512, 512, { type: Oi, samples: 0 });
+    rt.texture.name = "StudioFX.HDR";
     this.comp = new Zu(renderer, rt);
     this.renderPass = new Yu(scene, camera);
     this.comp.addPass(this.renderPass);
 
-    // Subtle optical halation only on genuine HDR emitters (> 1.16 linear radiance)
-    this.bloom = new _a(new ye(512, 512), 0.22, 0.38, 1.16);
+    // GTAO (v6 settings: radius 0.12, 12 samples, denoised)
+    this.ao = new A.GTAOPass(scene, camera, 512, 512);
+    this.ao.output = A.GTAOPass.OUTPUT.Default;
+    this.ao.blendIntensity = 0.85;
+    this.ao.updateGtaoMaterial({
+      radius: 0.12,
+      distanceExponent: 1.4,
+      thickness: 1.2,
+      scale: 1.0,
+      samples: 12,
+    });
+    this.ao.updatePdMaterial({
+      lumaPhi: 10,
+      depthPhi: 2,
+      normalPhi: 3,
+      radius: 6,
+      rings: 2,
+      samples: 12,
+    });
+    this.comp.addPass(this.ao);
+
+    // Selective bloom by threshold: only linear radiance above ~1.2 (LEDs, CRT phosphor,
+    // tube filaments, lasers) passes, so plastics and metals stay crisp.
+    this.bloom = new _a(new ye(512, 512), 0.42, 0.4, 1.2);
     this.comp.addPass(this.bloom);
+
+    // Depth of field only on close-ups, focused on the orbit target
+    this.dof = new A.BokehPass(scene, camera, { focus: 2, aperture: 0.0006, maxblur: 0.006 });
+    this.comp.addPass(this.dof);
+
     this.outputPass = new Ku();
     this.comp.addPass(this.outputPass);
 
-    // Contrast-Adaptive 4K Optical Acutance + Cinema Lens Vignette (zero haloing!)
+    // Contrast-adaptive sharpen + subtle lens vignette (display-referred, after tone mapping)
     this.lensPass = new Wu({
       uniforms: {
         tDiffuse: { value: null },
         uTexel: { value: new ye(1 / 1920, 1 / 1080) },
-        uSharpness: { value: 0.34 },
+        uSharpness: { value: 0.3 },
       },
       vertexShader: `
         varying vec2 vUv;
@@ -87,41 +131,66 @@ var Qu = class StudioFX {
         uniform vec2 uTexel;
         uniform float uSharpness;
         varying vec2 vUv;
-
         void main() {
           vec4 c = texture2D(tDiffuse, vUv);
           vec3 n = texture2D(tDiffuse, vUv + vec2(0.0, uTexel.y)).rgb;
           vec3 s = texture2D(tDiffuse, vUv - vec2(0.0, uTexel.y)).rgb;
           vec3 e = texture2D(tDiffuse, vUv + vec2(uTexel.x, 0.0)).rgb;
           vec3 w = texture2D(tDiffuse, vUv - vec2(uTexel.x, 0.0)).rgb;
-
           vec3 mn = min(c.rgb, min(min(n, s), min(e, w)));
           vec3 mx = max(c.rgb, max(max(n, s), max(e, w)));
           vec3 blur = 0.25 * (n + s + e + w);
           vec3 sharp = clamp(c.rgb + (c.rgb - blur) * uSharpness, mn - 0.015, mx + 0.015);
-
-          // Subtle studio lens corner falloff
           vec2 d = vUv - 0.5;
-          float vig = 1.0 - dot(d, d) * 0.16;
-          gl_FragColor = vec4(sharp * vig, c.a);
+          gl_FragColor = vec4(sharp * (1.0 - dot(d, d) * 0.16), c.a);
         }
       `,
     });
     this.comp.addPass(this.lensPass);
+
+    this.smaa = new A.SMAAPass(512, 512);
+    this.comp.addPass(this.smaa);
+    this.apply();
+  }
+
+  // Effective pixel ratio. Ultra may exceed devicePixelRatio (true supersampling) but is capped
+  // at STUDIO_MAX_SUPERSAMPLE_PIXELS and the GPU's max texture size (REVIEW-v5 B7).
+  pixelRatioFor(level, w = this.w, h = this.h) {
+    const q = zs[level];
+    const dpr = window.devicePixelRatio || 1;
+    if (!q.supersample) return Math.min(q.pr, dpr);
+    const maxTex = (this.r.capabilities && this.r.capabilities.maxTextureSize) || 4096;
+    const byPixels = Math.sqrt(STUDIO_MAX_SUPERSAMPLE_PIXELS / Math.max(1, w * h));
+    const byTex = maxTex / Math.max(1, w, h);
+    return Math.max(dpr, Math.min(q.pr, byPixels, byTex));
+  }
+
+  apply() {
+    const q = zs[this.level];
+    this.ao.enabled = q.ao;
+    this.bloom.enabled = q.bloom;
+    this.smaa.enabled = q.aa;
+    this.dof.enabled = q.dof && this.focus < 1.6;
+  }
+
+  // Called each frame with the camera-to-target distance (scene units)
+  setFocus(d) {
+    this.focus = d;
+    const u = this.dof.uniforms;
+    u.focus.value = d;
+    u.aperture.value = 0.00035 * Math.max(0, 1.6 - d);
+    this.dof.enabled = zs[this.level].dof && d < 1.6;
   }
 
   _applySamples(samples) {
-    const targetSamples = Math.min(this.maxSamples, samples || 0);
-    if (this.comp.renderTarget1 && this.comp.renderTarget1.samples !== targetSamples) {
-      const nextRT = new kt(
+    const target = Math.min(this.maxSamples, samples || 0);
+    if (this.comp.renderTarget1 && this.comp.renderTarget1.samples !== target) {
+      const next = new kt(
         Math.max(1, Math.round(this.w * this.comp._pixelRatio)),
         Math.max(1, Math.round(this.h * this.comp._pixelRatio)),
-        {
-          type: Oi,
-          samples: targetSamples,
-        },
+        { type: Oi, samples: target },
       );
-      this.comp.reset(nextRT);
+      this.comp.reset(next);
     }
   }
 
@@ -130,11 +199,10 @@ var Qu = class StudioFX {
     const prev = zs[this.level];
     const next = zs[level];
     this.level = level;
-    const dpr = Math.min(next.pr, window.devicePixelRatio || 1);
-    this.r.setPixelRatio(dpr);
-    this.comp.setPixelRatio(dpr);
+    const pr = this.pixelRatioFor(level);
+    this.r.setPixelRatio(pr);
+    this.comp.setPixelRatio(pr);
     this._applySamples(next.samples);
-
     if (this.r.shadowMap.enabled !== next.shadows || prev.smap !== next.smap) {
       this.r.shadowMap.enabled = next.shadows;
       this.sun.shadow.mapSize.set(next.smap, next.smap);
@@ -150,6 +218,7 @@ var Qu = class StudioFX {
         }
       });
     }
+    this.apply();
     this.setSize(this.w, this.h);
     this.hist = [];
     if (this.onChange) this.onChange(level, reason);
@@ -158,25 +227,27 @@ var Qu = class StudioFX {
   setSize(w, h) {
     this.w = Math.max(1, w);
     this.h = Math.max(1, h);
+    if (zs[this.level].supersample) {
+      const pr = this.pixelRatioFor(this.level);
+      this.r.setPixelRatio(pr);
+      this.comp.setPixelRatio(pr);
+    }
     this.r.setSize(this.w, this.h, false);
     this.comp.setSize(this.w, this.h);
-    if (this.lensPass) {
-      const pr = this.comp._pixelRatio || 1;
-      this.lensPass.uniforms.uTexel.value.set(
-        1 / Math.max(1, this.w * pr),
-        1 / Math.max(1, this.h * pr),
-      );
-    }
+    const pr = this.comp._pixelRatio || 1;
+    this.lensPass.uniforms.uTexel.value.set(
+      1 / Math.max(1, this.w * pr),
+      1 / Math.max(1, this.h * pr),
+    );
   }
 
   render() {
-    if (zs[this.level].bloom) {
-      this.comp.render();
-    } else {
-      this.r.render(this.scene, this.camera);
-    }
+    const q = zs[this.level];
+    if (q.bloom || q.ao || q.aa) this.comp.render();
+    else this.r.render(this.scene, this.camera);
   }
 
+  // Called once per second with measured fps; steps quality down if it stays low
   sample(fps) {
     if (!this.auto) return;
     this.hist.push(fps);

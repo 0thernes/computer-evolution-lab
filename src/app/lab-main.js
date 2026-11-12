@@ -2323,6 +2323,7 @@
       }
     } catch {}
 
+    fx.setFocus(camera.position.distanceTo(controls.target));
     fx.render();
     updateLabelPositions();
     requestAnimationFrame(frameLoop);
