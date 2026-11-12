@@ -1,3 +1,4 @@
+// Alias index: docs/ALIASES.md (regenerate with node tools/gen-alias-index.mjs).
 // Shared Three.js & Addon bindings for modular classic scripts (works offline via file:// and http://)
 var THREE = window.THREE,
   Xt = THREE,

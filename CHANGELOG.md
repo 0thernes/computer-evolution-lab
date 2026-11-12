@@ -2,6 +2,87 @@
 
 All notable changes to **Computer Evolution Lab** are documented in this file.
 
+## [Unreleased]
+
+## [6.0.0] - 2026-11-13
+
+Ports the v6 prototype's graphics, sampled score and sound into the 48-machine lab, and fixes all 49 findings of the v5 review ([`docs/REVIEW-v5.md`](docs/REVIEW-v5.md)).
+
+### Added
+
+- **CC0 assets, standard tier in git** ([ADR 0001](docs/adr/0001-asset-hosting.md)):
+  - ambientCG 1K PBR detail maps on the shared materials, with world-scale box UVs;
+  - Poly Haven `studio_small_09` HDRI image-based lighting;
+  - 18 sampled cues (3 stems each) rendered from VSCO 2 CE;
+  - 8 recorded SFX.
+    The optional full tier (2K maps, 2K HDRI, full-bitrate stems) ships as the release zip `cel-assets-full-v6.0.0.zip`. On `file://`, procedural materials and the synth score are used, and assets swap in only after a successful load.
+- **Post-processing from v6:** GTAO, SMAA, threshold-selective bloom and close-up depth of field. three.js r170 is rebuilt from npm (`tools/build-vendor.mjs`). Ultra really supersamples past `devicePixelRatio`, capped at 3840×2160.
+- **Displays and 6502 die:** CRT and LCD display shaders. The 6502 die gets a transistor-scale close-zoom LOD that draws the real visual6502 polygons in transistor mode.
+- **Phones** ([ADR 0005](docs/adr/0005-mobile-tier-lazy-build.md)):
+  - capability-based quality tier;
+  - lazy scene building, with proxies in the hub, a build on enter and LRU geometry disposal;
+  - progressive full-hub build on desktop;
+  - 44 px touch targets, a collapsible toolbar, a landscape info drawer and touch hints.
+- **Accessibility:** focus-visible styles, `prefers-reduced-motion`, a labelled `role="application"` canvas and an `aria-live` region.
+- **Tests and CI:**
+  - `tests/rv32-pipeline.test.mjs` diffs the pipeline against an ISS;
+  - `tests/golden.test.mjs` checks against independent references;
+  - `tests/security.test.mjs`, `tests/analog-patch.test.mjs` and `tests/version.test.mjs`;
+  - `tools/dormann-6502.mjs` runs Klaus Dormann's functional test, fetched at CI time;
+  - CI runs on a Node 20/22 matrix with SHA-pinned actions and a Prettier check;
+  - dependabot, CODEOWNERS, a PR template, `.editorconfig` and `CITATION.cff`.
+- **Offline build pipeline:** `tools/score/` and `tools/assets/`.
+- **Docs:** `CREDITS.md`, `SOUNDS.md` and ADRs 0001–0006.
+
+### Changed
+
+- **RV32IM** ([ADR 0006](docs/adr/0006-rv32-pipeline.md)): now a real cycle-stepped 5-stage pipeline, with forwarding, load-use stalls, EX branch resolution with flushes, BHT/JAL predecode, cache-miss penalties and traps. `step()` advances one clock.
+- **H₂:** real STO-3G full CI, giving R_e 0.735 Å and E −1.1373 Ha. The fudge factor was removed, and the test now pins R_e to 0.741 ± 0.01 Å.
+- **Shor:** uses Q = 2^⌈log₂N²⌉ with an exact FFT and base retry, and factors odd composites up to N = 255. Larger N throws a `RangeError`, and the UI states the limit.
+- **Hub performance:** the default proxy hub at Low draws 66 calls and 31,022 triangles, against 14,616 calls and 16.1 M triangles in v5.
+- **Score labels** ([ADR 0002](docs/adr/0002-score-attribution.md)): no composer or film names. The palettes are renamed to moods, and saved settings are migrated.
+- **Honesty labels:**
+  - gate bench and eye scope are "family template" (Z1 is mechanical, not relay);
+  - the AGC is a "conceptual model";
+  - the Cray-1 clock counts are a "timing model";
+  - pc20's frame time is "CPU submit ms".
+- **pc20 on touch devices:** the GPU target is 512² and pixels are read back every 6th frame.
+- **License** ([ADR 0003](docs/adr/0003-license-wording.md)): "patent pending" removed, terms unchanged.
+- **Versions:** VERSION, `package.json`, the csproj and `CITATION.cff` are all 6.0.0, and a test checks they agree.
+
+### Fixed
+
+- **Path traversal:** prefix-sibling traversal (`<root>-other/`) fixed in `tools/serve.mjs` and the desktop loopback server.
+- **Desktop loopback server:**
+  - accepts only `GET`/`HEAD` with a loopback `Host` and same-origin `Origin`;
+  - DevTools only with `--devtools`.
+- **Assembler:** immediate and shift range checks with per-line errors, and `.word` forward references.
+- **Default tier:** a phone in landscape no longer gets the High tier.
+- **Analog patch-panel compiler:** whitelists characters and own-property built-ins.
+- **visual6502 netlist:** pinned to a commit and verified by SHA-256.
+- **Content-Security-Policy:** added, and the inline boot script moved to `src/core/boot-guard.js`.
+- **Rendering:** `preserveDrawingBuffer` turned off.
+- **Audio:** the AudioContext is suspended in background tabs.
+- **CI audio check:** now measures real SFX events and notes instead of a hard-coded 3.
+- **Docs:**
+  - `SECURITY.md` now covers 6.x and makes accurate network, CSP and server claims;
+  - `THIRD-PARTY-NOTICES.md` lists the real SFX files and licenses.
+
+### Removed
+
+- Four committed SFX loops that nothing played.
+
+### Deferred
+
+- **I1 / I2 / I14:** de-minifying the bundle-derived sources and splitting them into per-machine ES modules. It is a large mechanical rewrite with a high regression risk, and the alias map is indexed in `docs/ALIASES.md`.
+- **P5:** async PBO readback in pc20. Readback is less frequent but still synchronous.
+
+## [2.1.1] - 2026-11-11
+
+### Added
+
+- Standalone Windows x64 single-file executable (`Computer-Evolution-Lab-win-x64.exe`) with all web assets embedded, a multi-instance-safe WebView2 profile and a Desktop/Start Menu installer.
+
 ## [5.0.0] - 2026-11-12
 
 ### Added
@@ -92,3 +173,11 @@ All notable changes to **Computer Evolution Lab** are documented in this file.
 - Eliminated severe HDR white-clipping and emissive blowouts caused by the legacy `3.5×` global shader chunk multiplier and uncalibrated dielectric albedos (`> 0.92`).
 - Fixed MOnSter 6502 rear easel support legs poking through the front face of the tilted carrier PCB (`z = -1.18, rot.x = 0.32`).
 - Eliminated browser `window.on` global collision by isolating the application orchestrator inside a clean IIFE (`src/app/lab-main.js`).
+
+[Unreleased]: https://github.com/0thernes/computer-evolution-lab/compare/v6.0.0...HEAD
+[6.0.0]: https://github.com/0thernes/computer-evolution-lab/compare/v5.0.0...v6.0.0
+[5.0.0]: https://github.com/0thernes/computer-evolution-lab/compare/v4.0.0...v5.0.0
+[4.0.0]: https://github.com/0thernes/computer-evolution-lab/compare/v3.0.0...v4.0.0
+[3.0.0]: https://github.com/0thernes/computer-evolution-lab/compare/v2.1.1...v3.0.0
+[2.1.1]: https://github.com/0thernes/computer-evolution-lab/compare/de3196b...v2.1.1
+[2.0.0]: https://github.com/0thernes/computer-evolution-lab/commit/de3196b
