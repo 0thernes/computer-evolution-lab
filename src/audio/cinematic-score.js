@@ -2845,6 +2845,21 @@ var yA = Object.keys(Vm),
   Ut = new Nm();
 Ut.names = yA;
 
+// Suspend the AudioContext while the tab is hidden (saves phone battery, REVIEW-v5 I12) and
+// resume it on return if it was running before.
+document.addEventListener("visibilitychange", () => {
+  const ac = Ut.ac;
+  if (!ac) return;
+  if (document.hidden) {
+    Ut._resumeOnShow = ac.state === "running";
+    if (Ut._resumeOnShow) ac.suspend().catch(() => {});
+  } else if (Ut._resumeOnShow) {
+    Ut._resumeOnShow = false;
+    ac.resume().catch(() => {});
+  }
+  Ut.emit();
+});
+
 var hi = (name, opts) => Ut.ev(name, opts);
 var Oa = Math.random,
   bA = {

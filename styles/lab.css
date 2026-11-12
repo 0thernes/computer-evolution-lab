@@ -1087,3 +1087,136 @@ kbd {
     height: 50px;
   }
 }
+
+/* ---- Accessibility (REVIEW-v5 P7) ---- */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+button:focus-visible,
+select:focus-visible,
+input:focus-visible,
+[tabindex]:focus-visible,
+a:focus-visible {
+  outline: 2px solid #ffd166;
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---- Touch devices (REVIEW-v5 P3/P4): capability-based, not width-based ---- */
+.touch-only,
+.hint-touch {
+  display: none;
+}
+@media (pointer: coarse) {
+  .hint-mouse {
+    display: none;
+  }
+  .hint-touch {
+    display: inline;
+  }
+  body {
+    font-size: 15px;
+  }
+  /* 44 px minimum touch targets (WCAG 2.5.5 / Material 48 dp guidance) */
+  button,
+  select,
+  #timeline button,
+  #toolbar button,
+  #tb-q,
+  .chip,
+  .row button,
+  #panel button,
+  #panel select,
+  #panel summary {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  #timeline button {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  #toolbar button,
+  #tb-q {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+  input[type="range"] {
+    min-height: 44px;
+  }
+  .touch-only {
+    display: inline-flex;
+    align-items: center;
+    position: absolute;
+    z-index: 30;
+    top: 8px;
+    padding: 0 14px;
+    border-radius: 22px;
+    border: 1px solid var(--line);
+    background: rgba(11, 16, 24, 0.86);
+    color: var(--ink);
+    font-size: 14px;
+  }
+  #tb-tools {
+    left: 8px;
+  }
+  #tb-info {
+    right: 8px;
+  }
+  /* toolbar collapses behind the Tools button so it never covers the 3D view */
+  #toolbar {
+    display: none;
+    top: 60px;
+  }
+  #toolbar.open {
+    display: flex;
+  }
+}
+/* phone landscape: full-width canvas, side panel becomes a slide-over drawer */
+@media (pointer: coarse) and (orientation: landscape) {
+  #app {
+    position: relative;
+  }
+  #panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(430px, 48vw);
+    z-index: 40;
+    transform: translateX(100%);
+    transition: transform 0.2s ease;
+    box-shadow: -6px 0 24px rgba(0, 0, 0, 0.45);
+  }
+  #panel.open {
+    transform: none;
+  }
+  #tb-info {
+    z-index: 50;
+  }
+  #top {
+    height: 48px;
+  }
+  #app {
+    height: calc(100% - 48px);
+  }
+}
+/* phone portrait: panel stays stacked below the view (the 880 px rule), Info scrolls to it */
+@media (pointer: coarse) and (orientation: portrait) {
+  #tb-info {
+    display: none;
+  }
+}

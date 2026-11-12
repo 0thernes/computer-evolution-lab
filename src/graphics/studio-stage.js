@@ -227,7 +227,7 @@ var Qu = class StudioFX {
   setSize(w, h) {
     this.w = Math.max(1, w);
     this.h = Math.max(1, h);
-    if (zs[this.level].supersample) {
+    if (zs[this.level].supersample && this.prLock == null) {
       const pr = this.pixelRatioFor(this.level);
       this.r.setPixelRatio(pr);
       this.comp.setPixelRatio(pr);

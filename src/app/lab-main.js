@@ -28,7 +28,9 @@
   const renderer = new Zl({
     canvas,
     antialias: true,
-    preserveDrawingBuffer: true,
+    // false: avoids a full-frame copy every frame on tiled mobile GPUs (REVIEW-v5 P6). 4K capture
+    // calls toDataURL synchronously right after rendering, which doesn't need a preserved buffer.
+    preserveDrawingBuffer: false,
     powerPreference: "high-performance",
   });
   renderer.toneMapping = Sa; // ACESFilmicToneMapping
@@ -179,6 +181,7 @@
         ? "proxy"
         : "full";
   const proxySizes = window.CEL_HUB_PROXY_SIZES || {};
+  const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
   const proxyGeo = new te(1, 1, 1);
   proxyGeo.translate(0, 0.5, 0);
   const proxyMats = {};
@@ -1047,6 +1050,10 @@
 
     $("#p-era").textContent = `${m.era} · ${m.short}`;
     $("#p-title").textContent = m.name;
+    {
+      const live = $("#sr-live");
+      if (live) live.textContent = `${m.name}. ${m.kit.parts.length} parts.`;
+    }
     $("#p-blurb").textContent = m.blurb;
     sharedCtx.diagram = m.diag;
 
@@ -2053,6 +2060,7 @@
     const prevH = fx.h;
     const prevAspect = camera.aspect;
 
+    fx.prLock = 1;
     renderer.setPixelRatio(1);
     fx.comp.setPixelRatio(1);
     fx.setSize(w, h);
@@ -2062,6 +2070,7 @@
 
     const dataUrl = canvas.toDataURL(mime, quality);
 
+    fx.prLock = null;
     renderer.setPixelRatio(prevPr);
     fx.comp.setPixelRatio(prevPr);
     fx.setSize(prevW, prevH);
@@ -2087,6 +2096,7 @@
           const prevH = fx.h;
           const prevAspect = camera.aspect;
 
+          fx.prLock = 1;
           renderer.setPixelRatio(1);
           fx.comp.setPixelRatio(1);
           fx.setSize(w, h);
@@ -2099,6 +2109,7 @@
           stage.height = h;
           stage.getContext("2d").drawImage(canvas, 0, 0);
 
+          fx.prLock = null;
           renderer.setPixelRatio(prevPr);
           fx.comp.setPixelRatio(prevPr);
           fx.setSize(prevW, prevH);
@@ -2360,7 +2371,7 @@
       }
     } else {
       for (const m of machines) {
-        m.holder.rotation.y += dt * 0.14;
+        if (!reducedMotion.matches) m.holder.rotation.y += dt * 0.14;
         if (!m.built || !m.root.visible) continue;
         if (m.idle) m.idle(dt, elapsedTotal);
         for (const anim of m.kit.anims) anim(dt, elapsedTotal);
@@ -2539,6 +2550,27 @@
     ric(pump, { timeout: 400 });
   } else {
     window.__hubFullyBuilt = true;
+  }
+
+  // Touch layout toggles (REVIEW-v5 P4)
+  {
+    const toolsBtn = $("#tb-tools");
+    const infoBtn = $("#tb-info");
+    const toolbarEl = $("#toolbar");
+    const panelEl = $("#panel");
+    if (toolsBtn && toolbarEl) {
+      toolsBtn.onclick = () => {
+        const open = toolbarEl.classList.toggle("open");
+        toolsBtn.setAttribute("aria-expanded", String(open));
+      };
+    }
+    if (infoBtn && panelEl) {
+      panelEl.classList.add("open");
+      infoBtn.onclick = () => {
+        const open = panelEl.classList.toggle("open");
+        infoBtn.setAttribute("aria-expanded", String(open));
+      };
+    }
   }
 
   window.__labStarted = true;

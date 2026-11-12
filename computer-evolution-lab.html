@@ -173,7 +173,18 @@
 
     <main id="app">
       <section id="view">
-        <canvas id="gl"></canvas>
+        <canvas
+          id="gl"
+          role="application"
+          aria-label="Interactive 3D view. Drag or swipe to orbit, pinch or scroll to zoom. Choose machines from the era timeline and parts from the side panel."
+          tabindex="0"
+        ></canvas>
+        <button id="tb-tools" class="touch-only" aria-expanded="false" aria-controls="toolbar">
+          ☰ Tools
+        </button>
+        <button id="tb-info" class="touch-only" aria-expanded="true" aria-controls="panel">
+          ⓘ Info
+        </button>
         <div id="labels"></div>
 
         <div id="toolbar">
@@ -269,9 +280,14 @@
         <div id="audiopop" hidden></div>
         <div id="plaza-nav"></div>
         <div id="hint">
-          Drag to orbit · scroll to zoom 15× · click any part · <b>X</b> slice ·
-          <b>1–4</b> camera · <b>[ ]</b> layers · <b>?</b> help
+          <span class="hint-mouse"
+            >Drag to orbit · scroll to zoom 15× · click any part · <b>X</b> slice ·
+            <b>1–4</b> camera · <b>[ ]</b> layers · <b>?</b> help</span
+          ><span class="hint-touch"
+            >Drag to orbit · pinch to zoom · two-finger drag to pan · tap any part</span
+          >
         </div>
+        <div id="sr-live" class="sr-only" aria-live="polite" aria-atomic="true"></div>
       </section>
 
       <aside id="panel">
