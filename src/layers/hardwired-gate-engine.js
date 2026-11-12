@@ -1,10 +1,29 @@
 // Universal Hard-Wired Gate-Level Netlist Engine, Signal-Integrity Eye Scope & 11-Rung Layer Expansion (v5.0.0)
 // Expands all 48 machines × 11 primary rungs = 528 primary layers (and × 3 interactive sub-lenses = 1,584 live views).
+//
+// HONESTY NOTE (review finding C9): the gate bench and eye scope are driven by
+// 9 generic switching-family TEMPLATES below, not per-machine netlists. Every
+// machine in a family shows the same 6-gate adder slice with that family's
+// voltages and delays. The only real per-machine netlist in the lab is the
+// MOS 6502 die (visual6502 data, fetched at runtime). The UI labels these
+// views "family template".
 
 (function (globalScope) {
   "use strict";
 
+  const TEMPLATE_NOTE = "family template, not this machine's own netlist";
+
   const SWITCH_FAMILIES = {
+    mech_plate: {
+      title: "Mechanical Sliding-Plate Logic Template (no electrical switching)",
+      device: "Slotted Sheet-Metal Plates & Pins (Z1-style binary mechanical gate)",
+      vLow: "Pin at rest (0)",
+      vHigh: "Pin displaced (1)",
+      vddVolts: 0,
+      gateDelayPs: 250000000000, // ~0.25 s per Z1 machine cycle phase (1 Hz clock, 4 phases)
+      switchEnergyFj: 0, // mechanical work, not electrical; not modelled
+      eyeJitterPct: 20,
+    },
     mech_relay_plate: {
       title: "Mechanical Sliding-Plate / Relay Contact Netlist",
       device: "Series/Shunt Relay Armature & Slotted Brass Linkage",
@@ -89,9 +108,9 @@
   };
 
   const MACHINE_FAMILY_MAP = {
-    turing: "mech_relay_plate",
-    z1: "mech_relay_plate",
-    analog: "mech_relay_plate",
+    turing: "mech_plate",
+    z1: "mech_plate",
+    analog: "thermionic_tube",
     tube: "thermionic_tube",
     eniac46: "thermionic_tube",
     pdp8: "bipolar_rtl_ttl_ecl",
@@ -142,7 +161,7 @@
   class HardWiredNetlistSolver {
     static familyFor(machineId) {
       const key = MACHINE_FAMILY_MAP[machineId] || "planar_cmos";
-      return { key, ...SWITCH_FAMILIES[key] };
+      return { key, template: true, templateNote: TEMPLATE_NOTE, ...SWITCH_FAMILIES[key] };
     }
 
     // Evaluates a genuine 6-gate topological DAG on 4 input pins [A, B, CIN, SUB_OR_TOFF]
@@ -306,7 +325,7 @@
         // Title bar
         c.font = Ce(10.5, "700");
         c.fillStyle = Z.acc2;
-        c.fillText(`⚡ ${fam.title}  [Click A/B/Cin/M!]`, 8, 14, w - 16);
+        c.fillText(`⚡ ${fam.title} · family template  [Click A/B/Cin/M]`, 8, 14, w - 16);
 
         const hitBoxes = [];
         const pinLabels = [
@@ -1455,7 +1474,7 @@
           ? new RegExp(hwSources.join("|"), "i")
           : /./i;
         entry.hw.splice(4, 0, {
-          t: `Hard-wired gate-level netlist (${fam.title}): live ${fam.device} topological adder/control slice — click input terminals A, B, Cin, Mode directly on the canvas to test physical switching!`,
+          t: `Gate-level FAMILY TEMPLATE (${fam.title}): a generic 6-gate ${fam.device} adder/control slice shared by every machine in this switching family (${TEMPLATE_NOTE}). Click A, B, Cin, Mode on the canvas to evaluate it.`,
           p: combinedHwRe,
           viz: "hardwiredgate",
         });
@@ -1652,6 +1671,7 @@
 
   Object.assign(globalScope, {
     SWITCH_FAMILIES,
+    TEMPLATE_NOTE,
     MACHINE_FAMILY_MAP,
     HardWiredNetlistSolver,
   });

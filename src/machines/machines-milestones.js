@@ -148,7 +148,7 @@ function makeMachineAgc66() {
     c.strokeRect(20, 82, 500, 410);
     c.fillStyle = "#6ee7b7";
     c.font = '700 16px "JetBrains Mono", monospace';
-    c.fillText("PRIORITY-SCHEDULED EXECUTIVE CORE SET (8 SLOTS)", 36, 112);
+    c.fillText("PRIORITY EXECUTIVE CORE SET (8 SLOTS) · CONCEPTUAL MODEL", 36, 112);
 
     for (let slot = 0; slot < 8; slot++) {
       const job = sim.coreSet[slot];
@@ -256,7 +256,7 @@ function makeMachineAgc66() {
     name: "MIT Apollo Guidance Computer (Block II) & DSKY",
     view0: 0.36,
     blurb:
-      "First computer built from monolithic Integrated Circuits (5,600 identical Fairchild 3-input RTL NOR flat-packs, consuming 60% of US IC output in 1963): features hand-woven copper Core Rope ROM (36K words), 2K erasable ferrite RAM, clickable electroluminescent DSKY Verb/Noun interface, and Margaret Hamilton's priority-scheduled real-time executive that survived Apollo 11's 1202 Executive Overflow.",
+      "First computer built from monolithic Integrated Circuits (5,600 identical Fairchild 3-input RTL NOR flat-packs, consuming 60% of US IC output in 1963): features hand-woven copper Core Rope ROM (36K words), 2K erasable ferrite RAM, clickable electroluminescent DSKY Verb/Noun interface, and Margaret Hamilton's priority-scheduled real-time executive that survived Apollo 11's 1202 Executive Overflow. Simulation: CONCEPTUAL MODEL. A 7-word rope program with 4 opcodes and a scripted 1202 (the job queue is filled to 8); not a Block II instruction-set emulator.",
     diagram: {
       nodes: [
         { id: "dsky", label: "DSKY Verb/Noun", x: 0.16, y: 0.24, color: "#4ade80" },

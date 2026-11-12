@@ -25,7 +25,7 @@ function makeMachineCray1() {
     c.fillStyle = "#fef2f2";
     c.font = '700 21px "JetBrains Mono", monospace';
     c.fillText(
-      `CRAY-1S VECTOR SUPERCOMPUTER · 80 MHz (12.5 ns) · VL=${sim.VL} · ${sim.chaining ? "CHAINING ON" : "UNCHAINED"} · ${sim.mflops.toFixed(1)} MFLOPS`,
+      `CRAY-1S VECTOR SUPERCOMPUTER · 80 MHz (12.5 ns) · TIMING MODEL · VL=${sim.VL} · ${sim.chaining ? "CHAINING ON" : "UNCHAINED"} · ${sim.mflops.toFixed(1)} MFLOPS`,
       26,
       46,
     );
@@ -118,7 +118,7 @@ function makeMachineCray1() {
     capital: true,
     view0: 0.42,
     blurb:
-      "Capital monument of supercomputing (Seymour Cray, 1976): bent into a 270° C-cylinder so no backplane wire exceeds 4 feet (beating speed-of-light propagation delay at 80 MHz = 12.5 ns), Freon-cooled through vertical copper coldbars beneath a padded bench, and introducing 64-element Vector Registers (V0–V7) with hardware Vector Chaining.",
+      "Capital monument of supercomputing (Seymour Cray, 1976): bent into a 270° C-cylinder so no backplane wire exceeds 4 feet (beating speed-of-light propagation delay at 80 MHz = 12.5 ns), Freon-cooled through vertical copper coldbars beneath a padded bench, and introducing 64-element Vector Registers (V0–V7) with hardware Vector Chaining. Simulation: the vector kernel runs for real; the clock counts come from a closed-form timing model (startup + VL per chime), not a cycle-level simulation.",
     diagram: {
       nodes: [
         { id: "mem", label: "1MW Bipolar SRAM", x: 0.16, y: 0.48, color: "#58c4ff" },

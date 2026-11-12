@@ -890,7 +890,7 @@ DONE  ST    R2,NETOUT
         this.V[4][i] = this.V[3][i] + this.V[2][i]; // Vector Add functional unit (6-stage)
       }
 
-      // Authentic Cray-1 cycle accounting (12.5 ns = 80 MHz clock):
+      // Closed-form Cray-1 timing MODEL (review P8), not a cycle simulation (12.5 ns = 80 MHz):
       //   Scalar loop (Load 11 + FMul 7 + FAdd 6 + Branch 5 = 29 clks/elem)
       this.scalarClocks = vl * 29;
       //   Unchained vector: Startup/Load (11 + vl) + Startup/FMul (7 + vl) + Startup/FAdd (6 + vl)
@@ -2168,6 +2168,8 @@ DONE  ST    R2,NETOUT
   // ============================================================================
   // 16. MIT APOLLO GUIDANCE COMPUTER BLOCK II & DSKY (1966)
   //     15-bit 1's-Complement RTL NOR CPU + Core Rope ROM + 1202 Executive Recovery
+  //     CONCEPTUAL MODEL (review P8): a 7-word rope with 4 opcodes; the 1202 is
+  //     produced by filling the 8-slot job queue. Not a Block II ISA emulator.
   // ============================================================================
   class ApolloAgcDsky {
     constructor() {
