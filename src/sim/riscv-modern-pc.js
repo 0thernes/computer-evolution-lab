@@ -68,6 +68,19 @@ function parseImm(tok, labels, pc = 0, relative = false) {
   throw new Error(`Invalid immediate or undefined label '${s}'`);
 }
 
+// Immediate range validation (REVIEW-v5 B3): out-of-range operands are rejected with a
+// RangeError instead of being silently truncated into a different instruction.
+function checkRange(v, lo, hi, what) {
+  if (!Number.isInteger(v) || v < lo || v > hi) {
+    throw new RangeError(`${what} ${v} out of range [${lo}, ${hi}]`);
+  }
+  return v;
+}
+function checkEven(v, what) {
+  if (v & 1) throw new RangeError(`${what} ${v} must be a multiple of 2`);
+  return v;
+}
+
 function encR(op, f3, f7, rd, rs1, rs2) {
   return (
     (((f7 & 0x7f) << 25) |
@@ -80,6 +93,7 @@ function encR(op, f3, f7, rd, rs1, rs2) {
   );
 }
 function encI(op, f3, rd, rs1, imm) {
+  checkRange(imm, -2048, 2047, "12-bit immediate");
   return (
     (((imm & 0xfff) << 20) |
       ((rs1 & 0x1f) << 15) |
@@ -90,6 +104,7 @@ function encI(op, f3, rd, rs1, imm) {
   );
 }
 function encS(op, f3, rs1, rs2, imm) {
+  checkRange(imm, -2048, 2047, "12-bit store offset");
   const lo = imm & 0x1f;
   const hi = (imm >> 5) & 0x7f;
   return (
@@ -103,6 +118,7 @@ function encS(op, f3, rs1, rs2, imm) {
   );
 }
 function encB(op, f3, rs1, rs2, off) {
+  checkRange(checkEven(off, "branch offset"), -4096, 4094, "branch offset");
   const b12 = (off >> 12) & 1;
   const b11 = (off >> 11) & 1;
   const b10_5 = (off >> 5) & 0x3f;
@@ -120,9 +136,11 @@ function encB(op, f3, rs1, rs2, off) {
   );
 }
 function encU(op, rd, imm20) {
+  checkRange(imm20, -524288, 0xfffff, "20-bit upper immediate");
   return (((imm20 & 0xfffff) << 12) | ((rd & 0x1f) << 7) | (op & 0x7f)) >>> 0;
 }
 function encJ(op, rd, off) {
+  checkRange(checkEven(off, "jump offset"), -1048576, 1048574, "jump offset");
   const b20 = (off >> 20) & 1;
   const b10_1 = (off >> 1) & 0x3ff;
   const b11 = (off >> 11) & 1;
@@ -138,6 +156,197 @@ function encJ(op, rd, off) {
   );
 }
 
+// ---------------------------------------------------------------------------------------------
+// Pipeline timing model (REVIEW-v5 C8). These are modelled numbers for a toy in-order core, not
+// measurements of any shipping CPU: a 1-cycle L1, +8 cycles for an L2 hit, +40 for DRAM.
+const RV32_TIMING = { l2HitPenalty: 8, dramPenalty: 40, branchMispredictPenalty: 2 };
+// RISC-V mcause codes used by the trap path
+const RV32_CAUSE = {
+  FETCH_MISALIGNED: 0,
+  FETCH_FAULT: 1,
+  ILLEGAL: 2,
+  BREAKPOINT: 3,
+  LOAD_FAULT: 5,
+  STORE_FAULT: 7,
+};
+const RV32_CAUSE_NAME = {
+  0: "instruction address misaligned",
+  1: "instruction access fault",
+  2: "illegal instruction",
+  3: "breakpoint",
+  5: "load access fault",
+  7: "store access fault",
+};
+
+// Decode one instruction word into the fields the pipeline needs. Returns null if illegal.
+function rv32Decode(inst) {
+  const opcode = inst & 0x7f;
+  const rd = (inst >>> 7) & 0x1f;
+  const f3 = (inst >>> 12) & 7;
+  const rs1 = (inst >>> 15) & 0x1f;
+  const rs2 = (inst >>> 20) & 0x1f;
+  const f7 = (inst >>> 25) & 0x7f;
+  const d = {
+    inst,
+    opcode,
+    rd: 0,
+    f3,
+    f7,
+    srcA: 0,
+    srcB: 0,
+    imm: 0,
+    isLoad: false,
+    isStore: false,
+    isBranch: false,
+    isJal: false,
+    isJalr: false,
+    isSystem: false,
+    sysImm: 0,
+  };
+  switch (opcode) {
+    case 0x37: // LUI
+    case 0x17: // AUIPC
+      d.rd = rd;
+      d.imm = inst & 0xfffff000;
+      return d;
+    case 0x6f: {
+      const raw =
+        (((inst >> 31) & 1) << 20) |
+        (((inst >>> 12) & 0xff) << 12) |
+        (((inst >>> 20) & 1) << 11) |
+        (((inst >>> 21) & 0x3ff) << 1);
+      d.rd = rd;
+      d.imm = (raw << 11) >> 11;
+      d.isJal = true;
+      return d;
+    }
+    case 0x67:
+      if (f3 !== 0) return null;
+      d.rd = rd;
+      d.srcA = rs1;
+      d.imm = inst >> 20;
+      d.isJalr = true;
+      return d;
+    case 0x63: {
+      if (f3 === 2 || f3 === 3) return null;
+      const raw =
+        (((inst >>> 31) & 1) << 12) |
+        (((inst >>> 7) & 1) << 11) |
+        (((inst >>> 25) & 0x3f) << 5) |
+        (((inst >>> 8) & 0xf) << 1);
+      d.srcA = rs1;
+      d.srcB = rs2;
+      d.imm = (raw << 19) >> 19;
+      d.isBranch = true;
+      return d;
+    }
+    case 0x03:
+      if (f3 === 3 || f3 > 5) return null;
+      d.rd = rd;
+      d.srcA = rs1;
+      d.imm = inst >> 20;
+      d.isLoad = true;
+      return d;
+    case 0x23: {
+      if (f3 > 2) return null;
+      const raw = (f7 << 5) | rd;
+      d.srcA = rs1;
+      d.srcB = rs2;
+      d.imm = (raw << 20) >> 20;
+      d.isStore = true;
+      return d;
+    }
+    case 0x13:
+      if (f3 === 1 && f7 !== 0) return null;
+      if (f3 === 5 && f7 !== 0 && f7 !== 0x20) return null;
+      d.rd = rd;
+      d.srcA = rs1;
+      d.imm = inst >> 20;
+      return d;
+    case 0x33:
+      if (!(f7 === 0 || f7 === 1 || (f7 === 0x20 && (f3 === 0 || f3 === 5)))) return null;
+      d.rd = rd;
+      d.srcA = rs1;
+      d.srcB = rs2;
+      return d;
+    case 0x0f: // FENCE: no-op
+      return d;
+    case 0x73: {
+      const sysImm = inst >>> 20;
+      if ((inst & 0xfff80) !== 0 || (sysImm !== 0 && sysImm !== 1)) return null;
+      d.isSystem = true;
+      d.sysImm = sysImm;
+      if (sysImm === 0) {
+        // ECALL reads a7 (x17) and a0 (x10) and may write a0 (cycle-counter syscall)
+        d.srcA = 17;
+        d.srcB = 10;
+      }
+      return d;
+    }
+    default:
+      return null;
+  }
+}
+
+// Execute-stage ALU. a/b are the (forwarded) source operand values.
+function rv32Alu(d, pc, a, b) {
+  const { opcode, f3, f7 } = d;
+  switch (opcode) {
+    case 0x37:
+      return d.imm | 0;
+    case 0x17:
+      return (pc + d.imm) | 0;
+    case 0x6f:
+    case 0x67:
+      return (pc + 4) | 0;
+    case 0x03:
+    case 0x23:
+      return (a + d.imm) | 0;
+    case 0x13: {
+      const imm = d.imm;
+      const sh = imm & 0x1f;
+      if (f3 === 0) return (a + imm) | 0;
+      if (f3 === 2) return a < imm ? 1 : 0;
+      if (f3 === 3) return a >>> 0 < imm >>> 0 ? 1 : 0;
+      if (f3 === 4) return a ^ imm;
+      if (f3 === 6) return a | imm;
+      if (f3 === 7) return a & imm;
+      if (f3 === 1) return a << sh;
+      return f7 & 0x20 ? a >> sh : (a >>> sh) | 0;
+    }
+    case 0x33:
+      if (f7 === 1) {
+        if (f3 === 0) return Math.imul(a, b);
+        if (f3 === 1) return Number((BigInt(a) * BigInt(b)) >> 32n) | 0;
+        if (f3 === 2) return Number((BigInt(a) * BigInt(b >>> 0)) >> 32n) | 0;
+        if (f3 === 3) return Number((BigInt(a >>> 0) * BigInt(b >>> 0)) >> 32n) | 0;
+        if (f3 === 4) return b === 0 ? -1 : a === -2147483648 && b === -1 ? a : (a / b) | 0;
+        if (f3 === 5) return b === 0 ? -1 : ((a >>> 0) / (b >>> 0)) | 0;
+        if (f3 === 6) return b === 0 ? a : a === -2147483648 && b === -1 ? 0 : a % b | 0;
+        return b === 0 ? a : ((a >>> 0) % (b >>> 0)) | 0;
+      }
+      if (f3 === 0) return f7 & 0x20 ? (a - b) | 0 : (a + b) | 0;
+      if (f3 === 1) return a << (b & 31);
+      if (f3 === 2) return a < b ? 1 : 0;
+      if (f3 === 3) return a >>> 0 < b >>> 0 ? 1 : 0;
+      if (f3 === 4) return a ^ b;
+      if (f3 === 5) return f7 & 0x20 ? a >> (b & 31) : (a >>> (b & 31)) | 0;
+      if (f3 === 6) return a | b;
+      return a & b;
+    default:
+      return 0;
+  }
+}
+
+function rv32BranchTaken(f3, a, b) {
+  if (f3 === 0) return a === b;
+  if (f3 === 1) return a !== b;
+  if (f3 === 4) return a < b;
+  if (f3 === 5) return a >= b;
+  if (f3 === 6) return a >>> 0 < b >>> 0;
+  return a >>> 0 >= b >>> 0;
+}
+
 // Two-pass RV32IM Assembler with .text / .data / .word / .asciz and rich pseudo-instructions
 function assembleRV32(source) {
   const rawLines = String(source).split(/\r?\n/);
@@ -147,6 +356,7 @@ function assembleRV32(source) {
   let textPC = 0;
   let dataPC = 0x2000;
   const dataBytes = [];
+  const wordFixups = [];
 
   const emitDataByte = (b) => {
     dataBytes.push([dataPC++, b & 0xff]);
@@ -216,7 +426,13 @@ function assembleRV32(source) {
           .map((s) => s.trim())
           .filter(Boolean);
         for (const p of parts) {
-          const val = parseImm(p, labels, 0, false);
+          let val = 0;
+          if (/^[A-Za-z_.$][\w.$]*$/.test(p) && !(p in labels)) {
+            // forward label reference: patch in after pass 1
+            wordFixups.push({ index: dataBytes.length, tok: p, lineNo: lnIdx + 1 });
+          } else {
+            val = parseImm(p, labels, 0, false);
+          }
           emitDataByte(val & 0xff);
           emitDataByte((val >>> 8) & 0xff);
           emitDataByte((val >>> 16) & 0xff);
@@ -313,6 +529,23 @@ function assembleRV32(source) {
 
   for (let i = 0; i < items.length; i++) {
     const it = items[i];
+    try {
+      encodeItem(i, it);
+    } catch (err) {
+      if (/^Line \d+:/.test(err.message)) throw err;
+      throw new Error(`Line ${it.lineNo}: ${err.message}`);
+    }
+  }
+
+  // Resolve .word fixups that referenced labels defined later (REVIEW-v5 B5)
+  for (const fx of wordFixups) {
+    const val = parseImm(fx.tok, labels, 0, false);
+    for (let k = 0; k < 4; k++) dataBytes[fx.index + k][1] = (val >>> (8 * k)) & 0xff;
+  }
+
+  return { words, dataBytes, labels, disasm, codeBytes: words.length * 4 };
+
+  function encodeItem(i, it) {
     const { pc, op, args } = it;
     let w = 0x00000013; // NOP
 
@@ -378,7 +611,7 @@ function assembleRV32(source) {
         parseImm(args[2], labels, pc),
       );
     } else if (op === "slli" || op === "srli" || op === "srai") {
-      const shamt = parseImm(args[2], labels, pc) & 0x1f;
+      const shamt = checkRange(parseImm(args[2], labels, pc), 0, 31, "shift amount");
       const f3 = op === "slli" ? 1 : 5;
       const imm = op === "srai" ? (0x20 << 5) | shamt : shamt;
       w = encI(0x13, f3, parseReg(args[0]), parseReg(args[1]), imm);
@@ -434,8 +667,6 @@ function assembleRV32(source) {
     words[i] = w >>> 0;
     if (!disasm.has(pc)) disasm.set(pc, it.src || `${op} ${args.join(", ")}`);
   }
-
-  return { words, dataBytes, labels, disasm, codeBytes: words.length * 4 };
 }
 
 // Set-Associative LRU Hardware Cache Simulator
@@ -766,6 +997,9 @@ var RV32ModernSystem = class {
       WB: emptyStage(),
     };
     this._prevLoadRd = 0;
+    this._pipeReset();
+    this.trap = null;
+    this._memFault = null;
 
     this.stats = {
       cycles: 0,
@@ -777,6 +1011,10 @@ var RV32ModernSystem = class {
       dramReads: 0,
       mmioGpuWrites: 0,
       nvmeOps: 0,
+      icacheStallCycles: 0,
+      dcacheStallCycles: 0,
+      flushes: 0,
+      jalrRedirects: 0,
     };
   }
 
@@ -816,22 +1054,27 @@ var RV32ModernSystem = class {
     }
   }
 
+  // Cache lookups return the EXTRA cycles the access costs beyond a 1-cycle L1 hit.
+  // The pipeline freezes for that many cycles (REVIEW-v5 C8: misses now cost time).
   _cacheFetchInst(addr) {
-    if (!this.l1i.access(addr, false)) {
-      if (!this.l2.access(addr, false)) {
-        this.stats.dramReads++;
-        this.busPulses.ddr = 1;
-      }
-    }
+    if (this.l1i.access(addr, false)) return 0;
+    if (this.l2.access(addr, false)) return RV32_TIMING.l2HitPenalty;
+    this.stats.dramReads++;
+    this.busPulses.ddr = 1;
+    return RV32_TIMING.dramPenalty;
   }
 
   _cacheData(addr, isWrite) {
-    if (!this.l1d.access(addr, isWrite)) {
-      if (!this.l2.access(addr, isWrite)) {
-        this.stats.dramReads++;
-        this.busPulses.ddr = 1;
-      }
+    let lat;
+    if (this.l1d.access(addr, isWrite)) lat = 0;
+    else if (this.l2.access(addr, isWrite)) lat = RV32_TIMING.l2HitPenalty;
+    else {
+      this.stats.dramReads++;
+      this.busPulses.ddr = 1;
+      lat = RV32_TIMING.dramPenalty;
     }
+    this._lastMemLat = lat;
+    return lat;
   }
 
   readMem(addr, bytes = 4, signed = true) {
@@ -851,7 +1094,10 @@ var RV32ModernSystem = class {
       return this.stats.nvmeOps | 0;
     }
     this._cacheData(a, false);
-    if (a + bytes > this.ramBytes) return 0;
+    if (a + bytes > this.ramBytes) {
+      this._memFault = { addr: a, write: false };
+      return 0;
+    }
     if (bytes === 1) return signed ? this.ramView.getInt8(a) : this.ramView.getUint8(a);
     if (bytes === 2)
       return signed ? this.ramView.getInt16(a, true) : this.ramView.getUint16(a, true);
@@ -892,20 +1138,29 @@ var RV32ModernSystem = class {
       return;
     }
     this._cacheData(a, true);
-    if (a + bytes > this.ramBytes) return;
+    if (a + bytes > this.ramBytes) {
+      this._memFault = { addr: a, write: true };
+      return;
+    }
     if (bytes === 1) this.ramView.setUint8(a, val & 0xff);
     else if (bytes === 2) this.ramView.setUint16(a, val & 0xffff, true);
     else this.ramView.setInt32(a, val | 0, true);
   }
 
-  // Execute one architectural instruction while advancing the 5-stage pipeline telemetry, hazards, & caches
+  // Clock the real 5-stage pipeline by one cycle (see RV32_PIPELINE below).
   step() {
+    return this.clock();
+  }
+
+  // Instruction-set reference model: executes ONE whole instruction atomically. It is kept as the
+  // architectural golden model that tests/rv32-pipeline.test.mjs diffs the pipeline against.
+  stepISS() {
     if (this.halted) return false;
     const pc = this.pc >>> 0;
-    if (pc >= this.ramBytes) {
-      this.halted = true;
-      return false;
+    if (pc >= this.ramBytes || pc & 3) {
+      return this._trap(pc & 3 ? RV32_CAUSE.FETCH_MISALIGNED : RV32_CAUSE.FETCH_FAULT, pc, 0);
     }
+    this._memFault = null;
 
     this._cacheFetchInst(pc);
     const inst = this.ramView.getUint32(pc, true);
@@ -1066,6 +1321,8 @@ var RV32ModernSystem = class {
         else if (f3 === 6) writeVal = v1 | v2;
         else if (f3 === 7) writeVal = v1 & v2;
       }
+    } else if (opcode === 0x0f) {
+      // FENCE / FENCE.I: no-op on this single-hart, coherent-cache model
     } else if (opcode === 0x73) {
       // SYSTEM: ECALL / EBREAK
       const sysImm = inst >>> 20;
@@ -1095,6 +1352,11 @@ var RV32ModernSystem = class {
           this.halted = true;
         }
       }
+    } else {
+      return this._trap(RV32_CAUSE.ILLEGAL, pc, inst);
+    }
+    if (this._memFault) {
+      return this._trap(this._memFault.write ? RV32_CAUSE.STORE_FAULT : RV32_CAUSE.LOAD_FAULT, pc, inst);
     }
 
     if (writeRd !== 0) {
@@ -1120,6 +1382,328 @@ var RV32ModernSystem = class {
     };
     this.pipe.ID.rd = rd;
     return !this.halted;
+  }
+
+  // ===========================================================================================
+  // RV32_PIPELINE: a cycle-stepped, in-order IF/ID/EX/MEM/WB pipeline (REVIEW-v5 C8).
+  //  * Stages are evaluated WB -> MEM -> EX -> ID -> IF each clock using the previous cycle's
+  //    latches, so every instruction really occupies one stage per cycle.
+  //  * Forwarding: EX/MEM (ALU results) and MEM/WB (ALU + load results) into EX, plus a
+  //    write-before-read register file for WB -> ID.
+  //  * Load-use hazard: the consumer is held in ID for one cycle and a bubble enters EX.
+  //  * Control: IF predecodes branches (2-bit BHT, 64 entries) and JAL; JALR is predicted
+  //    fall-through. Branches/JALR resolve in EX; a wrong prediction flushes IF and ID (2 cycles).
+  //  * Memory: I-cache misses stall IF; D-cache misses freeze the whole pipe for the L2/DRAM
+  //    penalty in RV32_TIMING. MMIO is uncached.
+  //  * Side effects happen only once no older instruction can redirect control: ECALL output in
+  //    EX, stores and MMIO in MEM. Traps (illegal instruction, access faults) are raised in EX/MEM,
+  //    squash younger work, and halt when the faulting instruction reaches WB.
+  // ===========================================================================================
+  _pipeReset() {
+    this.forwardingEnabled = this.forwardingEnabled !== false;
+    this._ifid = null;
+    this._idex = null;
+    this._exmem = null;
+    this._memwb = null;
+    this._fetchPending = null;
+    this._freeze = 0;
+    this._draining = false;
+  }
+
+  _trap(cause, pc, inst) {
+    if (this.trap) return false;
+    this.trap = { cause, pc, inst, name: RV32_CAUSE_NAME[cause] || `cause ${cause}` };
+    this.appendConsole(
+      `\n*** trap: ${this.trap.name} at pc=0x${bt(pc, 8)} inst=0x${bt(inst >>> 0, 8)} ***\n`,
+    );
+    this.halted = true;
+    return false;
+  }
+
+  _syscall(call, arg0) {
+    // returns { halt, writeA0, value }
+    if (call === 1) this.appendConsole(String(arg0));
+    else if (call === 4) {
+      let p = arg0 >>> 0;
+      let guard = 0;
+      let out = "";
+      while (p < this.ramBytes && guard++ < 512) {
+        const ch = this.ram[p++];
+        if (ch === 0) break;
+        out += String.fromCharCode(ch);
+      }
+      this.appendConsole(out);
+    } else if (call === 11) this.appendConsole(String.fromCharCode(arg0 & 0xff));
+    else if (call === 30) return { halt: false, writeA0: true, value: this.stats.cycles | 0 };
+    else if (call === 10) return { halt: true, writeA0: false, value: 0 };
+    return { halt: false, writeA0: false, value: 0 };
+  }
+
+  _stageView(l, fallbackText = "bubble") {
+    if (!l) return { valid: false, pc: 0, inst: 0x13, text: fallbackText, rd: 0 };
+    return {
+      valid: true,
+      pc: l.pc,
+      inst: l.inst,
+      rd: l.d ? l.d.rd : 0,
+      text: this.disasm.get(l.pc) || `0x${bt(l.inst >>> 0, 8)}`,
+    };
+  }
+
+  clock() {
+    if (this.halted) return false;
+    const st = this.stats;
+    st.cycles++;
+
+    // A D-cache miss in MEM freezes every stage; an outstanding I-fetch keeps counting down.
+    if (this._freeze > 0) {
+      this._freeze--;
+      st.dcacheStallCycles++;
+      if (this._fetchPending && this._fetchPending.left > 0) this._fetchPending.left--;
+      this.pipe.WB = this._stageView(null, "d$ miss stall");
+      return true;
+    }
+
+    const IFID = this._ifid;
+    const IDEX = this._idex;
+    const EXMEM = this._exmem;
+    const MEMWB = this._memwb;
+    const r = this.regs;
+
+    // ---------------- WB ----------------
+    if (MEMWB) {
+      if (MEMWB.d && MEMWB.d.rd !== 0 && MEMWB.writes) r[MEMWB.d.rd] = MEMWB.value | 0;
+      r[0] = 0;
+      if (!MEMWB.trap) {
+        st.instret++;
+        const core = ((MEMWB.pc >>> 2) + (st.instret >>> 5)) & 15;
+        this.coreHeat[core] = Math.min(1, this.coreHeat[core] + 0.35);
+      }
+      if (MEMWB.halt) {
+        if (MEMWB.trap) this._trap(MEMWB.trap, MEMWB.pc, MEMWB.inst);
+        this.halted = true;
+      }
+    }
+
+    // ---------------- MEM ----------------
+    let newMEMWB = null;
+    let memLatency = 0;
+    if (EXMEM) {
+      newMEMWB = { ...EXMEM };
+      const d = EXMEM.d;
+      if (!EXMEM.halt && d && (d.isLoad || d.isStore)) {
+        const addr = EXMEM.alu >>> 0;
+        this._memFault = null;
+        this._lastMemLat = 0;
+        if (d.isLoad) {
+          const f3 = d.f3;
+          const bytes = f3 === 0 || f3 === 4 ? 1 : f3 === 1 || f3 === 5 ? 2 : 4;
+          newMEMWB.value = this.readMem(addr, bytes, f3 < 4);
+        } else {
+          const bytes = d.f3 === 0 ? 1 : d.f3 === 1 ? 2 : 4;
+          this.writeMem(addr, EXMEM.storeVal, bytes);
+        }
+        memLatency = this._lastMemLat || 0;
+        if (this._memFault) {
+          newMEMWB.halt = true;
+          newMEMWB.writes = false;
+          newMEMWB.trap = d.isStore ? RV32_CAUSE.STORE_FAULT : RV32_CAUSE.LOAD_FAULT;
+        }
+      }
+    }
+
+    // ---------------- EX ----------------
+    let newEXMEM = null;
+    let redirect = -1;
+    const younger = (lat) => lat && !lat.halt; // halting latches never forward
+    if (IDEX && !(newMEMWB && newMEMWB.halt)) {
+      const d = IDEX.d;
+      const L = { pc: IDEX.pc, inst: IDEX.inst, d, writes: false, alu: 0, value: 0 };
+      if (IDEX.fault !== undefined) {
+        L.halt = true;
+        L.trap = IDEX.fault;
+        this._draining = true;
+        redirect = -2; // squash younger, stop fetch
+      } else {
+        const fwd = (reg, fallback) => {
+          if (reg === 0) return 0;
+          if (!this.forwardingEnabled) return fallback;
+          if (younger(EXMEM) && EXMEM.writes && EXMEM.d.rd === reg && !EXMEM.d.isLoad) {
+            st.forwards++;
+            return EXMEM.alu | 0;
+          }
+          if (MEMWB && MEMWB.writes && MEMWB.d.rd === reg) {
+            st.forwards++;
+            return MEMWB.value | 0;
+          }
+          return fallback;
+        };
+        const a = fwd(d.srcA, IDEX.a);
+        const b = fwd(d.srcB, IDEX.b);
+        L.alu = rv32Alu(d, IDEX.pc, a, b);
+        L.value = L.alu;
+        L.writes = d.rd !== 0 && !d.isStore && !d.isBranch && !d.isSystem && d.opcode !== 0x0f;
+        if (d.isStore) L.storeVal = b;
+        let actualNext = (IDEX.pc + 4) >>> 0;
+        if (d.isBranch) {
+          const taken = rv32BranchTaken(d.f3, a, b);
+          const idx = (IDEX.pc >>> 2) & 63;
+          const s = this.bht[idx];
+          if ((s >= 2) === taken) st.bpHits++;
+          else st.bpMisses++;
+          this.bht[idx] = taken ? Math.min(3, s + 1) : Math.max(0, s - 1);
+          if (taken) actualNext = (IDEX.pc + d.imm) >>> 0;
+        } else if (d.isJal) {
+          actualNext = (IDEX.pc + d.imm) >>> 0;
+        } else if (d.isJalr) {
+          actualNext = ((a + d.imm) & ~1) >>> 0;
+        } else if (d.isSystem) {
+          if (d.sysImm === 1) {
+            L.halt = true; // EBREAK stops the machine
+          } else {
+            const res = this._syscall(a, b);
+            if (res.writeA0) {
+              L.writes = true;
+              L.d = { ...d, rd: 10 };
+              L.value = L.alu = res.value;
+            }
+            if (res.halt) L.halt = true;
+          }
+          if (L.halt) {
+            this._draining = true;
+            redirect = -2;
+          }
+        }
+        if (redirect === -1 && actualNext !== IDEX.predNext) {
+          redirect = actualNext;
+          st.flushes++;
+          if (d.isJalr) st.jalrRedirects++;
+        }
+      }
+      newEXMEM = L;
+    } else if (IDEX && newMEMWB && newMEMWB.halt) {
+      // an older instruction trapped in MEM: squash everything younger
+      this._draining = true;
+      redirect = -2;
+    }
+
+    // ---------------- ID ----------------
+    let newIDEX = null;
+    let stallID = false;
+    if (IFID && redirect === -1) {
+      if (IFID.fault !== undefined) {
+        newIDEX = { pc: IFID.pc, inst: IFID.inst, d: null, fault: IFID.fault };
+      } else {
+        const d = rv32Decode(IFID.inst);
+        if (!d) {
+          newIDEX = { pc: IFID.pc, inst: IFID.inst, d: null, fault: RV32_CAUSE.ILLEGAL };
+        } else {
+          // load-use hazard against the instruction now in EX
+          if (
+            IDEX &&
+            IDEX.d &&
+            IDEX.d.isLoad &&
+            IDEX.d.rd !== 0 &&
+            (IDEX.d.rd === d.srcA || IDEX.d.rd === d.srcB)
+          ) {
+            stallID = true;
+            st.loadStalls++;
+          } else {
+            newIDEX = {
+              pc: IFID.pc,
+              inst: IFID.inst,
+              d,
+              a: r[d.srcA] | 0,
+              b: r[d.srcB] | 0,
+              predNext: IFID.predNext,
+            };
+          }
+        }
+      }
+    }
+
+    // ---------------- IF ----------------
+    let newIFID = IFID;
+    if (redirect !== -1) {
+      newIFID = null;
+      this._fetchPending = null;
+      if (redirect >= 0) this.pc = redirect;
+    } else if (!stallID) {
+      newIFID = null;
+      if (!this._draining) newIFID = this._fetch();
+    }
+    if (stallID) {
+      // hold IF/ID, keep PC; pending fetch keeps counting down
+      if (this._fetchPending && this._fetchPending.left > 0) this._fetchPending.left--;
+    }
+    // On a redirect the target is fetched next cycle: the wrong-path IF and ID work is lost,
+    // which is the 2-cycle mispredict penalty.
+
+    this._memwb = newMEMWB;
+    this._exmem = newEXMEM;
+    this._idex = stallID ? null : newIDEX;
+    this._ifid = newIFID;
+    if (redirect !== -1 && redirect !== -2) this._idex = null;
+    if (redirect === -2) {
+      this._idex = null;
+      this._ifid = null;
+    }
+
+    this.pipe = {
+      IF: this._stageView(newIFID === IFID && stallID ? IFID : newIFID, "i$ / redirect"),
+      ID: this._stageView(IFID, "bubble"),
+      EX: this._stageView(IDEX, "bubble"),
+      MEM: this._stageView(EXMEM, "bubble"),
+      WB: this._stageView(MEMWB, "bubble"),
+    };
+
+    if (memLatency > 0) this._freeze = memLatency;
+    if (this.halted) return false;
+    if (!this._ifid && !this._idex && !this._exmem && !this._memwb && this._draining) {
+      this.halted = true;
+      return false;
+    }
+    return true;
+  }
+
+  // IF stage: returns a new IF/ID latch or null (bubble) while an I-cache miss is outstanding.
+  _fetch() {
+    const pc = this.pc >>> 0;
+    if (pc >= this.ramBytes || pc & 3) {
+      // may be a wrong-path fetch: the fault only becomes a trap if it reaches EX
+      return {
+        pc,
+        inst: 0,
+        fault: pc & 3 ? RV32_CAUSE.FETCH_MISALIGNED : RV32_CAUSE.FETCH_FAULT,
+        predNext: pc,
+      };
+    }
+    if (!this._fetchPending || this._fetchPending.pc !== pc) {
+      const lat = this._cacheFetchInst(pc);
+      if (lat > 0) {
+        this._fetchPending = { pc, left: lat };
+        this.stats.icacheStallCycles++;
+        return null;
+      }
+    } else if (this._fetchPending.left > 1) {
+      this._fetchPending.left--;
+      this.stats.icacheStallCycles++;
+      return null;
+    }
+    this._fetchPending = null;
+    const inst = this.ramView.getUint32(pc, true);
+    // predecode for the next-PC predictor
+    let predNext = (pc + 4) >>> 0;
+    const op = inst & 0x7f;
+    if (op === 0x6f) {
+      const d = rv32Decode(inst);
+      if (d) predNext = (pc + d.imm) >>> 0;
+    } else if (op === 0x63 && this.bht[(pc >>> 2) & 63] >= 2) {
+      const d = rv32Decode(inst);
+      if (d) predNext = (pc + d.imm) >>> 0;
+    }
+    this.pc = predNext;
+    return { pc, inst, predNext };
   }
 
   runSteps(n) {

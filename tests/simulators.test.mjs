@@ -79,7 +79,8 @@ test("RV32IM two-pass assembler encodes R/I/S/B/U/J + M-extension accurately", (
 
   const sys = new env.RV32ModernSystem();
   sys.loadProgram(prog, false);
-  sys.runSteps(64);
+  // step() is one clock of the real pipeline; cold I-cache misses cost DRAM latency
+  sys.runSteps(2000);
   assert.equal(sys.halted, true);
   assert.equal(sys.regs[10], 42); // a0 = 6 * 7 = 42
   assert.equal(sys.regs[12], 7); // a2 = 42 / 6 = 7
@@ -102,7 +103,8 @@ test("RV32IM 5-stage pipeline tracks load-use stalls, forwarding, branch predict
       ebreak
   `;
   sys.loadProgram(hazardSrc, false);
-  sys.runSteps(32);
+  sys.runSteps(2000);
+  assert.equal(sys.halted, true);
   assert.equal(sys.regs[6], 198); // t1 = 99 + 99
   assert.equal(sys.regs[28], 200); // t3 = 198 + 2
   assert.ok(sys.stats.loadStalls >= 1, "Should detect load-use stall after LW");
@@ -132,9 +134,9 @@ test("RV32IM NVMe DMA (0x30000000), PCIe GPU MMIO (0x20000000), UART Keyboard & 
 
   // Interactive Keyboard Echo + GPU Tint program
   sys.loadProgram(env.RV32_PROGRAMS["Interactive Keyboard Echo + GPU Tint"], false);
-  sys.runSteps(40);
+  sys.runSteps(2000);
   sys.pushKey("Z");
-  sys.runSteps(40);
+  sys.runSteps(2000);
   assert.ok(sys.termOut.includes("Z"), "CPU should echo 3D keyboard char 'Z' to UART");
   assert.equal(sys.gpuRegs[1], "Z".charCodeAt(0));
 
