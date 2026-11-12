@@ -4447,6 +4447,8 @@ DL · DOR`,
           (y.rotation.x = -Math.PI / 2),
           y.position.set(-1.5, we + 0.09, ve),
           (y.renderOrder = 9),
+          (dieDetail = makeDieDetail(fe, ne)),
+          dieDetail && S.metal.mesh.add(dieDetail.mesh),
           D.add(y, {
             name: "Functional-block overlay (Hanson block diagram)",
             info: "Outlines of the functional blocks (after Donald F. Hanson's 6502 block diagram, 1995): decode ROM/PLA, random control logic, timing, IR, clock generator, PC low/high, ALU with decimal adjust, A/X/Y/S/P, address-bus drivers, input data latch and data output register. Blocks light up when the current bus cycle uses them.",
@@ -4758,8 +4760,101 @@ DL · DOR`,
             (g.rotation.x = -k._lid * 1.2)));
         let Y = performance.now();
         Y - P > (n ? 120 : 60) && ((P = Y), le(!1));
+        updateDieDetail(D);
       },
     };
+  // Close-zoom LOD for the magnified die (ported from v6): when the camera is
+  // within 0.8 units of the die, the area under the view is redrawn at
+  // transistor scale into a 2048² patch (1024² on low tier). Procedural layout
+  // idioms by default; the REAL visual6502 polygons once the netlist is loaded.
+  let dieDetail = null;
+  const _dv = new N();
+  function makeDieDetail(dieW, dieH) {
+    const DD = window.CelDieDetail;
+    if (!DD) return null;
+    const low = window.LAB && window.LAB.deviceClass && window.LAB.deviceClass.tier === "low";
+    const size = low ? 1024 : 2048;
+    const tex = Bt(size, size);
+    tex.tex.anisotropy = 8;
+    const mat = new xt({
+      map: tex.tex,
+      transparent: !0,
+      opacity: 0,
+      depthWrite: !1,
+      toneMapped: !1,
+      polygonOffset: !0,
+      polygonOffsetFactor: -2,
+    });
+    const mesh = new B(new mt(1, 1), mat);
+    mesh.renderOrder = 8;
+    mesh.visible = !1;
+    mesh.position.z = 0.004;
+    mesh.raycast = () => {};
+    mesh.name = "Die close-zoom detail";
+    return { DD, tex, mesh, mat, size, key: "", dieW, dieH, t: 0 };
+  }
+  function updateDieDetail(dt) {
+    const L = window.LAB;
+    const det = dieDetail;
+    if (!det || !L || L.active !== k || !S.metal) return;
+    const pl = S.metal.mesh,
+      cam = L.camera,
+      tg = L.controls.target;
+    pl.worldToLocal(_dv.copy(tg));
+    const fx = (_dv.x + det.dieW / 2) / det.dieW,
+      fy = (det.dieH / 2 - _dv.y) / det.dieH;
+    const dist = cam.position.distanceTo(tg),
+      on =
+        dist < 0.8 &&
+        fx > -0.05 &&
+        fx < 1.05 &&
+        fy > -0.05 &&
+        fy < 1.05 &&
+        (L.exp || 0) < 0.05 &&
+        pl.visible;
+    det.t += ((on ? 1 : 0) - det.t) * Math.min(1, dt * 5);
+    det.mat.opacity = det.t;
+    det.mesh.visible = det.t > 0.01;
+    if (y) y.material.opacity = 1 - 0.85 * det.t;
+    if (!on) return;
+    const span = Math.min(0.3, Math.max(0.025, (dist * 0.9) / det.dieW)),
+      q = span / 4;
+    const cx = Math.round(fx / q) * q,
+      cy = Math.round(fy / q) * q,
+      lv = Math.round(Math.log2(span) * 2),
+      key = `${cx.toFixed(4)},${cy.toFixed(4)},${lv},${d}`;
+    if (key === det.key) return;
+    det.key = key;
+    const sp = Math.pow(2, lv / 2),
+      u0 = cx - sp / 2,
+      v0 = cy - sp / 2,
+      Sz = det.size,
+      g = det.tex.ctx;
+    if (d === "net" && f)
+      det.DD.drawRealDetail(g, Sz, u0, v0, u0 + sp, v0 + sp, f.segdefs, u && u.state);
+    else det.DD.drawDieDetail(g, Sz, u0, v0, u0 + sp, v0 + sp);
+    // soft edges so the patch blends into the base layer textures
+    g.save();
+    g.globalCompositeOperation = "destination-in";
+    const e = Sz * 0.07;
+    for (const [x0, y0, x1, y1] of [
+      [0, 0, e, 0],
+      [Sz, 0, Sz - e, 0],
+      [0, 0, 0, e],
+      [0, Sz, 0, Sz - e],
+    ]) {
+      const gr = g.createLinearGradient(x0, y0, x1, y1);
+      gr.addColorStop(0, "rgba(0,0,0,0)");
+      gr.addColorStop(1, "rgba(0,0,0,1)");
+      g.fillStyle = gr;
+      g.fillRect(0, 0, Sz, Sz);
+    }
+    g.restore();
+    det.tex.tex.needsUpdate = !0;
+    det.mesh.scale.set(sp * det.dieW, sp * det.dieH, 1);
+    det.mesh.position.set((u0 + sp / 2 - 0.5) * det.dieW, (0.5 - (v0 + sp / 2)) * det.dieH, 0.004);
+    k._detail = { span: sp, u0, v0, mode: d };
+  }
   function L() {
     ((e = Er(t, 512)),
       h.err &&
