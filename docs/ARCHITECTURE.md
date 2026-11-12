@@ -1,4 +1,4 @@
-# System & Module Architecture (v5.0.0)
+# System & Module Architecture (v6.0.0)
 
 ## 1. Execution & Script Loading Graph
 
