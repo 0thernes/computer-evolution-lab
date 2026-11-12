@@ -1824,7 +1824,7 @@ function makeMachineQomega() {
       c.fillStyle = "#7dd3fc";
       c.font = '700 19px "JetBrains Mono", monospace';
       c.fillText(
-        `EXACT SHOR QUANTUM FACTORING: f(x) = ${sr.a}^x mod ${sr.N}  ->  QFT_256 INTERFERENCE SPECTRUM`,
+        `EXACT SHOR QUANTUM FACTORING: f(x) = ${sr.a}^x mod ${sr.N}  ->  QFT INTERFERENCE SPECTRUM (Q = ${sr.Q || sim.Q}; N ≤ 255)`,
         42,
         122,
       );
@@ -1883,7 +1883,7 @@ function makeMachineQomega() {
       c.fillStyle = "#6ee7b7";
       c.font = '700 19px "JetBrains Mono", monospace';
       c.fillText(
-        `JORDAN–WIGNER H₂ ELECTRONIC STRUCTURE · EQUILIBRIUM R_eq = ${sim.h2EqAngstrom.toFixed(2)} Å · E₀ = ${sim.h2MinEnergyHa.toFixed(4)} Ha`,
+        `H₂ STO-3G FULL CI · R_eq = ${sim.h2EqAngstrom.toFixed(3)} Å (expt 0.741 Å; basis-set error) · E₀ = ${sim.h2MinEnergyHa.toFixed(4)} Ha`,
         42,
         122,
       );
@@ -1972,7 +1972,7 @@ function makeMachineQomega() {
     capital: true,
     view0: 0.44,
     blurb:
-      "Capital monument of the Quantum Age (Speculative Fault-Tolerant Horizon Architecture): unifies topological Majorana logical vaults, room-temperature photonic entanglement routers, 15-to-1 |T⟩ magic-state distillation prisms, and d=31 quantum Low-Density Parity-Check (qLDPC) error suppression (ε_L ≈ 10⁻³⁴) — running genuine live Shor QFT₂₅₆ factoring, 256-state Grover search, and H₂ quantum chemistry.",
+      "Capital monument of the Quantum Age (Speculative Fault-Tolerant Horizon Architecture): unifies topological Majorana logical vaults, room-temperature photonic entanglement routers, 15-to-1 |T⟩ magic-state distillation prisms, and d=31 quantum Low-Density Parity-Check (qLDPC) error suppression (ε_L ≈ 10⁻³⁴) — running exact state-vector Shor factoring (N ≤ 255, up to a 16-qubit period register), 256-state Grover search, and H₂ quantum chemistry.",
     diagram: {
       nodes: [
         { id: "core", label: "Icosahedral QPU Core", x: 0.5, y: 0.44, color: "#fde047" },
@@ -2301,7 +2301,7 @@ function makeMachineQomega() {
 
       statsUi = Pt([
         ["mode", "Active Engine"],
-        ["shor", "Shor QFT_256"],
+        ["shor", "Shor QFT (N ≤ 255)"],
         ["grov", "Grover 256-State"],
         ["chem", "H₂ Full-CI Probe"],
         ["dist", "Code Distance"],
@@ -2357,6 +2357,9 @@ function makeMachineQomega() {
                 ["21", "Shor Semiprime N = 21 (3 × 7)"],
                 ["33", "Shor Semiprime N = 33 (3 × 11)"],
                 ["35", "Shor Semiprime N = 35 (5 × 7)"],
+                ["143", "Shor Semiprime N = 143 (11 × 13), Q = 2¹⁵"],
+                ["221", "Shor Semiprime N = 221 (13 × 17), Q = 2¹⁶"],
+                ["253", "Shor Semiprime N = 253 (11 × 23), Q = 2¹⁶ (simulator limit N ≤ 255)"],
               ],
               "15",
               (val) => {

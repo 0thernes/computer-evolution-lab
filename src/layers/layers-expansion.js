@@ -1680,7 +1680,7 @@
       ],
       sw: [
         {
-          t: "Exact Quantum Algorithms running live: Shor's QFT₂₅₆ Integer Factoring (N=15,21,33,35), 256-state Grover O(√N) Search, and Full-CI H₂ Quantum Chemistry.",
+          t: "Exact Quantum Algorithms running live: Shor's algorithm with an exact QFT of up to 2¹⁶ amplitudes (odd composites N ≤ 255), 256-state Grover O(√N) Search, and Full-CI H₂ Quantum Chemistry.",
           p: /Holo-Display/i,
           viz: "app",
         },
@@ -1695,7 +1695,7 @@
           viz: "isa",
         },
         {
-          t: "Exact QFT₂₅₆ constructive-interference harmonics & Grover amplitude bars.",
+          t: "Exact QFT constructive-interference harmonics (256-bin view) & Grover amplitude bars.",
           p: /Icosahedral|Gimbal Ring/i,
           viz: "omegaqft",
         },
@@ -1716,9 +1716,9 @@
           bars,
           sigTitle: "Heralded Optical Bell-Pair Teleportation & qLDPC Syndromes",
           bits: s.groverTarget & 0xff,
-          app: `Active Quantum Engine: ${s.mode.toUpperCase()}\n• Shor QFT_256: N=${sr.N}, a=${sr.a} -> period r=${sr.period} -> ${sr.factors[0]} × ${sr.factors[1]}\n• Grover 256-State: Iter ${s.groverIter}/12 -> P(|${s.groverTarget}⟩) = ${(s.groverTargetProb * 100).toFixed(2)}%\n• H₂ Full-CI Curve: R_probe = ${(s.h2ProbeR || s.h2EqAngstrom).toFixed(2)} Å, E₀ = ${s.h2MinEnergyHa.toFixed(4)} Ha`,
+          app: `Active Quantum Engine: ${s.mode.toUpperCase()}\n• Shor QFT (Q=${sr.Q || s.Q}): N=${sr.N}, a=${sr.a} -> period r=${sr.period} -> ${sr.factors[0]} × ${sr.factors[1]}\n• Grover 256-State: Iter ${s.groverIter}/12 -> P(|${s.groverTarget}⟩) = ${(s.groverTargetProb * 100).toFixed(2)}%\n• H₂ STO-3G Full-CI Curve: R_probe = ${(s.h2ProbeR || s.h2EqAngstrom).toFixed(2)} Å, E₀ = ${s.h2MinEnergyHa.toFixed(4)} Ha`,
           os: `Speculative Fault-Tolerant Horizon OS (qLDPC d=${s.codeDistance})\nLogical Error Rate per Cycle: ε_L = ${s.logicalErrorRate().toExponential(2)}`,
-          isa: `Clifford + Distilled |T⟩ Universal Logical Gate Set\nQFT_256 + Continued Fractions + Jordan–Wigner Fermion Mapping`,
+          isa: `Clifford + Distilled |T⟩ Universal Logical Gate Set\nQFT (Q = 2^⌈log₂N²⌉) + Continued Fractions + Jordan–Wigner Fermion Mapping`,
         };
       },
     },
@@ -2722,7 +2722,7 @@
       devices: "Speculative modular qLDPC + photonic-interconnect logical vaults",
       power: null,
       price: null,
-      note: "Speculative horizon architecture (no fabricated figures claimed); executes exact live Shor QFT_256, 256-state Grover & H2 Full-CI math.",
+      note: "Speculative horizon architecture (no fabricated figures claimed); executes exact Shor (N ≤ 255), 256-state Grover and STO-3G H2 full-CI math.",
       src: "Shor, SIAM J. Comput. 26 (1997); Grover, STOC (1996); Bravyi et al. (high-rate qLDPC), Nature 627 (2024)",
     },
     {

@@ -1757,10 +1757,169 @@ DONE  ST    R2,NETOUT
     }
   }
 
+  // ---- STO-3G minimal-basis H2: exact Gaussian integrals + 2x2 full CI (REVIEW-v5 B6) ----
+  // Szabo & Ostlund, "Modern Quantum Chemistry" §3.5: H 1s STO-3G (zeta = 1.24).
+  const H2_STO3G_ALPHA = [3.42525091, 0.62391373, 0.1688554];
+  const H2_STO3G_COEF = [0.15432897, 0.53532814, 0.44463454];
+  const BOHR_PER_ANGSTROM = 1 / 0.529177210903;
+
+  function h2Erf(x) {
+    // erf via its Taylor series (|x| < 3) or asymptotic complement; |error| < 1e-12 on [0, 6]
+    if (x < 3) {
+      let sum = x;
+      let term = x;
+      for (let n = 1; n < 80; n++) {
+        term *= (-x * x) / n;
+        const add = term / (2 * n + 1);
+        sum += add;
+        if (Math.abs(add) < 1e-17) break;
+      }
+      return (2 / Math.sqrt(Math.PI)) * sum;
+    }
+    // continued fraction for erfc
+    let f = 0;
+    for (let n = 60; n >= 1; n--) f = n / 2 / (x + f);
+    return 1 - Math.exp(-x * x) / Math.sqrt(Math.PI) / (x + f);
+  }
+  function h2F0(t) {
+    if (t < 1e-10) return 1 - t / 3;
+    const st = Math.sqrt(t);
+    return 0.5 * Math.sqrt(Math.PI / t) * h2Erf(st);
+  }
+
+  // Returns the 2-configuration CI energies (Hartree) at bond length R (Angstrom).
+  function h2Sto3gEnergies(Rang) {
+    const R = Rang * BOHR_PER_ANGSTROM;
+    const centres = [0, R]; // nuclei on the z axis
+    const prims = (c) =>
+      H2_STO3G_ALPHA.map((a, k) => ({
+        a,
+        c: H2_STO3G_COEF[k] * Math.pow((2 * a) / Math.PI, 0.75),
+        z: c,
+      }));
+    const basis = centres.map(prims);
+    const S = [[0, 0], [0, 0]];
+    const Hc = [[0, 0], [0, 0]];
+    for (let i = 0; i < 2; i++)
+      for (let j = 0; j < 2; j++)
+        for (const p of basis[i])
+          for (const q of basis[j]) {
+            const g = p.a + q.a;
+            const ab2 = (p.z - q.z) ** 2;
+            const pre = Math.exp((-p.a * q.a * ab2) / g);
+            const ovl = Math.pow(Math.PI / g, 1.5) * pre;
+            const Pz = (p.a * p.z + q.a * q.z) / g;
+            let v = 0;
+            for (const C of centres) v += ((-2 * Math.PI) / g) * pre * h2F0(g * (Pz - C) ** 2);
+            const kin = ((p.a * q.a) / g) * (3 - (2 * p.a * q.a * ab2) / g) * ovl;
+            S[i][j] += p.c * q.c * ovl;
+            Hc[i][j] += p.c * q.c * (kin + v);
+          }
+    const eri = (i, j, k, l) => {
+      let s = 0;
+      for (const p of basis[i])
+        for (const q of basis[j])
+          for (const r of basis[k])
+            for (const t of basis[l]) {
+              const g1 = p.a + q.a;
+              const g2 = r.a + t.a;
+              const P = (p.a * p.z + q.a * q.z) / g1;
+              const Q = (r.a * r.z + t.a * t.z) / g2;
+              const val =
+                ((2 * Math.pow(Math.PI, 2.5)) / (g1 * g2 * Math.sqrt(g1 + g2))) *
+                Math.exp((-p.a * q.a * (p.z - q.z) ** 2) / g1 - (r.a * t.a * (r.z - t.z) ** 2) / g2) *
+                h2F0(((g1 * g2) / (g1 + g2)) * (P - Q) ** 2);
+              s += p.c * q.c * r.c * t.c * val;
+            }
+      return s;
+    };
+    // symmetry-adapted MOs: g = (A+B)/sqrt(2(1+S)), u = (A-B)/sqrt(2(1-S))
+    const s12 = S[0][1];
+    const cg = [1 / Math.sqrt(2 * (1 + s12)), 1 / Math.sqrt(2 * (1 + s12))];
+    const cu = [1 / Math.sqrt(2 * (1 - s12)), -1 / Math.sqrt(2 * (1 - s12))];
+    const ao = [];
+    for (let i = 0; i < 2; i++) {
+      ao[i] = [];
+      for (let j = 0; j < 2; j++) {
+        ao[i][j] = [];
+        for (let k = 0; k < 2; k++) {
+          ao[i][j][k] = [];
+          for (let l = 0; l < 2; l++) ao[i][j][k][l] = eri(i, j, k, l);
+        }
+      }
+    }
+    const h1 = (c1, c2) => {
+      let s = 0;
+      for (let i = 0; i < 2; i++) for (let j = 0; j < 2; j++) s += c1[i] * c2[j] * Hc[i][j];
+      return s;
+    };
+    const g2e = (a, b, c, d) => {
+      let s = 0;
+      for (let i = 0; i < 2; i++)
+        for (let j = 0; j < 2; j++)
+          for (let k = 0; k < 2; k++)
+            for (let l = 0; l < 2; l++) s += a[i] * b[j] * c[k] * d[l] * ao[i][j][k][l];
+      return s;
+    };
+    const hgg = h1(cg, cg);
+    const huu = h1(cu, cu);
+    const Jgg = g2e(cg, cg, cg, cg);
+    const Juu = g2e(cu, cu, cu, cu);
+    const Kgu = g2e(cg, cu, cg, cu);
+    const eNuc = 1 / R;
+    const H00 = 2 * hgg + Jgg + eNuc; // |sigma_g^2> (Hartree-Fock)
+    const H11 = 2 * huu + Juu + eNuc; // |sigma_u^2> (double excitation)
+    const avg = 0.5 * (H00 + H11);
+    const halfGap = 0.5 * (H11 - H00);
+    const split = Math.sqrt(halfGap * halfGap + Kgu * Kgu);
+    return { eGround: avg - split, eHF: H00, eExcited: avg + split, Kgu, halfGap };
+  }
+
   // ============================================================================
   // 15. OMEGA-Q SINGULARITY HYPER-QUANTUM COMPUTER (2045+)
   //     Exact Shor QFT Factoring + Exact 256-State Grover + H2 Chemistry Solver
   // ============================================================================
+  const SHOR_MAX_N = 255;
+  function isPrimeInt(n) {
+    if (n < 2) return false;
+    for (let d = 2; d * d <= n; d++) if (n % d === 0) return false;
+    return true;
+  }
+  // iterative radix-2 Cooley-Tukey FFT (length must be a power of two)
+  function fftInPlace(re, im) {
+    const n = re.length;
+    for (let i = 1, j = 0; i < n; i++) {
+      let bit = n >> 1;
+      for (; j & bit; bit >>= 1) j ^= bit;
+      j ^= bit;
+      if (i < j) {
+        [re[i], re[j]] = [re[j], re[i]];
+        [im[i], im[j]] = [im[j], im[i]];
+      }
+    }
+    for (let len = 2; len <= n; len <<= 1) {
+      const ang = (2 * Math.PI) / len;
+      const wr = Math.cos(ang);
+      const wi = Math.sin(ang);
+      for (let i = 0; i < n; i += len) {
+        let cr = 1;
+        let ci = 0;
+        for (let k = 0; k < len / 2; k++) {
+          const ur = re[i + k];
+          const ui = im[i + k];
+          const vr = re[i + k + len / 2] * cr - im[i + k + len / 2] * ci;
+          const vi = re[i + k + len / 2] * ci + im[i + k + len / 2] * cr;
+          re[i + k] = ur + vr;
+          im[i + k] = ui + vi;
+          re[i + k + len / 2] = ur - vr;
+          im[i + k + len / 2] = ui - vi;
+          const t = cr * wr - ci * wi;
+          ci = cr * wi + ci * wr;
+          cr = t;
+        }
+      }
+    }
+  }
   function gcdInt(a, b) {
     a = Math.abs(a | 0);
     b = Math.abs(b | 0);
@@ -1789,7 +1948,7 @@ DONE  ST    R2,NETOUT
       this.mode = "shor"; // "shor" | "grover" | "chem"
       this.shorN = 15;
       this.shorA = 7;
-      this.Q = 256; // 8-bit QFT period-register size
+      this.Q = 256; // period-register size; runShor resizes it to 2^ceil(log2 N^2)
       this.qftProbs = new Float64Array(256);
       this.groverTarget = 173;
       this.groverAmp = new Float64Array(256);
@@ -1802,82 +1961,86 @@ DONE  ST    R2,NETOUT
     }
 
     // 1. EXACT SHOR'S QUANTUM FACTORING ALGORITHM (Modular Exp + Exact 256-pt QFT + Continued Fractions!)
+    // Shor's algorithm, simulated exactly (REVIEW-v5 B7). The period register uses
+    // Q = 2^ceil(log2 N^2) amplitudes (the textbook size that guarantees continued fractions
+    // recover r), up to Q = 65536, so N is limited to 3..255. The QFT is an exact radix-2 FFT of
+    // the post-measurement register; measurement outcomes are tried in descending probability
+    // order, and a different base a is tried when the period is odd or gives trivial factors,
+    // exactly as the classical post-processing of real Shor does.
     runShor(N = 15, coprimeA = 7) {
-      this.shorN = N;
-      let a = coprimeA;
-      if (gcdInt(a, N) !== 1) {
-        for (const cand of [2, 4, 7, 8, 11, 13]) {
-          if (cand < N && gcdInt(cand, N) === 1) {
-            a = cand;
-            break;
-          }
-        }
+      N = Math.round(+N);
+      if (!(N >= 3 && N <= SHOR_MAX_N)) {
+        throw new RangeError(`Shor simulator supports 3 <= N <= ${SHOR_MAX_N} (got ${N})`);
       }
-      this.shorA = a;
+      this.shorN = N;
+      const Q = 1 << Math.ceil(Math.log2(N * N));
+      this.Q = Q;
+      const note = (msg, p, q, a = 0, period = 0) => {
+        this.shorResult = { N, a, period, factors: [Math.min(p, q), Math.max(p, q)], note: msg, Q };
+        this.shorA = a;
+        return this.shorResult;
+      };
+      if (N % 2 === 0) return note("even N: factor 2 found classically", 2, N / 2);
+      if (isPrimeInt(N)) return note("N is prime: no non-trivial factors", 1, N);
+      for (let b = 2; b * b <= N; b++) {
+        let v = b * b;
+        while (v < N) v *= b;
+        if (v === N) return note("prime power: factored classically", b, N / b);
+      }
+      const bases = [coprimeA];
+      for (let c = 2; c < N && bases.length < 24; c++) if (c !== coprimeA) bases.push(c);
+      for (const a of bases) {
+        if (a < 2 || a >= N) continue;
+        const g = gcdInt(a, N);
+        if (g !== 1) continue; // a lucky gcd would factor N classically; keep the quantum path
+        const res = this._shorAttempt(N, a, Q);
+        if (res) return note("quantum period finding", res[0], res[1], a, res[2]);
+      }
+      return note("no base produced a usable period", 1, N);
+    }
 
-      // Measure modular exponentiation register f(x) = a^x mod N (collapse to coset f(x) == f(0) = 1)
-      const Q = this.Q;
-      const reg = new Float64Array(Q);
+    _shorAttempt(N, a, Q) {
+      // |x>|a^x mod N>, measure the second register in the outcome f(0) = 1: keeps x = 0, r, 2r, ...
+      const re = new Float64Array(Q);
+      const im = new Float64Array(Q);
       let count = 0;
       for (let x = 0; x < Q; x++) {
         if (modPowInt(a, x, N) === 1) {
-          reg[x] = 1;
+          re[x] = 1;
           count++;
         }
       }
       const norm = 1 / Math.sqrt(Math.max(1, count));
-      for (let x = 0; x < Q; x++) reg[x] *= norm;
-
-      // Exact Quantum Fourier Transform (QFT_256) on collapsed period register!
+      for (let x = 0; x < Q; x++) re[x] *= norm;
+      fftInPlace(re, im); // unnormalised DFT; QFT amplitude = DFT / sqrt(Q)
+      const probs = new Float64Array(Q);
+      for (let k = 0; k < Q; k++) probs[k] = (re[k] * re[k] + im[k] * im[k]) / Q;
+      this.qftProbsFull = probs;
+      // 256-bin max-pooled view for the visualiser
       this.qftProbs.fill(0);
-      const invSqrtQ = 1 / Math.sqrt(Q);
-      let peakK = 0;
-      let peakP = 0;
+      const bin = Q / 256;
       for (let k = 0; k < Q; k++) {
-        let re = 0;
-        let im = 0;
-        for (let x = 0; x < Q; x++) {
-          if (reg[x] === 0) continue;
-          const ang = (2 * Math.PI * k * x) / Q;
-          re += reg[x] * Math.cos(ang);
-          im += reg[x] * Math.sin(ang);
-        }
-        const prob = (re * re + im * im) * (invSqrtQ * invSqrtQ);
-        this.qftProbs[k] = prob;
-        // Pick strongest non-zero harmonic peak where gcd(k, Q) reveals full period r!
-        if (k > 0 && prob > peakP * 0.85 && peakK === 0) {
-          peakP = prob;
-          peakK = k;
+        const b = Math.min(255, Math.floor(k / Math.max(1, bin)));
+        if (probs[k] > this.qftProbs[b]) this.qftProbs[b] = probs[k];
+      }
+      const order = Array.from(probs.keys())
+        .filter((k) => k > 0 && probs[k] > 1e-6)
+        .sort((x, y) => probs[y] - probs[x])
+        .slice(0, 64);
+      for (const k of order) {
+        const r = this._continuedFractionOrder(k, Q, a, N);
+        if (r > 0 && r % 2 === 0) {
+          const half = modPowInt(a, r / 2, N);
+          if (half === N - 1) return null; // a^(r/2) = -1 mod N: trivial, try another base
+          const f = gcdInt(half - 1, N);
+          if (f > 1 && f < N) return [f, N / f, r];
+          const f2 = gcdInt(half + 1, N);
+          if (f2 > 1 && f2 < N) return [f2, N / f2, r];
+        } else if (r > 0) {
+          return null; // odd period: try another base
         }
       }
-
-      // Continued-fractions denominator extraction on k / Q to recover period r
-      let period = 0;
-      for (let k = 1; k < Q; k++) {
-        if (this.qftProbs[k] < 0.02) continue;
-        const rCand = this._continuedFractionOrder(k, Q, a, N);
-        if (rCand > 0) {
-          period = rCand;
-          break;
-        }
-      }
-
-      let p = 1;
-      let q = N;
-      if (period > 0 && period % 2 === 0) {
-        const halfPow = modPowInt(a, period / 2, N);
-        const f1 = gcdInt(halfPow - 1, N);
-        const f2 = gcdInt(halfPow + 1, N);
-        if (f1 > 1 && f1 < N) {
-          p = f1;
-          q = N / f1;
-        } else if (f2 > 1 && f2 < N) {
-          p = f2;
-          q = N / f2;
-        }
-      }
-      this.shorResult = { N, a, period, factors: [Math.min(p, q), Math.max(p, q)] };
-      return this.shorResult;
+      return null;
     }
 
     _continuedFractionOrder(k, Q, a, N) {
@@ -1887,7 +2050,7 @@ DONE  ST    R2,NETOUT
         pCur = 1;
       let qPrev = 1,
         qCur = 0;
-      for (let iter = 0; iter < 12 && den !== 0; iter++) {
+      for (let iter = 0; iter < 40 && den !== 0; iter++) {
         const quot = Math.floor(num / den);
         const rem = num % den;
         const pNext = quot * pCur + pPrev;
@@ -1935,48 +2098,33 @@ DONE  ST    R2,NETOUT
       return { iter: this.groverIter, prob: this.groverTargetProb };
     }
 
-    // 3. EXACT H2 MOLECULAR ELECTRONIC-STRUCTURE POTENTIAL ENERGY CURVE (2-Qubit Jordan-Wigner / Full-CI Subspace)
+    // 3. H2 POTENTIAL ENERGY CURVE: STO-3G minimal basis, exact Gaussian integrals, 2x2 full CI
+    //    in the {|sigma_g^2>, |sigma_u^2>} space (equivalent to the 2-qubit Jordan-Wigner problem).
+    //    No empirical correction factors. STO-3G FCI gives R_e ~ 0.735 A vs 0.741 A experiment;
+    //    that ~0.006 A gap is the basis-set (method) error and is reported as such in the UI.
     computeH2DissociationCurve() {
-      // Exact 1s Slater-orbital MO integrals + 2x2 {|sigma_g^2>, |sigma_u^2>} CI diagonalization across bond length R
       const points = [];
-      let minE = 99;
-      let eqR = 0.74;
       for (let i = 0; i < 28; i++) {
         const R = +(0.35 + i * 0.08).toFixed(2); // Angstroms (0.35 .. 2.51 A)
-        const r = R / 0.52917721; // Bohr atomic units
-        const S = Math.exp(-r) * (1 + r + (r * r) / 3);
-        const Vaa = (1 / r) * (1 - (1 + r) * Math.exp(-2 * r));
-        const Vab = Math.exp(-r) * (1 + r);
-        const Jaa = 0.625; // exact <1s_A 1s_A | 1/r12 | 1s_A 1s_A> = 5/8 Ha
-        const Jab =
-          (1 / r) *
-          (1 -
-            Math.exp(-2 * r) * (1 + (11 / 8) * r + 0.75 * r * r + (1 / 6) * r * r * r));
-        // Mulliken-corrected two-electron MO integrals (exact at both united-atom and R->inf limits!)
-        const hgg = -0.5 - (Vaa + Vab) / (1 + S);
-        const huu = -0.5 - (Vaa - Vab) / Math.max(1e-4, 1 - S);
-        const Jgg = (Jaa + Jab) / (2 * (1 + S * S * 0.18));
-        const Juu = (Jaa + Jab) / 2;
-        const Kgu = (Jaa - Jab) / 2;
-        const eNuc = 1 / r;
-
-        const H00 = 2 * hgg + Jgg + eNuc; // Hartree-Fock |01> = |sigma_g^2>
-        const H11 = 2 * huu + Juu + eNuc; // Doubly-excited |10> = |sigma_u^2>
-        const avg = 0.5 * (H00 + H11);
-        const halfGap = 0.5 * (H11 - H00);
-        const split = Math.sqrt(halfGap * halfGap + Kgu * Kgu);
-        const eGround = avg - split;
-        const eExcited = avg + split;
-        if (eGround < minE) {
-          minE = eGround;
-          eqR = R;
-        }
-        points.push({ R, eGround, eHF: H00, eExcited });
+        const e = h2Sto3gEnergies(R);
+        points.push({ R, eGround: e.eGround, eHF: e.eHF, eExcited: e.eExcited });
       }
+      // refine the minimum by golden-section search on the exact curve
+      let a = 0.5;
+      let b = 1.0;
+      const g = (Math.sqrt(5) - 1) / 2;
+      for (let k = 0; k < 60; k++) {
+        const c = b - g * (b - a);
+        const d = a + g * (b - a);
+        if (h2Sto3gEnergies(c).eGround < h2Sto3gEnergies(d).eGround) b = d;
+        else a = c;
+      }
+      const eqR = (a + b) / 2;
       this.h2Curve = points;
-      this.h2MinEnergyHa = minE;
-      this.h2EqAngstrom = eqR;
-      if (this.h2SelectedR === undefined) this.h2SelectedR = eqR;
+      this.h2EqAngstrom = +eqR.toFixed(4);
+      this.h2MinEnergyHa = h2Sto3gEnergies(eqR).eGround;
+      this.h2Method = "STO-3G full CI (2 electrons, 2 orbitals)";
+      if (this.h2SelectedR === undefined) this.h2SelectedR = +eqR.toFixed(2);
       this.evalH2At(this.h2SelectedR);
       return points;
     }
@@ -1984,34 +2132,14 @@ DONE  ST    R2,NETOUT
     evalH2At(R = 0.75) {
       const clampedR = Math.max(0.35, Math.min(2.55, +R));
       this.h2SelectedR = +clampedR.toFixed(2);
-      const r = this.h2SelectedR / 0.52917721;
-      const S = Math.exp(-r) * (1 + r + (r * r) / 3);
-      const Vaa = (1 / r) * (1 - (1 + r) * Math.exp(-2 * r));
-      const Vab = Math.exp(-r) * (1 + r);
-      const Jaa = 0.625;
-      const Jab =
-        (1 / r) *
-        (1 - Math.exp(-2 * r) * (1 + (11 / 8) * r + 0.75 * r * r + (1 / 6) * r * r * r));
-      const hgg = -0.5 - (Vaa + Vab) / (1 + S);
-      const huu = -0.5 - (Vaa - Vab) / Math.max(1e-4, 1 - S);
-      const Jgg = (Jaa + Jab) / (2 * (1 + S * S * 0.18));
-      const Juu = (Jaa + Jab) / 2;
-      const Kgu = (Jaa - Jab) / 2;
-      const eNuc = 1 / r;
-      const H00 = 2 * hgg + Jgg + eNuc;
-      const H11 = 2 * huu + Juu + eNuc;
-      const avg = 0.5 * (H00 + H11);
-      const halfGap = 0.5 * (H11 - H00);
-      const split = Math.sqrt(halfGap * halfGap + Kgu * Kgu);
-      const eGround = avg - split;
-      const eExcited = avg + split;
-      const corrHa = eGround - H00;
-      const thetaUcc = -0.5 * Math.atan2(Kgu, halfGap);
+      const e = h2Sto3gEnergies(this.h2SelectedR);
+      const corrHa = e.eGround - e.eHF;
+      const thetaUcc = -0.5 * Math.atan2(e.Kgu, e.halfGap);
       this.h2Probe = {
         R: this.h2SelectedR,
-        eGround,
-        eHF: H00,
-        eExcited,
+        eGround: e.eGround,
+        eHF: e.eHF,
+        eExcited: e.eExcited,
         corrHa,
         thetaUcc,
       };

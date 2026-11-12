@@ -435,10 +435,23 @@ test("Circle IV Quantum Age simulators (Surface-Code Cryo, Rydberg Atom, Photoni
     omega.groverTargetProb > 0.94,
     "12 Grover O(sqrt(N)) iterations amplify marked state out of 256 to >94%",
   );
+  // STO-3G full CI: R_e = 0.735 A (Szabo & Ostlund); experiment 0.741 A. Allow the
+  // 0.006 A basis-set error plus 0.004 A margin, and pin the textbook energies.
   assert.ok(
-    omega.h2EqAngstrom >= 0.65 && omega.h2EqAngstrom <= 0.85,
-    "Jordan-Wigner H2 potential curve minimum sits near 0.74 A bond length",
+    Math.abs(omega.h2EqAngstrom - 0.741) <= 0.01,
+    `H2 R_e ${omega.h2EqAngstrom} A should be within STO-3G method error of 0.741 A`,
   );
+  assert.ok(Math.abs(omega.h2MinEnergyHa - -1.1373) < 5e-4, "STO-3G FCI E_min = -1.1373 Ha");
+  const probe14 = omega.evalH2At(0.74);
+  assert.ok(Math.abs(probe14.eHF - -1.1167) < 2e-3, "STO-3G HF energy near R_e = -1.1167 Ha");
+  // Shor with Q = 2^ceil(log2 N^2): every odd composite up to the stated limit factors
+  for (const N of [143, 221, 253]) {
+    const res = omega.runShor(N, 7);
+    assert.equal(res.factors[0] * res.factors[1], N, `Shor factors N=${N}`);
+    assert.ok(res.factors[0] > 1, `Shor finds a non-trivial factor of ${N}`);
+  }
+  assert.throws(() => omega.runShor(323, 7), /N <= 255/);
+  omega.runShor(15, 7);
   const probeEq = omega.evalH2At(0.75);
   const probeStr = omega.evalH2At(2.2);
   assert.ok(
