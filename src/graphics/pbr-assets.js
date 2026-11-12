@@ -90,7 +90,8 @@ var CelPBR = (() => {
     if (!root) return 0;
     let n = 0;
     root.traverse((o) => {
-      if (!o.isMesh || o.isInstancedMesh || Array.isArray(o.material) || !o.geometry) return;
+      if (!o.isMesh || o.isInstancedMesh || Array.isArray(o.material) || !o.geometry)
+        return;
       const tile = o.material && o.material.userData && o.material.userData.tile;
       if (!tile || !o.geometry.attributes.normal || o.userData.celUV === tile) return;
       o.geometry = worldUV(o.geometry, tile);
@@ -124,7 +125,8 @@ var CelPBR = (() => {
       U[k] = (...args) => detail(orig(...args), set, ns, tile);
     }
     const wood = U.wood;
-    if (typeof wood === "function") U.wood = (...a) => detail(wood(...a), "wood", 0.6, 0.6, true);
+    if (typeof wood === "function")
+      U.wood = (...a) => detail(wood(...a), "wood", 0.6, 0.6, true);
   }
 
   // HDRI environment: swap in only once decoded and prefiltered

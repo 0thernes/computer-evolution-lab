@@ -3779,8 +3779,11 @@ async function visual6502Verify(name, text) {
   const subtle = globalThis.crypto && globalThis.crypto.subtle;
   if (!want || !subtle) return; // pinned commit still applies when SubtleCrypto is unavailable
   const buf = await subtle.digest("SHA-256", new TextEncoder().encode(text));
-  const hex = Array.from(new Uint8Array(buf), (b) => b.toString(16).padStart(2, "0")).join("");
-  if (hex !== want) throw new Error(`${name}: SHA-256 mismatch (got ${hex.slice(0, 12)}…)`);
+  const hex = Array.from(new Uint8Array(buf), (b) =>
+    b.toString(16).padStart(2, "0"),
+  ).join("");
+  if (hex !== want)
+    throw new Error(`${name}: SHA-256 mismatch (got ${hex.slice(0, 12)}…)`);
 }
 var NA = `https://raw.githubusercontent.com/trebonian/visual6502/${VISUAL6502_COMMIT}/`,
   mb =
@@ -4772,7 +4775,8 @@ DL · DOR`,
   function makeDieDetail(dieW, dieH) {
     const DD = window.CelDieDetail;
     if (!DD) return null;
-    const low = window.LAB && window.LAB.deviceClass && window.LAB.deviceClass.tier === "low";
+    const low =
+      window.LAB && window.LAB.deviceClass && window.LAB.deviceClass.tier === "low";
     const size = low ? 1024 : 2048;
     const tex = Bt(size, size);
     tex.tex.anisotropy = 8;
@@ -4852,7 +4856,11 @@ DL · DOR`,
     g.restore();
     det.tex.tex.needsUpdate = !0;
     det.mesh.scale.set(sp * det.dieW, sp * det.dieH, 1);
-    det.mesh.position.set((u0 + sp / 2 - 0.5) * det.dieW, (0.5 - (v0 + sp / 2)) * det.dieH, 0.004);
+    det.mesh.position.set(
+      (u0 + sp / 2 - 0.5) * det.dieW,
+      (0.5 - (v0 + sp / 2)) * det.dieH,
+      0.004,
+    );
     k._detail = { span: sp, u0, v0, mode: d };
   }
   function L() {

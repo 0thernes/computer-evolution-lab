@@ -9,24 +9,114 @@
 // good if stems can't load (file://, missing files, or no Opus decoder).
 
 var STEM_CUES = {
-  hub: { title: "Gallery of Minds", bpm: 76, key: "D major", mood: "lyrical strings and horns" },
-  turing: { title: "Tape and Thought", bpm: 104, key: "A minor", mood: "pulsing low strings, ticking clocks, running piano" },
-  z1: { title: "Sliding Plates", bpm: 96, key: "F minor", mood: "mechanical 3+3+2 spiccato, clockwork" },
-  analog: { title: "Integrators", bpm: 112, key: "E minor", mood: "swirling spiccato, low brass, timpani" },
-  tube: { title: "Three Thousand Valves", bpm: 120, key: "C minor", mood: "relentless pedal strings, heartbeat drums" },
-  pdp8: { title: "Core Planes", bpm: 132, key: "B♭ major", mood: "counting piano in 3/4, flute and strings" },
-  altair: { title: "Switches and Lamps", bpm: 80, key: "E♭ major", mood: "warm horns, harp, glockenspiel" },
-  home80: { title: "Raster Lines", bpm: 120, key: "A minor", mood: "synth arpeggiator with orchestra" },
-  pc90: { title: "Rain on Beige", bpm: 66, key: "F dorian", mood: "slow synth brass, bells, long reverb" },
-  pc00: { title: "Deeper Pipeline", bpm: 60, key: "G minor", mood: "monumental low brass, Shepard-tone riser" },
-  pc10: { title: "Four Cores", bpm: 72, key: "E minor", mood: "piano eighths, slow strings, brass at the turns" },
-  pc20: { title: "Shader Cores", bpm: 132, key: "D minor", mood: "driving taiko, spiccato and brass stabs" },
-  aibox: { title: "Gradient Descent", bpm: 100, key: "C♯ minor", mood: "music-box piano, pulse, blooming strings" },
-  m6502: { title: "3,510 Transistors", bpm: 108, key: "B♭ major", mood: "heroic horn theme, timpani, cymbals" },
-  quantum: { title: "Superposition", bpm: 70, key: "E minor", mood: "pipe-organ swells, ticking, church acoustics" },
-  bci: { title: "Culture in a Dish", bpm: 60, key: "E major", mood: "sparse piano, string pads" },
-  alife: { title: "Reaction-Diffusion", bpm: 56, key: "F lydian", mood: "lydian shimmer, harp, cello song" },
-  photonic: { title: "Light Through Waveguides", bpm: 50, key: "D minor", mood: "breathing string clusters, flute air" },
+  hub: {
+    title: "Gallery of Minds",
+    bpm: 76,
+    key: "D major",
+    mood: "lyrical strings and horns",
+  },
+  turing: {
+    title: "Tape and Thought",
+    bpm: 104,
+    key: "A minor",
+    mood: "pulsing low strings, ticking clocks, running piano",
+  },
+  z1: {
+    title: "Sliding Plates",
+    bpm: 96,
+    key: "F minor",
+    mood: "mechanical 3+3+2 spiccato, clockwork",
+  },
+  analog: {
+    title: "Integrators",
+    bpm: 112,
+    key: "E minor",
+    mood: "swirling spiccato, low brass, timpani",
+  },
+  tube: {
+    title: "Three Thousand Valves",
+    bpm: 120,
+    key: "C minor",
+    mood: "relentless pedal strings, heartbeat drums",
+  },
+  pdp8: {
+    title: "Core Planes",
+    bpm: 132,
+    key: "B♭ major",
+    mood: "counting piano in 3/4, flute and strings",
+  },
+  altair: {
+    title: "Switches and Lamps",
+    bpm: 80,
+    key: "E♭ major",
+    mood: "warm horns, harp, glockenspiel",
+  },
+  home80: {
+    title: "Raster Lines",
+    bpm: 120,
+    key: "A minor",
+    mood: "synth arpeggiator with orchestra",
+  },
+  pc90: {
+    title: "Rain on Beige",
+    bpm: 66,
+    key: "F dorian",
+    mood: "slow synth brass, bells, long reverb",
+  },
+  pc00: {
+    title: "Deeper Pipeline",
+    bpm: 60,
+    key: "G minor",
+    mood: "monumental low brass, Shepard-tone riser",
+  },
+  pc10: {
+    title: "Four Cores",
+    bpm: 72,
+    key: "E minor",
+    mood: "piano eighths, slow strings, brass at the turns",
+  },
+  pc20: {
+    title: "Shader Cores",
+    bpm: 132,
+    key: "D minor",
+    mood: "driving taiko, spiccato and brass stabs",
+  },
+  aibox: {
+    title: "Gradient Descent",
+    bpm: 100,
+    key: "C♯ minor",
+    mood: "music-box piano, pulse, blooming strings",
+  },
+  m6502: {
+    title: "3,510 Transistors",
+    bpm: 108,
+    key: "B♭ major",
+    mood: "heroic horn theme, timpani, cymbals",
+  },
+  quantum: {
+    title: "Superposition",
+    bpm: 70,
+    key: "E minor",
+    mood: "pipe-organ swells, ticking, church acoustics",
+  },
+  bci: {
+    title: "Culture in a Dish",
+    bpm: 60,
+    key: "E major",
+    mood: "sparse piano, string pads",
+  },
+  alife: {
+    title: "Reaction-Diffusion",
+    bpm: 56,
+    key: "F lydian",
+    mood: "lydian shimmer, harp, cello song",
+  },
+  photonic: {
+    title: "Light Through Waveguides",
+    bpm: 50,
+    key: "D minor",
+    mood: "breathing string clusters, flute air",
+  },
 };
 
 // The repo has 48 machines; the 30 without their own cue borrow the closest one by era and timbre.
@@ -206,7 +296,8 @@ var StemScoreEngine = class {
     if (!c) return;
     const t = this.ac.currentTime;
     const muted = this.h.muted || this.h.vol.music <= 0.005;
-    for (const l of c.layers) l.g.gain.setTargetAtTime(muted ? 0 : this.level[l.k], t, 0.25);
+    for (const l of c.layers)
+      l.g.gain.setTargetAtTime(muted ? 0 : this.level[l.k], t, 0.25);
     this.h.stats.notes++;
   }
 

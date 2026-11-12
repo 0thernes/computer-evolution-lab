@@ -1977,7 +1977,8 @@ var Nm = class LabAudioController {
       if (typeof saved.muted === "boolean") this.muted = saved.muted;
       if (typeof saved.boost === "boolean") this.boost = saved.boost;
       if (saved.scoreOverride) {
-        this.scoreOverride = SCORE_THEME_MIGRATION[saved.scoreOverride] || saved.scoreOverride;
+        this.scoreOverride =
+          SCORE_THEME_MIGRATION[saved.scoreOverride] || saved.scoreOverride;
       }
     } catch {}
   }
@@ -2121,7 +2122,16 @@ var Nm = class LabAudioController {
       // CC0 recorded SFX (assets/audio/*.mp3, credited in SOUNDS.md). http(s) only; from file://
       // the synthesized versions are used.
       if (typeof CelAssets !== "undefined" && CelAssets.canLoad()) {
-        for (const name of ["relay", "toggle", "ttyhit", "seek", "bell", "floppy", "keys", "modem"]) {
+        for (const name of [
+          "relay",
+          "toggle",
+          "ttyhit",
+          "seek",
+          "bell",
+          "floppy",
+          "keys",
+          "modem",
+        ]) {
           fetch(CelAssets.sfx(name))
             .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(r.status))))
             .then((ab) => ac.decodeAudioData(ab))

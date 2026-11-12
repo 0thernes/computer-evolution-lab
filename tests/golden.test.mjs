@@ -12,7 +12,9 @@ function load(rel) {
   sb.window = sb;
   sb.globalThis = sb;
   vm.createContext(sb);
-  vm.runInContext(fs.readFileSync(path.join(ROOT_DIR, rel), "utf8"), sb, { filename: rel });
+  vm.runInContext(fs.readFileSync(path.join(ROOT_DIR, rel), "utf8"), sb, {
+    filename: rel,
+  });
   return sb;
 }
 
@@ -66,7 +68,9 @@ test("Cray-1 kernel computes V4 = S1*V0 + V2 and the stated timing model", () =>
 
 test("Shor factors odd composites up to N=255 and refuses above it", () => {
   const omega = new env.OmegaSingularityCore();
-  for (const N of [15, 21, 33, 35, 39, 51, 55, 57, 65, 77, 85, 91, 143, 187, 209, 221, 247, 253]) {
+  for (const N of [
+    15, 21, 33, 35, 39, 51, 55, 57, 65, 77, 85, 91, 143, 187, 209, 221, 247, 253,
+  ]) {
     const r = omega.runShor(N, 2);
     const [p, q] = Array.from(r.factors);
     assert.equal(p * q, N, `N=${N}`);

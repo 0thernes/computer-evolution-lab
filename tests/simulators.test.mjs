@@ -441,9 +441,15 @@ test("Circle IV Quantum Age simulators (Surface-Code Cryo, Rydberg Atom, Photoni
     Math.abs(omega.h2EqAngstrom - 0.741) <= 0.01,
     `H2 R_e ${omega.h2EqAngstrom} A should be within STO-3G method error of 0.741 A`,
   );
-  assert.ok(Math.abs(omega.h2MinEnergyHa - -1.1373) < 5e-4, "STO-3G FCI E_min = -1.1373 Ha");
+  assert.ok(
+    Math.abs(omega.h2MinEnergyHa - -1.1373) < 5e-4,
+    "STO-3G FCI E_min = -1.1373 Ha",
+  );
   const probe14 = omega.evalH2At(0.74);
-  assert.ok(Math.abs(probe14.eHF - -1.1167) < 2e-3, "STO-3G HF energy near R_e = -1.1167 Ha");
+  assert.ok(
+    Math.abs(probe14.eHF - -1.1167) < 2e-3,
+    "STO-3G HF energy near R_e = -1.1167 Ha",
+  );
   // Shor with Q = 2^ceil(log2 N^2): every odd composite up to the stated limit factors
   for (const N of [143, 221, 253]) {
     const res = omega.runShor(N, 7);
@@ -816,7 +822,9 @@ test("Universal HardWiredNetlistSolver verifies exact Boolean & physical switchi
         Number.isFinite(snap.critDelayPs) &&
           snap.critDelayPs > 0 &&
           Number.isFinite(snap.totalEnergyFj) &&
-          (fam.key === "mech_plate" ? snap.totalEnergyFj === 0 : snap.totalEnergyFj > 0) &&
+          (fam.key === "mech_plate"
+            ? snap.totalEnergyFj === 0
+            : snap.totalEnergyFj > 0) &&
           env.HardWiredNetlistSolver.formatDelay(snap.critDelayPs).length > 0,
         `${id} physical delay & switching energy are positive and finite`,
       );

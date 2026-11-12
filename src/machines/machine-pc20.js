@@ -211,7 +211,8 @@ void main(){ vec4 c = texture(tex, vUv); if (mode == 1) { float v = c.g; outColo
 
 var Qs = (i, e, t, n) => (i.position.set(e, t, n), i),
   // GPU render-target size scales with the device (REVIEW-v5 P5): 512² on touch devices, 1024² else
-  PC20_TOUCH = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches,
+  PC20_TOUCH =
+    typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches,
   xi = PC20_TOUCH ? 512 : 1024,
   Mi = xi / 2,
   // synchronous readback stalls the GPU pipeline; do it less often on phones

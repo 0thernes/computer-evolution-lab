@@ -320,9 +320,11 @@ function rv32Alu(d, pc, a, b) {
         if (f3 === 1) return Number((BigInt(a) * BigInt(b)) >> 32n) | 0;
         if (f3 === 2) return Number((BigInt(a) * BigInt(b >>> 0)) >> 32n) | 0;
         if (f3 === 3) return Number((BigInt(a >>> 0) * BigInt(b >>> 0)) >> 32n) | 0;
-        if (f3 === 4) return b === 0 ? -1 : a === -2147483648 && b === -1 ? a : (a / b) | 0;
+        if (f3 === 4)
+          return b === 0 ? -1 : a === -2147483648 && b === -1 ? a : (a / b) | 0;
         if (f3 === 5) return b === 0 ? -1 : ((a >>> 0) / (b >>> 0)) | 0;
-        if (f3 === 6) return b === 0 ? a : a === -2147483648 && b === -1 ? 0 : a % b | 0;
+        if (f3 === 6)
+          return b === 0 ? a : a === -2147483648 && b === -1 ? 0 : (a % b) | 0;
         return b === 0 ? a : ((a >>> 0) % (b >>> 0)) | 0;
       }
       if (f3 === 0) return f7 & 0x20 ? (a - b) | 0 : (a + b) | 0;
@@ -1158,7 +1160,11 @@ var RV32ModernSystem = class {
     if (this.halted) return false;
     const pc = this.pc >>> 0;
     if (pc >= this.ramBytes || pc & 3) {
-      return this._trap(pc & 3 ? RV32_CAUSE.FETCH_MISALIGNED : RV32_CAUSE.FETCH_FAULT, pc, 0);
+      return this._trap(
+        pc & 3 ? RV32_CAUSE.FETCH_MISALIGNED : RV32_CAUSE.FETCH_FAULT,
+        pc,
+        0,
+      );
     }
     this._memFault = null;
 
@@ -1356,7 +1362,11 @@ var RV32ModernSystem = class {
       return this._trap(RV32_CAUSE.ILLEGAL, pc, inst);
     }
     if (this._memFault) {
-      return this._trap(this._memFault.write ? RV32_CAUSE.STORE_FAULT : RV32_CAUSE.LOAD_FAULT, pc, inst);
+      return this._trap(
+        this._memFault.write ? RV32_CAUSE.STORE_FAULT : RV32_CAUSE.LOAD_FAULT,
+        pc,
+        inst,
+      );
     }
 
     if (writeRd !== 0) {
@@ -1434,7 +1444,8 @@ var RV32ModernSystem = class {
       }
       this.appendConsole(out);
     } else if (call === 11) this.appendConsole(String.fromCharCode(arg0 & 0xff));
-    else if (call === 30) return { halt: false, writeA0: true, value: this.stats.cycles | 0 };
+    else if (call === 30)
+      return { halt: false, writeA0: true, value: this.stats.cycles | 0 };
     else if (call === 10) return { halt: true, writeA0: false, value: 0 };
     return { halt: false, writeA0: false, value: 0 };
   }
@@ -1542,14 +1553,15 @@ var RV32ModernSystem = class {
         const b = fwd(d.srcB, IDEX.b);
         L.alu = rv32Alu(d, IDEX.pc, a, b);
         L.value = L.alu;
-        L.writes = d.rd !== 0 && !d.isStore && !d.isBranch && !d.isSystem && d.opcode !== 0x0f;
+        L.writes =
+          d.rd !== 0 && !d.isStore && !d.isBranch && !d.isSystem && d.opcode !== 0x0f;
         if (d.isStore) L.storeVal = b;
         let actualNext = (IDEX.pc + 4) >>> 0;
         if (d.isBranch) {
           const taken = rv32BranchTaken(d.f3, a, b);
           const idx = (IDEX.pc >>> 2) & 63;
           const s = this.bht[idx];
-          if ((s >= 2) === taken) st.bpHits++;
+          if (s >= 2 === taken) st.bpHits++;
           else st.bpMisses++;
           this.bht[idx] = taken ? Math.min(3, s + 1) : Math.max(0, s - 1);
           if (taken) actualNext = (IDEX.pc + d.imm) >>> 0;

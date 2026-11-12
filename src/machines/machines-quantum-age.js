@@ -2359,7 +2359,10 @@ function makeMachineQomega() {
                 ["35", "Shor Semiprime N = 35 (5 × 7)"],
                 ["143", "Shor Semiprime N = 143 (11 × 13), Q = 2¹⁵"],
                 ["221", "Shor Semiprime N = 221 (13 × 17), Q = 2¹⁶"],
-                ["253", "Shor Semiprime N = 253 (11 × 23), Q = 2¹⁶ (simulator limit N ≤ 255)"],
+                [
+                  "253",
+                  "Shor Semiprime N = 253 (11 × 23), Q = 2¹⁶ (simulator limit N ≤ 255)",
+                ],
               ],
               "15",
               (val) => {

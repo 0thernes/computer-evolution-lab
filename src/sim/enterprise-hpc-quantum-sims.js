@@ -1798,8 +1798,14 @@ DONE  ST    R2,NETOUT
         z: c,
       }));
     const basis = centres.map(prims);
-    const S = [[0, 0], [0, 0]];
-    const Hc = [[0, 0], [0, 0]];
+    const S = [
+      [0, 0],
+      [0, 0],
+    ];
+    const Hc = [
+      [0, 0],
+      [0, 0],
+    ];
     for (let i = 0; i < 2; i++)
       for (let j = 0; j < 2; j++)
         for (const p of basis[i])
@@ -1810,7 +1816,8 @@ DONE  ST    R2,NETOUT
             const ovl = Math.pow(Math.PI / g, 1.5) * pre;
             const Pz = (p.a * p.z + q.a * q.z) / g;
             let v = 0;
-            for (const C of centres) v += ((-2 * Math.PI) / g) * pre * h2F0(g * (Pz - C) ** 2);
+            for (const C of centres)
+              v += ((-2 * Math.PI) / g) * pre * h2F0(g * (Pz - C) ** 2);
             const kin = ((p.a * q.a) / g) * (3 - (2 * p.a * q.a * ab2) / g) * ovl;
             S[i][j] += p.c * q.c * ovl;
             Hc[i][j] += p.c * q.c * (kin + v);
@@ -1827,7 +1834,10 @@ DONE  ST    R2,NETOUT
               const Q = (r.a * r.z + t.a * t.z) / g2;
               const val =
                 ((2 * Math.pow(Math.PI, 2.5)) / (g1 * g2 * Math.sqrt(g1 + g2))) *
-                Math.exp((-p.a * q.a * (p.z - q.z) ** 2) / g1 - (r.a * t.a * (r.z - t.z) ** 2) / g2) *
+                Math.exp(
+                  (-p.a * q.a * (p.z - q.z) ** 2) / g1 -
+                    (r.a * t.a * (r.z - t.z) ** 2) / g2,
+                ) *
                 h2F0(((g1 * g2) / (g1 + g2)) * (P - Q) ** 2);
               s += p.c * q.c * r.c * t.c * val;
             }
@@ -1850,7 +1860,8 @@ DONE  ST    R2,NETOUT
     }
     const h1 = (c1, c2) => {
       let s = 0;
-      for (let i = 0; i < 2; i++) for (let j = 0; j < 2; j++) s += c1[i] * c2[j] * Hc[i][j];
+      for (let i = 0; i < 2; i++)
+        for (let j = 0; j < 2; j++) s += c1[i] * c2[j] * Hc[i][j];
       return s;
     };
     const g2e = (a, b, c, d) => {
@@ -1970,13 +1981,22 @@ DONE  ST    R2,NETOUT
     runShor(N = 15, coprimeA = 7) {
       N = Math.round(+N);
       if (!(N >= 3 && N <= SHOR_MAX_N)) {
-        throw new RangeError(`Shor simulator supports 3 <= N <= ${SHOR_MAX_N} (got ${N})`);
+        throw new RangeError(
+          `Shor simulator supports 3 <= N <= ${SHOR_MAX_N} (got ${N})`,
+        );
       }
       this.shorN = N;
       const Q = 1 << Math.ceil(Math.log2(N * N));
       this.Q = Q;
       const note = (msg, p, q, a = 0, period = 0) => {
-        this.shorResult = { N, a, period, factors: [Math.min(p, q), Math.max(p, q)], note: msg, Q };
+        this.shorResult = {
+          N,
+          a,
+          period,
+          factors: [Math.min(p, q), Math.max(p, q)],
+          note: msg,
+          Q,
+        };
         this.shorA = a;
         return this.shorResult;
       };

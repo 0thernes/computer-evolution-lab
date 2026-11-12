@@ -164,13 +164,18 @@
   // Phones/tablets are detected by capability (coarse pointer, UA-CH mobile hint, memory, cores),
   // not by viewport width, so a phone in landscape is still treated as a phone.
   const deviceClass = (() => {
-    const coarse = matchMedia("(pointer: coarse)").matches && !matchMedia("(pointer: fine)").matches;
+    const coarse =
+      matchMedia("(pointer: coarse)").matches && !matchMedia("(pointer: fine)").matches;
     const uaMobile = !!(navigator.userAgentData && navigator.userAgentData.mobile);
     const mem = navigator.deviceMemory || 8;
     const cores = navigator.hardwareConcurrency || 8;
     const mobile = coarse || uaMobile;
     const weak = mem <= 4 || cores <= 4;
-    return { mobile, weak, tier: mobile ? (mem <= 3 ? "low" : "medium") : weak ? "medium" : "high" };
+    return {
+      mobile,
+      weak,
+      tier: mobile ? (mem <= 3 ? "low" : "medium") : weak ? "medium" : "high",
+    };
   })();
   // hub=proxy: the campus shows lightweight proxies and a machine's full model is built on enter;
   // hub=full: every machine is built (progressively, after first paint) and shown in the campus.
@@ -197,8 +202,9 @@
   const groupHex = (m) =>
     capitalSet.has(m.id)
       ? 0xfde047
-      : { servers: 0x38bdf8, super: 0xf97316, quantum: 0xc084fc, center: 0x5eead4 }[m.group] ||
-        0xffb347;
+      : { servers: 0x38bdf8, super: 0xf97316, quantum: 0xc084fc, center: 0x5eead4 }[
+          m.group
+        ] || 0xffb347;
 
   function registerMachine(m) {
     if (frontierSet.has(m.id)) m.group = "center";
@@ -237,7 +243,11 @@
     }
     const holder = m.holder;
     const root = m.root;
-    const saved = [holder.position.clone(), holder.rotation.clone(), holder.scale.clone()];
+    const saved = [
+      holder.position.clone(),
+      holder.rotation.clone(),
+      holder.scale.clone(),
+    ];
     holder.position.set(0, 0, 0);
     holder.rotation.set(0, 0, 0);
     holder.scale.setScalar(1);
@@ -2464,10 +2474,7 @@
   {
     const qParam = queryParams.get("q");
     fx.auto = queryParams.get("auto") !== "0" && !qParam;
-    fx.set(
-      zs[qParam] ? qParam : deviceClass.tier,
-      "init",
-    );
+    fx.set(zs[qParam] ? qParam : deviceClass.tier, "init");
   }
 
   // Expose full programmatic inspection & test harness API on window.LAB
@@ -2533,7 +2540,8 @@
   if (hubMode === "full") {
     const queue = machines.filter((m) => !m.built);
     const ric =
-      window.requestIdleCallback || ((fn) => setTimeout(() => fn({ timeRemaining: () => 12 }), 16));
+      window.requestIdleCallback ||
+      ((fn) => setTimeout(() => fn({ timeRemaining: () => 12 }), 16));
     const pump = (deadline) => {
       while (queue.length && (deadline.timeRemaining() > 6 || deadline.didTimeout)) {
         const m = queue.shift();

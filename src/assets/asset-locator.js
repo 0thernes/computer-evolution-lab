@@ -30,8 +30,16 @@ var CelAssets = (() => {
   }
 
   const paths = {
-    standard: { tex: "assets/tex/1k/", hdri: "assets/hdri/studio_1k.hdr", music: "assets/music/lite/" },
-    full: { tex: "assets/full/tex/2k/", hdri: "assets/full/hdri/studio_2k.hdr", music: "assets/full/music/" },
+    standard: {
+      tex: "assets/tex/1k/",
+      hdri: "assets/hdri/studio_1k.hdr",
+      music: "assets/music/lite/",
+    },
+    full: {
+      tex: "assets/full/tex/2k/",
+      hdri: "assets/full/hdri/studio_2k.hdr",
+      music: "assets/full/music/",
+    },
   };
 
   return {

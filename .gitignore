@@ -26,3 +26,6 @@ Computer Evolution Lab.exe
 # Environment / local secrets
 .env
 .env.*
+
+# Fetched test fixtures (GPL-3 Dormann binary; not vendored)
+.cache/

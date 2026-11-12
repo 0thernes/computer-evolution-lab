@@ -1,0 +1,9 @@
+vendor/
+assets/**/*.mp3
+assets/**/*.ogg
+assets/**/*.jpg
+assets/**/*.hdr
+desktop/bin/
+desktop/obj/
+node_modules/
+.cache/

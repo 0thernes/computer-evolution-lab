@@ -106,7 +106,11 @@ var Qu = class StudioFX {
     this.comp.addPass(this.bloom);
 
     // Depth of field only on close-ups, focused on the orbit target
-    this.dof = new A.BokehPass(scene, camera, { focus: 2, aperture: 0.0006, maxblur: 0.006 });
+    this.dof = new A.BokehPass(scene, camera, {
+      focus: 2,
+      aperture: 0.0006,
+      maxblur: 0.006,
+    });
     this.comp.addPass(this.dof);
 
     this.outputPass = new Ku();

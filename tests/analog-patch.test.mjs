@@ -7,7 +7,10 @@ import vm from "node:vm";
 import { ROOT_DIR } from "../tools/serve.mjs";
 
 function loadCompiler() {
-  const src = fs.readFileSync(path.join(ROOT_DIR, "src/machines/machines-early.js"), "utf8");
+  const src = fs.readFileSync(
+    path.join(ROOT_DIR, "src/machines/machines-early.js"),
+    "utf8",
+  );
   const a = src.indexOf("var Gm = {");
   const b = src.indexOf("function MA(i) {");
   const end = src.indexOf("\n}\n", b) + 2;
@@ -20,7 +23,9 @@ function loadCompiler() {
 
 test("valid patches compile and integrate", () => {
   const MA = loadCompiler();
-  const p = MA("param k = 2 0..5\nint x(1) = -k*x\nout y = x*2 + sin(t)\nplot x y\ntime 5");
+  const p = MA(
+    "param k = 2 0..5\nint x(1) = -k*x\nout y = x*2 + sin(t)\nplot x y\ntime 5",
+  );
   assert.equal(p.errors.length, 0, p.errors.join("; "));
   const S = { k: 2, x: 1, t: 0 };
   p.initF(S, {}, []);

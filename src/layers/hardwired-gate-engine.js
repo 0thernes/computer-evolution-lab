@@ -151,7 +151,12 @@
   class HardWiredNetlistSolver {
     static familyFor(machineId) {
       const key = MACHINE_FAMILY_MAP[machineId] || "planar_cmos";
-      return { key, template: true, templateNote: TEMPLATE_NOTE, ...SWITCH_FAMILIES[key] };
+      return {
+        key,
+        template: true,
+        templateNote: TEMPLATE_NOTE,
+        ...SWITCH_FAMILIES[key],
+      };
     }
 
     // Evaluates a genuine 6-gate topological DAG on 4 input pins [A, B, CIN, SUB_OR_TOFF]
