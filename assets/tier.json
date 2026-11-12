@@ -1,0 +1,4 @@
+{
+  "tier": "standard",
+  "note": "Unzip cel-assets-full-v6.0.0.zip from the v6.0.0 GitHub release at the repo root to switch to the full tier (it overwrites this file with tier=full and adds assets/full/). See docs/adr/0001-asset-hosting.md."
+}

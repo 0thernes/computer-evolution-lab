@@ -139,7 +139,7 @@ var CelPBR = (() => {
           hdr.dispose();
           const prev = scene.environment;
           scene.environment = env;
-          scene.environmentIntensity = 0.95;
+          scene.environmentIntensity = 0.78;
           if (scene.environmentRotation) scene.environmentRotation.y = 0.6;
           if (prev && prev.dispose) prev.dispose();
           CelPBR.hdri = true;

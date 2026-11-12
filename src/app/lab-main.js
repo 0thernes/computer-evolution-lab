@@ -158,25 +158,92 @@
     toast,
   };
 
-  for (const makeMachine of factories) {
-    const m = makeMachine();
+  // ---- Device class & lazy scene building (REVIEW-v5 P1, B8) ----
+  // Phones/tablets are detected by capability (coarse pointer, UA-CH mobile hint, memory, cores),
+  // not by viewport width, so a phone in landscape is still treated as a phone.
+  const deviceClass = (() => {
+    const coarse = matchMedia("(pointer: coarse)").matches && !matchMedia("(pointer: fine)").matches;
+    const uaMobile = !!(navigator.userAgentData && navigator.userAgentData.mobile);
+    const mem = navigator.deviceMemory || 8;
+    const cores = navigator.hardwareConcurrency || 8;
+    const mobile = coarse || uaMobile;
+    const weak = mem <= 4 || cores <= 4;
+    return { mobile, weak, tier: mobile ? (mem <= 3 ? "low" : "medium") : weak ? "medium" : "high" };
+  })();
+  // hub=proxy: the campus shows lightweight proxies and a machine's full model is built on enter;
+  // hub=full: every machine is built (progressively, after first paint) and shown in the campus.
+  const hubMode =
+    queryParams.get("hub") === "full" || queryParams.get("hub") === "proxy"
+      ? queryParams.get("hub")
+      : deviceClass.mobile
+        ? "proxy"
+        : "full";
+  const proxySizes = window.CEL_HUB_PROXY_SIZES || {};
+  const proxyGeo = new te(1, 1, 1);
+  proxyGeo.translate(0, 0.5, 0);
+  const proxyMats = {};
+  const proxyMat = (hex) =>
+    proxyMats[hex] ||
+    (proxyMats[hex] = new et({
+      color: 0x1a2230,
+      roughness: 0.55,
+      metalness: 0.25,
+      emissive: hex,
+      emissiveIntensity: 0.16,
+    }));
+  const groupHex = (m) =>
+    capitalSet.has(m.id)
+      ? 0xfde047
+      : { servers: 0x38bdf8, super: 0xf97316, quantum: 0xc084fc, center: 0x5eead4 }[m.group] ||
+        0xffb347;
+
+  function registerMachine(m) {
     if (frontierSet.has(m.id)) m.group = "center";
     else if (m.id === "quantum") m.group = "quantum";
     const holder = new ft();
     const root = new ft();
     holder.add(root);
-    const kit = new Hu(root);
-    m.kit = kit;
+    m.kit = new Hu(root);
     m.holder = holder;
     m.root = root;
+    m.built = false;
+    m.gpuResident = false;
+    const ps = proxySizes[m.id] || [1.6, 1.2, 1.0];
+    m.size = new N(ps[0], ps[1], ps[2]);
+    m.focusScale = 4 / Math.max(ps[0], ps[1], ps[2]);
+    if (m.view0 === undefined) m.view0 = { pc00: 0.6, pc10: 0.6, pc20: 0.58 }[m.id] || 0;
+    m.diag = new Ra(m.diagram.nodes, m.diagram.edges);
+    // hub proxy: one shared unit box scaled to the machine's footprint (1 draw call per machine)
+    const proxy = new B(proxyGeo, proxyMat(groupHex(m)));
+    proxy.scale.set(ps[0] * 0.92, ps[1], ps[2] * 0.92);
+    proxy.castShadow = true;
+    proxy.receiveShadow = true;
+    proxy.userData.keep = true;
+    proxy.userData.hubProxy = true;
+    holder.add(proxy);
+    m.proxy = proxy;
+    root.visible = false;
+    scene.add(holder);
+    machines.push(m);
+  }
 
+  function ensureBuilt(m) {
+    if (m.built) {
+      if (!m.gpuResident) m.gpuResident = true; // geometry re-uploads on next render
+      return m;
+    }
+    const holder = m.holder;
+    const root = m.root;
+    const saved = [holder.position.clone(), holder.rotation.clone(), holder.scale.clone()];
+    holder.position.set(0, 0, 0);
+    holder.rotation.set(0, 0, 0);
+    holder.scale.setScalar(1);
     try {
-      m.build(kit, Xt, sharedCtx);
+      m.build(m.kit, Xt, sharedCtx);
     } catch (err) {
       console.error("Machine build failed:", m.id, err);
     }
     if (window.CelPBR) CelPBR.refineUVs(root);
-
     // Populate high-detail multi-piece SMD components on every marked PCB mesh
     {
       let pcbIdx = 1;
@@ -192,25 +259,49 @@
           pcbMeshes.push(obj);
         }
       });
-      for (const pcbMesh of pcbMeshes) {
-        Dy(pcbMesh, pcbIdx++ * 31 + machines.length);
-      }
+      const seedBase = machines.indexOf(m);
+      for (const pcbMesh of pcbMeshes) Dy(pcbMesh, pcbIdx++ * 31 + seedBase);
     }
-
-    if (m.view0 === undefined) {
-      m.view0 = { pc00: 0.6, pc10: 0.6, pc20: 0.58 }[m.id] || 0;
-    }
-
+    holder.updateMatrixWorld(true);
     const bounds = new li().setFromObject(root);
     const size = bounds.getSize(new N());
     const center = bounds.getCenter(new N());
     root.position.set(-center.x, -bounds.min.y, -center.z);
     m.size = size;
     m.focusScale = 4 / Math.max(size.x, size.y, size.z);
-    m.diag = new Ra(m.diagram.nodes, m.diagram.edges);
-    scene.add(holder);
-    machines.push(m);
+    holder.position.copy(saved[0]);
+    holder.rotation.copy(saved[1]);
+    holder.scale.copy(saved[2]);
+    m.built = true;
+    m.gpuResident = true;
+    if (cutawayCur > 0) applyCutawayOpacity(cutawayCur);
+    return m;
   }
+
+  // Show a machine as its full model or its proxy
+  function showFull(m, on) {
+    m.root.visible = on;
+    m.proxy.visible = !on;
+  }
+
+  // Free GPU buffers of machines we left (scene graph stays in RAM; geometry re-uploads on demand)
+  const gpuLRU = [];
+  function touchGPU(m) {
+    const i = gpuLRU.indexOf(m);
+    if (i >= 0) gpuLRU.splice(i, 1);
+    gpuLRU.push(m);
+    const keep = deviceClass.mobile ? 2 : 6;
+    while (hubMode === "proxy" && gpuLRU.length > keep) {
+      const old = gpuLRU.shift();
+      if (old === activeMachine) continue;
+      old.root.traverse((o) => {
+        if (o.geometry && !o.userData.keep) o.geometry.dispose();
+      });
+      old.gpuResident = false;
+    }
+  }
+
+  for (const makeMachine of factories) registerMachine(makeMachine());
 
   slicer.attachToMachines(machines);
 
@@ -655,6 +746,7 @@
       const ang = (idx / Math.max(1, ringList.length)) * Math.PI * 2 + phaseOffset;
       const sc = scaleSize / Math.max(m.size.x, m.size.y, m.size.z);
       m.holder.visible = true;
+      showFull(m, hubMode === "full" && m.built);
       m.holder.scale.setScalar(sc);
       m.holder.position.set(cx + Math.cos(ang) * radius, 0, cz + Math.sin(ang) * radius);
       m.holder.rotation.y = -ang - Math.PI / 2;
@@ -664,6 +756,7 @@
   function placeCapitalMonument(m, cx, cz, scaleSize = 3.25) {
     if (!m) return;
     m.holder.visible = true;
+    showFull(m, hubMode === "full" && m.built);
     m.holder.scale.setScalar(scaleSize / Math.max(m.size.x, m.size.y, m.size.z));
     m.holder.position.set(cx, 0.095, cz);
     m.holder.rotation.y = 0;
@@ -941,7 +1034,10 @@
     keyLight.shadow.camera.updateProjectionMatrix();
     Ut.setMachine(id);
     syncAudioUi();
+    ensureBuilt(m);
+    touchGPU(m);
     for (const item of machines) item.holder.visible = item === m;
+    showFull(m, true);
     hubStage.visible = false;
 
     m.holder.position.set(0, 0, 0);
@@ -1251,6 +1347,7 @@
 
   function applyCutawayOpacity(amount) {
     for (const m of machines) {
+      if (!m.built) continue;
       m.root.traverse((obj) => {
         if (!(obj.isMesh && obj.userData.shellMesh && obj.material)) return;
         if (!obj.userData._ownShellMat) {
@@ -2264,6 +2361,7 @@
     } else {
       for (const m of machines) {
         m.holder.rotation.y += dt * 0.14;
+        if (!m.built || !m.root.visible) continue;
         if (m.idle) m.idle(dt, elapsedTotal);
         for (const anim of m.kit.anims) anim(dt, elapsedTotal);
       }
@@ -2356,7 +2454,7 @@
     const qParam = queryParams.get("q");
     fx.auto = queryParams.get("auto") !== "0" && !qParam;
     fx.set(
-      zs[qParam] ? qParam : matchMedia("(max-width: 820px)").matches ? "medium" : "high",
+      zs[qParam] ? qParam : deviceClass.tier,
       "init",
     );
   }
@@ -2368,6 +2466,9 @@
     machines,
     byId,
     select: selectMachine,
+    ensureBuilt,
+    deviceClass,
+    hubMode,
     get active() {
       return activeMachine;
     },
@@ -2416,6 +2517,29 @@
       return explodeCur;
     },
   };
+
+  // hub=full: build the remaining machines in idle time after first paint (progressive boot)
+  if (hubMode === "full") {
+    const queue = machines.filter((m) => !m.built);
+    const ric =
+      window.requestIdleCallback || ((fn) => setTimeout(() => fn({ timeRemaining: () => 12 }), 16));
+    const pump = (deadline) => {
+      while (queue.length && (deadline.timeRemaining() > 6 || deadline.didTimeout)) {
+        const m = queue.shift();
+        ensureBuilt(m);
+        if (!activeMachine) showFull(m, true);
+        else if (m !== activeMachine) m.holder.visible = false;
+      }
+      if (queue.length) ric(pump, { timeout: 400 });
+      else {
+        if (!activeMachine) layoutHubGallery();
+        window.__hubFullyBuilt = true;
+      }
+    };
+    ric(pump, { timeout: 400 });
+  } else {
+    window.__hubFullyBuilt = true;
+  }
 
   window.__labStarted = true;
   {
