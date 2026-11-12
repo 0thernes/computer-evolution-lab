@@ -43,6 +43,11 @@
   const pmrem = new so(renderer);
   scene.environment = pmrem.fromScene(buildStudioEnvironmentScene(), 0.032).texture;
   scene.environmentIntensity = 0.68;
+  // Over http(s): CC0 HDRI image-based lighting replaces RoomEnvironment once it has loaded
+  if (window.CelPBR) {
+    CelPBR.setAnisotropy(Math.min(8, renderer.capabilities.getMaxAnisotropy()));
+    CelPBR.loadHDRI(renderer, scene, pmrem);
+  }
 
   const camera = new oi(40, 1, 0.01, 400);
   const controls = new zu(camera, canvas);
@@ -170,6 +175,7 @@
     } catch (err) {
       console.error("Machine build failed:", m.id, err);
     }
+    if (window.CelPBR) CelPBR.refineUVs(root);
 
     // Populate high-detail multi-piece SMD components on every marked PCB mesh
     {

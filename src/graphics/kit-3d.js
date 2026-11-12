@@ -656,7 +656,10 @@ function Ki(bank, bitmask, _unused, arrayVals) {
 
 function zi(kit, w, h, pos, res = [512, 384], opts = {}, parent) {
   const surf = Bt(res[0], res[1]);
-  const mesh = new B(new mt(w, h), U.screen(surf.tex));
+  const mesh = new B(
+    new mt(w, h),
+    U.screen(surf.tex, { crt: !!opts.crt, lcd: !!opts.lcd }),
+  );
   mesh.position.set(...pos);
   if (opts.rot) mesh.rotation.set(...opts.rot);
   kit.add(mesh, { name: opts.name, info: opts.info, live: opts.live }, parent);
@@ -1330,7 +1333,7 @@ function buildMonitor3D(kit, pos, opts = {}, parent) {
     mask.position.set(0, yBase + bezelH * 0.52, zFace + 0.002);
     grp.add(mask);
 
-    const scrMesh = new B(new mt(sw, sh), U.screen(surf.tex));
+    const scrMesh = new B(new mt(sw, sh), U.screen(surf.tex, { crt: true }));
     scrMesh.position.set(0, yBase + bezelH * 0.52, zFace + 0.01);
     grp.add(scrMesh);
 
@@ -1382,7 +1385,7 @@ function buildMonitor3D(kit, pos, opts = {}, parent) {
   chin.position.set(0, panelY - sh * 0.5 - 0.011, 0.001);
   grp.add(chin);
 
-  const scrMesh = new B(new mt(sw, sh), U.screen(surf.tex));
+  const scrMesh = new B(new mt(sw, sh), U.screen(surf.tex, { lcd: true }));
   scrMesh.position.set(0, panelY + 0.004, 0.0175);
   grp.add(scrMesh);
 

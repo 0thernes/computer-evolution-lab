@@ -1278,9 +1278,45 @@ var U = {
       clearcoatRoughness: 0.1,
     }),
 
-  screen: (tex) =>
-    new xt({
-      map: tex,
-      toneMapped: false,
-    }),
+  // Live display surface. {crt:true}: curved-glass CRT (barrel distortion, phosphor bloom,
+  // scanlines, aperture grille, vignette). {lcd:true}: flat panel with a faint pixel grid.
+  // Default: plain emissive surface (lamps, DSKY segments, LED matrices). Ported from v6 kit.js.
+  screen: (tex, o = {}) => celDisplayMaterial(tex, o),
 };
+
+function celDisplayMaterial(texture, o) {
+  const m = new xt({ map: texture, toneMapped: false });
+  const kind = o.crt ? "crt" : o.lcd ? "lcd" : "";
+  if (!kind) return m;
+  m.onBeforeCompile = (sh) => {
+    const img = texture.image || {};
+    sh.uniforms.uLines = { value: img.height ? img.height / (o.lineDiv || 2) : 200 };
+    sh.uniforms.uCols = { value: img.width || 640 };
+    sh.fragmentShader =
+      "uniform float uLines; uniform float uCols;\n" +
+      sh.fragmentShader.replace(
+        "#include <map_fragment>",
+        kind === "crt"
+          ? `
+      vec2 cc = vMapUv * 2.0 - 1.0; cc *= 1.0 + 0.055 * dot(cc, cc); vec2 uv = cc * 0.5 + 0.5;
+      float inside = step(0.0, uv.x) * step(uv.x, 1.0) * step(0.0, uv.y) * step(uv.y, 1.0);
+      vec4 sampledDiffuseColor = texture2D(map, uv);
+      vec3 bloom = (texture2D(map, uv + vec2(0.004, 0.0)).rgb + texture2D(map, uv - vec2(0.004, 0.0)).rgb
+        + texture2D(map, uv + vec2(0.0, 0.006)).rgb + texture2D(map, uv - vec2(0.0, 0.006)).rgb) * 0.25;
+      float scan = 0.72 + 0.28 * pow(abs(sin(uv.y * uLines * 3.14159)), 0.6);
+      float grille = 0.9 + 0.1 * sin(uv.x * uCols * 3.14159 * 2.0);
+      float vig = smoothstep(1.35, 0.45, length(cc * vec2(0.9, 1.0)));
+      sampledDiffuseColor.rgb = (sampledDiffuseColor.rgb * 1.25 + bloom * 0.6) * scan * grille * vig * inside
+        + vec3(0.010, 0.013, 0.012);
+      diffuseColor *= sampledDiffuseColor;`
+          : `
+      vec4 sampledDiffuseColor = texture2D(map, vMapUv);
+      vec2 px = fract(vMapUv * vec2(uCols, uCols * 0.625));
+      float grid = 0.93 + 0.07 * step(0.12, px.x) * step(0.12, px.y);
+      sampledDiffuseColor.rgb *= grid; diffuseColor *= sampledDiffuseColor;`,
+      );
+  };
+  m.customProgramCacheKey = () => kind;
+  m.userData.display = kind;
+  return m;
+}

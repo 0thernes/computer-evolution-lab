@@ -1253,7 +1253,7 @@ screen RAM $0400, colour RAM $D800`,
       (le.position.set(0, 0.54, 0.452),
         W.add(rearYoke, silverFace, le),
         (a = Bt(1408, 928)));
-      let pe = new B(new mt(0.92, 0.66), U.screen(a.tex));
+      let pe = new B(new mt(0.92, 0.66), U.screen(a.tex, { crt: true }));
       (pe.position.set(0, 0.54, 0.472), W.add(pe));
       let crtGlass = new B(new mt(0.93, 0.67), U.glass(0xe2f2ff, 0.14));
       crtGlass.position.set(0, 0.54, 0.476);
