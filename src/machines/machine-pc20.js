@@ -210,8 +210,12 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
 void main(){ vec4 c = texture(tex, vUv); if (mode == 1) { float v = c.g; outColor = vec4(0.5 + 0.5 * cos(6.0 * v + vec3(0.0, 1.0, 2.5) + 2.0) * step(0.05, v) + vec3(0.02, 0.02, 0.06), 1.0); } else outColor = vec4(c.rgb, 1.0); }`;
 
 var Qs = (i, e, t, n) => (i.position.set(e, t, n), i),
-  xi = 1024,
-  Mi = 512,
+  // GPU render-target size scales with the device (REVIEW-v5 P5): 512² on touch devices, 1024² else
+  PC20_TOUCH = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches,
+  xi = PC20_TOUCH ? 512 : 1024,
+  Mi = xi / 2,
+  // synchronous readback stalls the GPU pipeline; do it less often on phones
+  PC20_READBACK_EVERY = PC20_TOUCH ? 6 : 2,
   h1 =
     "in vec3 position; in vec2 uv; out vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }",
   Hc = `precision highp float; precision highp sampler2D;
@@ -1543,12 +1547,14 @@ function d1() {
       glRenderer.render(dispScene, orthoCam);
       glRenderer.setRenderTarget(rtReadback);
       glRenderer.render(dispScene, orthoCam);
-      if (frameIdx % 2 === 0) {
+      if (frameIdx % PC20_READBACK_EVERY === 0) {
         glRenderer.readRenderTargetPixels(rtReadback, 0, 0, Mi, Mi, readbackBuf);
         updateReadbackAndSMs();
         drawMonitorComposite();
       }
       glRenderer.setRenderTarget(null);
+      // CPU-side command submission time (plus the readback stall on readback frames). WebGL has no
+      // portable GPU timer in all browsers, so this is labelled as CPU submit time (REVIEW-v5 B9).
       gpuFrameMs = performance.now() - t0;
       frameIdx++;
       fpsSmooth = fpsSmooth * 0.9 + (1 / Math.max(dt, 0.001)) * 0.1;
@@ -1871,7 +1877,11 @@ function d1() {
     get err() {
       return lastErr;
     },
+    // CPU submit + readback time, not GPU execution time (see comment at the assignment)
     get frameMs() {
+      return gpuFrameMs;
+    },
+    get cpuSubmitMs() {
       return gpuFrameMs;
     },
     pixel(k = 0) {

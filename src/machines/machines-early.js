@@ -1937,11 +1937,25 @@ function MA(i) {
       ...t.map((u) => u.name),
       ...n.map((u) => u.name),
     ]),
-    c = (u, f) =>
+    // Expression whitelist (REVIEW-v5 I8): only numbers, names, arithmetic/comparison operators,
+    // parentheses, commas and ?: may reach new Function. Anything else ([ ] ! " ' ` ; { } = .member
+    // access) is rejected, so JSFuck-style payloads can't be compiled.
+    c = (u, f) => {
+      const rest = String(u).replace(
+        /[A-Za-z_]\w*|\d+(?:\.\d*)?(?:e[-+]?\d+)?|\.\d+(?:e[-+]?\d+)?|\*\*|<=|>=|==|!=|&&|\|\||[-+*/%(),?:<>\s]/g,
+        "",
+      );
+      if (rest) {
+        r.push(`line ${f}: illegal character(s) ${JSON.stringify(rest.slice(0, 8))}`);
+        return "0";
+      }
+      return cNames(u, f);
+    },
+    cNames = (u, f) =>
       u.replace(/[a-zA-Z_]\w*/g, (p) =>
         l.has(p)
           ? `S.${p}`
-          : p in Gm
+          : Object.prototype.hasOwnProperty.call(Gm, p)
             ? `F.${p}`
             : /^e\d*$/.test(p)
               ? p

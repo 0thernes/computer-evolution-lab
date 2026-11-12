@@ -3765,7 +3765,24 @@ var gs = 1,
       ((this.mem[65532] = t & 255), (this.mem[65533] = t >> 8));
     }
   };
-var NA = "https://raw.githubusercontent.com/trebonian/visual6502/master/",
+// Pinned to an immutable commit and verified by SHA-256 (REVIEW-v5 I6), so upstream changes can't
+// alter what the transistor-level simulation runs. The data is CC BY-NC-SA 3.0 and is only fetched
+// at run time on request; it is never bundled with this repository.
+var VISUAL6502_COMMIT = "d8ecc129b34e0eaf320e0400fcf33329475bdb1e";
+var VISUAL6502_SHA256 = {
+  "segdefs.js": "52bec71bdee12e8bca8bffb15753a9472b17c3e69878f1bb1fc8881ca7356e2e",
+  "transdefs.js": "d49b4a9b3c4969048ca6a82d5c2338d3699fb96cee25b34e85630854cd8443d2",
+  "nodenames.js": "82d676dabc3e190a50c1ac41b44c0e30c5d0a4675d30827333427ae67eefdf37",
+};
+async function visual6502Verify(name, text) {
+  const want = VISUAL6502_SHA256[name];
+  const subtle = globalThis.crypto && globalThis.crypto.subtle;
+  if (!want || !subtle) return; // pinned commit still applies when SubtleCrypto is unavailable
+  const buf = await subtle.digest("SHA-256", new TextEncoder().encode(text));
+  const hex = Array.from(new Uint8Array(buf), (b) => b.toString(16).padStart(2, "0")).join("");
+  if (hex !== want) throw new Error(`${name}: SHA-256 mismatch (got ${hex.slice(0, 12)}…)`);
+}
+var NA = `https://raw.githubusercontent.com/trebonian/visual6502/${VISUAL6502_COMMIT}/`,
   mb =
     "Netlist & layout: visual6502.org (Greg James, Brian Silverman, Barry Silverman), CC BY-NC-SA 3.0 — fetched at run time, not redistributed. Node names: MIT (Silverman, Silverman, Spittles, Boessenkool).";
 function pb(i, e) {
@@ -3793,7 +3810,9 @@ async function gb(i = NA, e = fetch) {
   let t = async (o) => {
       let a = await e(i + o);
       if (!a.ok) throw new Error(o + ": HTTP " + a.status);
-      return a.text();
+      const txt = await a.text();
+      if (i === NA) await visual6502Verify(o, txt);
+      return txt;
     },
     [n, s, r] = await Promise.all([
       t("segdefs.js"),

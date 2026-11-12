@@ -1167,7 +1167,7 @@ stalls: branch ${e.stall.branch} · memory ${e.stall.mem} · hazard ${e.stall.ha
         } catch {}
         return {
           app: kn(i),
-          os: `GPU frames shaded: ${t.frame} (${(+t.frameMs || 0).toFixed(1)} ms) · GLSL: ${t.err ? "ERROR" : "OK"}
+          os: `GPU frames shaded: ${t.frame} (CPU submit ${(+t.frameMs || 0).toFixed(1)} ms) · GLSL: ${t.err ? "ERROR" : "OK"}
 RV32IM Mini-OS: ${c ? `${c.stats.instret.toLocaleString()} instr · IPC ${c.ipc().toFixed(2)} · L1D ${(c.l1d.hitRate() * 100).toFixed(1)}% · NVMe ops ${c.stats.nvmeOps}` : ""}`,
           isa: `GPU driver: ${s} (${t.err ? t.err.slice(0, 120) : "native GPU code ✓"})
 CPU RV32IM: ${c ? `PC=0x${At(c.pc, 4)} IF[${c.pipe.IF.text}] EX[${c.pipe.EX.text}] BP=${(c.bpAccuracy() * 100).toFixed(1)}%` : ""}`,
