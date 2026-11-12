@@ -29,3 +29,6 @@ Computer Evolution Lab.exe
 
 # Fetched test fixtures (GPL-3 Dormann binary; not vendored)
 .cache/
+
+# Optional full asset tier unzipped from the release (see docs/adr/0001-asset-hosting.md)
+assets/full/

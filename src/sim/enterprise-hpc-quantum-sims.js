@@ -1972,7 +1972,7 @@ DONE  ST    R2,NETOUT
     }
 
     // 1. EXACT SHOR'S QUANTUM FACTORING ALGORITHM (Modular Exp + Exact 256-pt QFT + Continued Fractions!)
-    // Shor's algorithm, simulated exactly (REVIEW-v5 B7). The period register uses
+    // Shor's algorithm, simulated exactly (REVIEW-v5 I13). The period register uses
     // Q = 2^ceil(log2 N^2) amplitudes (the textbook size that guarantees continued fractions
     // recover r), up to Q = 65536, so N is limited to 3..255. The QFT is an exact radix-2 FFT of
     // the post-measurement register; measurement outcomes are tried in descending probability

@@ -51,6 +51,18 @@ function collectRuntimeFiles() {
     if (!fs.existsSync(absDir)) return;
     for (const item of fs.readdirSync(absDir, { withFileTypes: true })) {
       const childRel = `${dirRel}/${item.name}`;
+      // The exe embeds the standard asset tier only (docs/adr/0001-asset-hosting.md).
+      if (childRel === "assets/full") continue;
+      if (childRel === "assets/tier.json") {
+        entries.push({
+          rel: childRel,
+          data: Buffer.from(
+            JSON.stringify({ tier: "standard", note: "Embedded in the Windows exe" }) +
+              "\n",
+          ),
+        });
+        continue;
+      }
       if (item.isDirectory()) {
         walk(childRel);
       } else if (item.isFile()) {
@@ -69,7 +81,7 @@ function writeZipArchive(outPath, files) {
   let offset = 0;
 
   for (const f of files) {
-    const raw = fs.readFileSync(f.abs);
+    const raw = f.data || fs.readFileSync(f.abs);
     const compressed = zlib.deflateRawSync(raw, { level: 9 });
     const useDeflate = compressed.length < raw.length;
     const payload = useDeflate ? compressed : raw;

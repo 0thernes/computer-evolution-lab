@@ -1,6 +1,6 @@
 {
   "name": "computer-evolution-lab",
-  "version": "5.0.0",
+  "version": "6.0.0",
   "private": true,
   "description": "48 hard-wired operational computers across 4 Grand Circles (Personal & Logic, Mainframes & Servers, Supercomputers, Quantum Age) + 49-scene 4K HDR 3D interactive museum, 528 primary abstraction rungs (1,584 sub-lens views) with universal transistor/gate solver, 5-Tab CS Roofline Atlas, RV32IM + WebGL2 Modern Mini PC, and acoustic orchestral WebAudio film-score engine.",
   "scripts": {
