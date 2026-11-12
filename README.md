@@ -14,6 +14,12 @@
 > - **Launch Live in Browser (Zero Install)**: **[https://0thernes.github.io/computer-evolution-lab/](https://0thernes.github.io/computer-evolution-lab/)**
 > - **Download Standalone Windows `.exe`**: **[GitHub Releases (`Computer Evolution Lab.exe`)](https://github.com/0thernes/computer-evolution-lab/releases/latest)**
 
+|               Hub                |                 6502 die close-zoom                 |                    v5 → v6 (Z1 close-up)                     |
+| :------------------------------: | :-------------------------------------------------: | :----------------------------------------------------------: |
+| ![Hub](docs/screenshots/hub.jpg) | ![6502 die](docs/screenshots/m6502-die-closeup.jpg) | ![Z1 before and after](docs/screenshots/z1-before-after.jpg) |
+
+Screenshots were rendered headless with SwiftShader at the High tier, 1280×720.
+
 ---
 
 ## Users
