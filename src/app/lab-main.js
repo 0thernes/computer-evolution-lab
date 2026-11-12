@@ -1915,7 +1915,7 @@
         q(
           "p",
           { class: "small" },
-          "Music: every score is an ORIGINAL multi-bar composition voiced live in real time, inspired by the orchestral craft of Hans Zimmer, James Horner, Christopher Nolan's collaborations, Terrence Malick's symphonic palette, Oliver Stone, and Vangelis. No copyrighted melodies or recordings are used.",
+          "Music: an original score in the mood of epic/hybrid orchestral music. When served over http(s) it plays 18 sampled cues rendered from the CC0 VSCO 2 Community Edition orchestra (three stems each that follow the running machine); from file:// or if the files are missing it falls back to the live procedural orchestra. No copyrighted melodies or recordings are used; see CREDITS.md and SOUNDS.md.",
         ),
       ),
     );

@@ -354,27 +354,29 @@ async function runHeadlessBrowserSuite() {
     );
 
     // Cinematic Orchestral Audio Engine checks
-    const audioCheck = await session.evalValue(`(() => {
+    const audioCheck = await session.evalValue(`(async () => {
       LAB.select("pc20");
       LAB.audio.start();
+      try { await LAB.audio.ac.resume(); } catch {}
+      const notes0 = LAB.audio.stats.notes;
       const themesTested = [];
-      for (const t of ["zimmer", "horner", "nolan", "malick", "stone", "vangelis", "auto"]) {
+      for (const t of ["epic", "noble", "clockwork", "suspended", "elegiac", "synthnoir", "auto"]) {
         LAB.audio.set("scoreOverride", t);
         for (let i = 0; i < 6; i++) LAB.audio.tick(0.12, 0.55);
-        themesTested.push({ theme: t, chord: LAB.audio.nowPlaying.chord, bpm: LAB.audio.nowPlaying.bpm });
+        const np = LAB.audio.nowPlaying || {};
+        themesTested.push({ theme: t, chord: np.chord, bpm: np.bpm });
       }
-      // Fire representative hardware SFX
-      if (typeof hi === "function") {
-        hi("relay", { v: 0.5 });
-        hi("key", { v: 0.5 });
-        hi("bell", { v: 0.5 });
-      }
+      // Fire representative hardware SFX and count the events the engine actually voiced
+      const ev0 = LAB.audio.stats.events;
+      const voiced = [hi("relay", { v: 0.5 }), hi("key", { v: 0.5 }), hi("bell", { v: 0.5 })];
       return {
         ok: LAB.audio.ok,
         state: LAB.audio.state,
         themesTested,
-        sfxPlayed: LAB.audio.stats.sfx ?? LAB.audio.stats.sfxPlayed ?? 3,
-        notesScheduled: LAB.audio.stats.notes
+        sfxVoiced: voiced.filter(Boolean).length,
+        sfxEvents: LAB.audio.stats.events - ev0,
+        notesScheduled: LAB.audio.stats.notes - notes0,
+        scoreMode: LAB.audio.scoreMode || "procedural",
       };
     })()`);
 
@@ -383,9 +385,16 @@ async function runHeadlessBrowserSuite() {
       audioCheck.themesTested.every((t) => t.chord && t.bpm > 0),
       `Missing chord/BPM in orchestral themes: ${JSON.stringify(audioCheck.themesTested)}`,
     );
+    assert(audioCheck.notesScheduled > 0, "Score scheduled no notes/stem updates");
+    if (audioCheck.state === "running") {
+      assert(
+        audioCheck.sfxEvents === 3 && audioCheck.sfxVoiced === 3,
+        `Expected 3 voiced SFX events, got ${audioCheck.sfxEvents}`,
+      );
+    }
     ok(
-      "Cinematic Orchestral Score & Hardware SFX",
-      `${audioCheck.themesTested.length} composer palettes verified, sfxPlayed=${audioCheck.sfxPlayed}`,
+      "Orchestral Score & Hardware SFX",
+      `${audioCheck.themesTested.length} mood palettes, AudioContext=${audioCheck.state}, sfx voiced=${audioCheck.sfxEvents} (measured), notes=${audioCheck.notesScheduled}, score=${audioCheck.scoreMode}`,
     );
 
     assert(

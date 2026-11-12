@@ -1,6 +1,6 @@
-// Cinematic Orchestral & Hybrid Film-Score Engine + Authentic Hardware Acoustic SFX
-// Inspired by the scoring craft of Hans Zimmer, James Horner, Ludwig Göransson / Christopher Nolan,
-// Terrence Malick's orchestral selections, Oliver Stone's elegiac brass/strings, and Vangelis.
+// Procedural orchestral score engine (fallback when the sampled stem score in stem-score.js can't
+// load, e.g. from file://) + hardware SFX. All music is original; cues are described only by mood
+// ("in the mood of epic/hybrid orchestral"), never by composer (see docs/adr/0002-score-attribution.md).
 
 var Xy = window.LAB_SFX_CLIPS || {};
 
@@ -162,17 +162,17 @@ var us = {
   },
   qtopo: {
     film: "The Tree of Life & Annihilation",
-    style: "malick",
+    style: "suspended",
     mood: "suspended Majorana divisi strings, organ & formant choir",
   },
   qomega: {
     film: "Interstellar & 2001: A Space Odyssey",
-    style: "zimmer",
+    style: "epic",
     mood: "grand cathedral organ, solo cello, French horns & horizon choir",
   },
   agc66: {
     film: "Apollo 13 & First Man",
-    style: "horner",
+    style: "noble",
     mood: "noble mission brass, solo trumpet, luminous choir & felt piano",
   },
   alto73: {
@@ -187,12 +187,12 @@ var us = {
   },
   vax78: {
     film: "JFK & All the President's Men",
-    style: "stone",
+    style: "elegiac",
     mood: "elegiac adagio strings, noble solo brass & concert snare",
   },
   cdc6600: {
     film: "Oppenheimer & Hidden Figures",
-    style: "nolan",
+    style: "clockwork",
     mood: "clockwork spiccato strings, Freon-era horns & concert timpani",
   },
   ascired97: {
@@ -207,7 +207,7 @@ var us = {
   },
   qanneal: {
     film: "Interstellar & Sunshine",
-    style: "malick",
+    style: "suspended",
     mood: "15 mK cathedral pedal organ, suspended strings & solo cello",
   },
   eniac46: {
@@ -227,7 +227,7 @@ var us = {
   },
   tandem77: {
     film: "All the President's Men & JFK",
-    style: "stone",
+    style: "elegiac",
     mood: "elegiac adagio strings, noble solo trumpet & steady snare",
   },
   blade04: {
@@ -253,20 +253,30 @@ var us = {
 };
 
 var SCORE_THEMES = [
-  ["auto", "Auto · Era-Matched Film Score"],
-  ["zimmer", "Hans Zimmer · Cathedral Organ, Solo Cello & Ostinato"],
-  ["horner", "James Horner · Noble Horns, Choir & Kaleidoscope Piano"],
-  ["nolan", "Christopher Nolan / Göransson · Clockwork Spiccato & Brass"],
-  ["malick", "Terrence Malick · Suspended Cathedral Strings & 32' Organ"],
-  ["stone", "Oliver Stone · Elegiac Adagio Strings, Trumpet & Snare"],
-  ["inception", "Hans Zimmer · 'Time' Slow-Build Cello & Brass"],
-  ["vangelis", "Vangelis / 2049 · Expressive CS-80 Brass & Rain Bells"],
+  ["auto", "Auto · era-matched original score"],
+  ["epic", "Epic hybrid orchestral · cathedral organ, solo cello and ostinato"],
+  ["noble", "Noble orchestral · horns, choir and kaleidoscope piano"],
+  ["clockwork", "Clockwork hybrid · spiccato strings and brass"],
+  ["suspended", "Suspended · cathedral strings and 32' organ"],
+  ["elegiac", "Elegiac · adagio strings, trumpet and snare"],
+  ["slowbuild", "Slow-build · cello and brass crescendo"],
+  ["synthnoir", "Synth-noir · CS-80-style brass and rain bells"],
 ];
+// localStorage values saved by v5 used composer names; map them to the mood palettes
+var SCORE_THEME_MIGRATION = {
+  zimmer: "epic",
+  horner: "noble",
+  nolan: "clockwork",
+  malick: "suspended",
+  stone: "elegiac",
+  inception: "slowbuild",
+  vangelis: "synthnoir",
+};
 
 var Yy = (id) => {
   const entry = us[id] || us.hub;
-  return entry.film
-    ? `Original orchestral score · mood of ${entry.film}`
+  return entry.mood
+    ? "Original score · in the mood of epic/hybrid orchestral"
     : "Original orchestral gallery score";
 };
 
@@ -275,7 +285,7 @@ var Fm = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
 
 // Hand-voiced cinematic cues: every chord has [bass, tenor, alto, soprano, colorTone] + composed melody
 var CINEMATIC_CUES = {
-  // Terrence Malick / Oliver Stone / Zimmer "Time" & Barber Adagio-inspired luminous elegy (D minor -> Bbmaj9 -> Fmaj7 -> Csus4/A)
+  // Gallery: luminous elegy (D minor -> Bbmaj9 -> Fmaj7 -> Csus4/A)
   gallery: {
     bpm: 64,
     subdiv: 4, // 16th-note grid, 16 steps/bar
@@ -371,7 +381,7 @@ var CINEMATIC_CUES = {
     },
   },
 
-  // Hans Zimmer "Interstellar" (No Time for Caution / Cornfield Chase): Am -> Fmaj7/A -> C/G -> G6(add11)
+  // Epic organ-and-strings palette: Am -> Fmaj7/A -> C/G -> G6(add11)
   interstellar: {
     bpm: 96,
     subdiv: 4,
@@ -464,14 +474,14 @@ var CINEMATIC_CUES = {
       if (stepInChord === 8 && act > 0.2) {
         eng.concertPiano(chord.top, stepDur * 8, 0.2 + 0.08 * act, 0.18);
       }
-      // Subtle Nolan pocket-watch tick
+      // Subtle pocket-watch tick
       if (stepInChord % 4 === 0) {
         eng.pocketWatchTick(stepInChord % 8 === 0, 0.09 + 0.06 * act);
       }
     },
   },
 
-  // Desplat / Horner intimate piano & solo strings (C minor -> Abmaj7 -> Fm9 -> G7sus4)
+  // Intimate piano and solo strings (C minor -> Abmaj7 -> Fm9 -> G7sus4)
   imitation: {
     bpm: 100,
     subdiv: 4,
@@ -554,7 +564,7 @@ var CINEMATIC_CUES = {
     },
   },
 
-  // Nolan / Göransson "Can You Hear the Music" & "Supermarine" propulsive tension
+  // Clockwork palette: propulsive spiccato tension
   oppenheimer: {
     bpm: 132,
     subdiv: 4,
@@ -650,7 +660,7 @@ var CINEMATIC_CUES = {
     },
   },
 
-  // James Horner "A Beautiful Mind" / "Apollo 13": Kaleidoscope of Mathematics + Luminous Choir + Noble Horns
+  // Noble palette: flowing piano figures, luminous choir and horns
   mind: {
     bpm: 88,
     subdiv: 3, // 12 steps/bar (flowing compound 12/8 triplet feel!)
@@ -730,7 +740,7 @@ var CINEMATIC_CUES = {
           );
         }
       }
-      // Horner flowing triplet piano figures
+      // Flowing triplet piano figures
       const n = chord.trip[stepInChord % 6];
       eng.concertPiano(
         n + (stepInChord >= 6 ? 12 : 0),
@@ -745,7 +755,7 @@ var CINEMATIC_CUES = {
     },
   },
 
-  // Hans Zimmer "Time" (Inception): Em -> G/D -> Bm7 -> Cmaj7 (the iconic 4-chord cathedral build!)
+  // Slow-build palette: Em -> G/D -> Bm7 -> Cmaj7 crescendo
   inception: {
     bpm: 72,
     subdiv: 4,
@@ -784,7 +794,7 @@ var CINEMATIC_CUES = {
       if (stepInChord % 4 === 0) {
         const q = Math.floor(stepInChord / 4);
         eng.concertPiano(chord.lead[q], stepDur * 5.2, 0.2 + 0.08 * act, 0.12);
-        // Zimmer electric-cello / spiccato pulse
+        // Electric-cello / spiccato pulse
         eng.spiccatoStrings(chord.notes[0], stepDur * 2.2, 0.14 + 0.12 * act);
       }
       if (stepInChord % 2 === 0 && act > 0.35) {
@@ -873,7 +883,7 @@ var CINEMATIC_CUES = {
     },
   },
 
-  // Vangelis / Zimmer "Blade Runner" & "2049" CS-80 symphonic noir
+  // Synth-noir palette: CS-80-style symphonic brass and bells
   blade: {
     bpm: 62,
     subdiv: 4,
@@ -1010,7 +1020,7 @@ var CINEMATIC_CUES = {
     },
   },
 
-  // Malick "Tree of Life" / Jóhannsson "Arrival" luminous organic choir & suspended strings
+  // Organic palette: luminous choir and suspended strings
   annihilation: {
     bpm: 58,
     subdiv: 4,
@@ -1141,8 +1151,8 @@ var CINEMATIC_CUES = {
     },
   },
 
-  // Terrence Malick ("The Thin Red Line" / "The Tree of Life"): 32' Cathedral Organ, Suspended Diatonic Strings & Singing Solo Cello
-  malick: {
+  // Suspended palette: 32' cathedral organ, suspended diatonic strings and singing solo cello
+  suspended: {
     bpm: 56,
     subdiv: 4,
     barsPerChord: 2,
@@ -1221,8 +1231,8 @@ var CINEMATIC_CUES = {
     },
   },
 
-  // Oliver Stone ("Platoon" Barber Adagio / "JFK" / "Born on the Fourth of July"): Climbing Elegiac Strings, Noble Solo Trumpet & Distant Concert Snare
-  stone: {
+  // Elegiac palette: climbing adagio strings, solo trumpet and distant concert snare
+  elegiac: {
     bpm: 60,
     subdiv: 4,
     barsPerChord: 2,
@@ -1265,11 +1275,12 @@ var CINEMATIC_CUES = {
   },
 };
 
-// Canonical composer aliases so both UI SCORE_THEMES and automated tests resolve directly
-CINEMATIC_CUES.zimmer = CINEMATIC_CUES.interstellar;
-CINEMATIC_CUES.horner = CINEMATIC_CUES.mind;
-CINEMATIC_CUES.nolan = CINEMATIC_CUES.oppenheimer;
-CINEMATIC_CUES.vangelis = CINEMATIC_CUES.blade;
+// Mood-palette aliases so both UI SCORE_THEMES and automated tests resolve directly
+CINEMATIC_CUES.epic = CINEMATIC_CUES.interstellar;
+CINEMATIC_CUES.noble = CINEMATIC_CUES.mind;
+CINEMATIC_CUES.clockwork = CINEMATIC_CUES.oppenheimer;
+CINEMATIC_CUES.synthnoir = CINEMATIC_CUES.blade;
+CINEMATIC_CUES.slowbuild = CINEMATIC_CUES.inception;
 
 var OrchestralScoreEngine = class {
   constructor(host) {
@@ -1467,7 +1478,7 @@ var OrchestralScoreEngine = class {
     });
   }
 
-  // 2. Spiccato / Short Bowed Chamber Strings (Nolan / Zimmer motoric ostinato)
+  // 2. Spiccato / Short Bowed Chamber Strings (motoric ostinato)
   spiccatoStrings(midi, dur, vel = 0.18) {
     const t = this._t;
     const f = ii(midi);
@@ -1547,7 +1558,7 @@ var OrchestralScoreEngine = class {
     this.h.noiseSrc(t, 0.022, kg, 0.75);
   }
 
-  // 4. Hans Zimmer Temple-Church Cathedral Pipe Organ (32'/16'/8'/4'/2-2/3'/2' stops + wind chiff)
+  // 4. Cathedral Pipe Organ (32'/16'/8'/4'/2-2/3'/2' stops + wind chiff)
   cathedralOrgan(midiList, dur, vel = 0.2) {
     const t = this._t;
     const stops = [
@@ -1646,7 +1657,7 @@ var OrchestralScoreEngine = class {
     this.frenchHorns([midi, midi + 12], dur, vel * 0.95);
   }
 
-  // 5b. Expressive Singing Solo Cello (Zimmer / Malick lyrical voice: 215 Hz chest + 690 Hz A-string bridge + vibrato)
+  // 5b. Expressive Singing Solo Cello (lyrical voice: 215 Hz chest + 690 Hz A-string bridge + vibrato)
   soloCello(midi, dur, vel = 0.2) {
     const t = this._t + 0.01;
     const f = ii(midi);
@@ -1693,7 +1704,7 @@ var OrchestralScoreEngine = class {
     }
   }
 
-  // 5c. Noble Elegiac Solo Trumpet (Oliver Stone "JFK" / James Horner "Apollo 13" warm brass lead)
+  // 5c. Noble Elegiac Solo Trumpet (warm brass lead)
   soloTrumpet(midi, dur, vel = 0.18) {
     const t = this._t + 0.008;
     const f = ii(midi);
@@ -1746,7 +1757,7 @@ var OrchestralScoreEngine = class {
     }
   }
 
-  // 5d. Soft Distant Concert Snare Roll (Oliver Stone / Apollo 13 ceremonial pulse)
+  // 5d. Soft Distant Concert Snare Roll (ceremonial pulse)
   concertSnareRoll(dur, vel = 0.08) {
     const t = this._t;
     const panOut = this._pan(0.22, this.dryBus, 0.68);
@@ -1813,7 +1824,7 @@ var OrchestralScoreEngine = class {
     });
   }
 
-  // 7. Vangelis CS-80 Expressive Analog Ribbon Lead
+  // 7. CS-80-style Expressive Analog Ribbon Lead
   cs80Ribbon(midi, dur, vel = 0.2) {
     const t = this._t;
     const f = ii(midi);
@@ -1898,7 +1909,7 @@ var OrchestralScoreEngine = class {
     }
   }
 
-  // 9. Nolan Pocket-Watch Escapement & Bessel-Mode Concert Timpani
+  // 9. Pocket-Watch Escapement & Bessel-Mode Concert Timpani
   pocketWatchTick(isDownbeat, vel = 0.1) {
     const t = this._t;
     const panOut = this._pan(isDownbeat ? -0.18 : 0.18, this.dryBus, 0.22);
@@ -1965,7 +1976,9 @@ var Nm = class LabAudioController {
       if (saved.vol) Object.assign(this.vol, saved.vol);
       if (typeof saved.muted === "boolean") this.muted = saved.muted;
       if (typeof saved.boost === "boolean") this.boost = saved.boost;
-      if (saved.scoreOverride) this.scoreOverride = saved.scoreOverride;
+      if (saved.scoreOverride) {
+        this.scoreOverride = SCORE_THEME_MIGRATION[saved.scoreOverride] || saved.scoreOverride;
+      }
     } catch {}
   }
 
@@ -3027,7 +3040,7 @@ var g0 = {
     "32'/16'/8'/4'/2-2/3' cathedral pipe organ with wind chiff",
     "conical-bore dual-formant French horns & distant concert snare roll",
     "3-formant vowel-morphing luminous choir",
-    "Vangelis-style CS-80 ribbon synthesizer",
+    "CS-80-style ribbon synthesizer",
     "Bessel-mode concert timpani & pocket-watch escapement",
     "1.4 Hz pulse-tube dilution cryocooler helium breath & 400 Hz Apollo inverter tone",
     "relay armature + Z1 sliding plates + mercury delay-line ticks",
