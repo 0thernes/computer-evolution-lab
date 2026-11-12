@@ -1,106 +1,106 @@
 [
- {
-  "name": "ir_hall",
-  "title": "IR_ST_Hall_04.wav",
-  "author": "Tim_Verberne",
-  "url": "https://freesound.org/people/Tim_Verberne/sounds/537650/",
-  "license": "CC0 1.0",
-  "source": "Freesound (HQ preview)"
- },
- {
-  "name": "ir_church",
-  "title": "IR_ST_Church_03.wav",
-  "author": "Tim_Verberne",
-  "url": "https://freesound.org/people/Tim_Verberne/sounds/537633/",
-  "license": "CC0 1.0",
-  "source": "Freesound (HQ preview)"
- },
- {
-  "name": "relay_a",
-  "title": "relay1.wav",
-  "author": "Mihacappy",
-  "url": "https://freesound.org/people/Mihacappy/sounds/876593/",
-  "license": "CC0 1.0",
-  "source": "Freesound (HQ preview)"
- },
- {
-  "name": "relay_b",
-  "title": "Relay 3",
-  "author": "JoontheFloof",
-  "url": "https://freesound.org/people/JoontheFloof/sounds/740253/",
-  "license": "CC0 1.0",
-  "source": "Freesound (HQ preview)"
- },
- {
-  "name": "relay_c",
-  "title": "Relay and loud click",
-  "author": "bassmosphere",
-  "url": "https://freesound.org/people/bassmosphere/sounds/384701/",
-  "license": "CC0 1.0",
-  "source": "Freesound (HQ preview)"
- },
- {
-  "name": "tty_a",
-  "title": "S24-01 Teletype or printing machine.wav",
-  "author": "craigsmith",
-  "url": "https://freesound.org/people/craigsmith/sounds/675940/",
-  "license": "CC0 1.0",
-  "source": "Freesound (HQ preview)"
- },
- {
-  "name": "tty_b",
-  "title": "R20-17-Teletype Machine.wav",
-  "author": "craigsmith",
-  "url": "https://freesound.org/people/craigsmith/sounds/483336/",
-  "license": "CC0 1.0",
-  "source": "Freesound (HQ preview)"
- },
- {
-  "name": "hdd",
-  "title": "Conner CFS420a - 3600rpm - BB",
-  "author": "Klerrp",
-  "url": "https://freesound.org/people/Klerrp/sounds/155882/",
-  "license": "CC0 1.0",
-  "source": "Freesound (HQ preview)"
- },
- {
-  "name": "hddclick",
-  "title": "computer hard drive access fan click.wav",
-  "author": "martian",
-  "url": "https://freesound.org/people/martian/sounds/570733/",
-  "license": "CC0 1.0",
-  "source": "Freesound (HQ preview)"
- },
- {
-  "name": "fan",
-  "title": "Computer fan",
-  "author": "ohrpilot",
-  "url": "https://freesound.org/people/ohrpilot/sounds/181995/",
-  "license": "CC0 1.0",
-  "source": "Freesound (HQ preview)"
- },
- {
-  "name": "crt",
-  "title": "CRT TV Whine",
-  "author": "Fission9",
-  "url": "https://freesound.org/people/Fission9/sounds/693863/",
-  "license": "CC0 1.0",
-  "source": "Freesound (HQ preview)"
- },
- {
-  "name": "toggle_a",
-  "title": "toggle switch 1",
-  "author": "TheTechTinkerer",
-  "url": "https://freesound.org/people/TheTechTinkerer/sounds/795663/",
-  "license": "CC0 1.0",
-  "source": "Freesound (HQ preview)"
- },
- {
-  "name": "toggle_b",
-  "title": "Toggle Switch",
-  "author": "pillwave",
-  "url": "https://freesound.org/people/pillwave/sounds/423957/",
-  "license": "CC0 1.0",
-  "source": "Freesound (HQ preview)"
- }
+  {
+    "name": "ir_hall",
+    "title": "IR_ST_Hall_04.wav",
+    "author": "Tim_Verberne",
+    "url": "https://freesound.org/people/Tim_Verberne/sounds/537650/",
+    "license": "CC0 1.0",
+    "source": "Freesound (HQ preview)"
+  },
+  {
+    "name": "ir_church",
+    "title": "IR_ST_Church_03.wav",
+    "author": "Tim_Verberne",
+    "url": "https://freesound.org/people/Tim_Verberne/sounds/537633/",
+    "license": "CC0 1.0",
+    "source": "Freesound (HQ preview)"
+  },
+  {
+    "name": "relay_a",
+    "title": "relay1.wav",
+    "author": "Mihacappy",
+    "url": "https://freesound.org/people/Mihacappy/sounds/876593/",
+    "license": "CC0 1.0",
+    "source": "Freesound (HQ preview)"
+  },
+  {
+    "name": "relay_b",
+    "title": "Relay 3",
+    "author": "JoontheFloof",
+    "url": "https://freesound.org/people/JoontheFloof/sounds/740253/",
+    "license": "CC0 1.0",
+    "source": "Freesound (HQ preview)"
+  },
+  {
+    "name": "relay_c",
+    "title": "Relay and loud click",
+    "author": "bassmosphere",
+    "url": "https://freesound.org/people/bassmosphere/sounds/384701/",
+    "license": "CC0 1.0",
+    "source": "Freesound (HQ preview)"
+  },
+  {
+    "name": "tty_a",
+    "title": "S24-01 Teletype or printing machine.wav",
+    "author": "craigsmith",
+    "url": "https://freesound.org/people/craigsmith/sounds/675940/",
+    "license": "CC0 1.0",
+    "source": "Freesound (HQ preview)"
+  },
+  {
+    "name": "tty_b",
+    "title": "R20-17-Teletype Machine.wav",
+    "author": "craigsmith",
+    "url": "https://freesound.org/people/craigsmith/sounds/483336/",
+    "license": "CC0 1.0",
+    "source": "Freesound (HQ preview)"
+  },
+  {
+    "name": "hdd",
+    "title": "Conner CFS420a - 3600rpm - BB",
+    "author": "Klerrp",
+    "url": "https://freesound.org/people/Klerrp/sounds/155882/",
+    "license": "CC0 1.0",
+    "source": "Freesound (HQ preview)"
+  },
+  {
+    "name": "hddclick",
+    "title": "computer hard drive access fan click.wav",
+    "author": "martian",
+    "url": "https://freesound.org/people/martian/sounds/570733/",
+    "license": "CC0 1.0",
+    "source": "Freesound (HQ preview)"
+  },
+  {
+    "name": "fan",
+    "title": "Computer fan",
+    "author": "ohrpilot",
+    "url": "https://freesound.org/people/ohrpilot/sounds/181995/",
+    "license": "CC0 1.0",
+    "source": "Freesound (HQ preview)"
+  },
+  {
+    "name": "crt",
+    "title": "CRT TV Whine",
+    "author": "Fission9",
+    "url": "https://freesound.org/people/Fission9/sounds/693863/",
+    "license": "CC0 1.0",
+    "source": "Freesound (HQ preview)"
+  },
+  {
+    "name": "toggle_a",
+    "title": "toggle switch 1",
+    "author": "TheTechTinkerer",
+    "url": "https://freesound.org/people/TheTechTinkerer/sounds/795663/",
+    "license": "CC0 1.0",
+    "source": "Freesound (HQ preview)"
+  },
+  {
+    "name": "toggle_b",
+    "title": "Toggle Switch",
+    "author": "pillwave",
+    "url": "https://freesound.org/people/pillwave/sounds/423957/",
+    "license": "CC0 1.0",
+    "source": "Freesound (HQ preview)"
+  }
 ]
