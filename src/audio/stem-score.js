@@ -125,6 +125,7 @@ var STEM_CUE_FOR = {
   cdc6600: "tube",
   agc66: "pdp8",
   s360: "pdp8",
+  b1700: "pdp8",
   unix70: "pdp8",
   alto73: "altair",
   tandem77: "altair",

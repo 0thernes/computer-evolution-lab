@@ -782,19 +782,21 @@ test("Universal HardWiredNetlistSolver verifies exact Boolean & physical switchi
     "src/sim/riscv-modern-pc.js",
     "src/sim/enterprise-hpc-quantum-sims.js",
     "src/sim/hardwired-frontier-sims.js",
+    "src/sim/b1700-sim.js",
     "src/layers/layer-stack.js",
     "src/layers/layers-expansion.js",
+    "src/layers/layers-b1700.js",
     "src/layers/hardwired-gate-engine.js",
   ]);
 
   assert.equal(typeof env.HardWiredNetlistSolver, "function");
   assert.equal(env._c.length, 6, "Hardware stack expanded to 6 rungs");
   assert.equal(env.Cc.length, 5, "Software stack expanded to 5 rungs");
-  assert.equal(env.p0.length, 48, "Primary-source spec table covers all 48 machines");
+  assert.equal(env.p0.length, 49, "Primary-source spec table covers all 49 machines");
 
-  const all48Ids = env.p0.map((r) => r.id);
+  const allIds = env.p0.map((r) => r.id);
   const familiesSeen = new Set();
-  for (const id of all48Ids) {
+  for (const id of allIds) {
     assert.ok(env.qy[id], `Layer definition missing for ${id}`);
     assert.equal(env.qy[id].hw.length, 6, `${id} must have 6 HW rungs`);
     assert.equal(env.qy[id].sw.length, 5, `${id} must have 5 SW rungs`);
@@ -833,7 +835,7 @@ test("Universal HardWiredNetlistSolver verifies exact Boolean & physical switchi
   assert.equal(
     familiesSeen.size,
     8,
-    `Expected 8 physical switching families to be represented across 48 machines, got ${familiesSeen.size}`,
+    `Expected 8 physical switching families to be represented across 49 machines, got ${familiesSeen.size}`,
   );
   // C9: every view is a labelled family template; Z1 is mechanical, not relay.
   assert.equal(env.HardWiredNetlistSolver.familyFor("z1").key, "mech_plate");

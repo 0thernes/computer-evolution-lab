@@ -118,6 +118,7 @@
     S1,
     A1,
     makeMachineS360,
+    makeMachineB1700,
     makeMachineUnix70,
     makeMachineTandem77,
     makeMachineVax78,

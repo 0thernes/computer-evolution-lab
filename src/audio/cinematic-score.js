@@ -100,6 +100,11 @@ var us = {
     style: "oppenheimer",
     mood: "propulsive spiccato strings, noble horns & mainframe timpani",
   },
+  b1700: {
+    film: "The Conversation & Three Days of the Condor",
+    style: "mind",
+    mood: "intricate piano ostinato, muted brass & ticking 1970s machine-room pulse",
+  },
   unix70: {
     film: "A Beautiful Mind & All the President's Men",
     style: "mind",
@@ -2579,6 +2584,7 @@ var Nm = class LabAudioController {
       case "arm07":
         break; // True silent fanless 4-watt mobile slab!
       case "s360":
+      case "b1700":
       case "unix70":
       case "vax78":
       case "sun90":
@@ -2926,6 +2932,11 @@ var Oa = Math.random,
       "chan>tape": ["tape", { min: 0.12 }],
       "chan>disk": () => ["seek", { d: 0.4 + Oa() * 0.5, min: 0.09 }],
       "chan>prn": ["clack", { min: 0.09 }],
+    },
+    b1700: {
+      "cm>mreg": () => ["tick", { f: 700 + Oa() * 500, v: 0.035, min: 0.06 }],
+      "smem>mreg": () => ["tick", { f: 420 + Oa() * 260, v: 0.045, min: 0.06 }],
+      "fu>smem": () => ["seek", { d: 0.2 + Oa() * 0.3, min: 0.12 }],
     },
     unix70: {
       "uni>vt": ["tty", { min: 0.08 }],

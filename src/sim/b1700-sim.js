@@ -297,6 +297,12 @@
       }
       throw new Error("B1700: register " + name + " is not a destination");
     }
+    // side-effect-free read for the console lamps (TAS would pop on a real move)
+    peek(name) {
+      if (name === "TAS") return this.astack[(this.asp + 31) & 31];
+      if (name === "READ" || name === "WRIT" || name === "DATA" || name === "CMND" || name === "NULL") return 0;
+      return this.get(name);
+    }
     reg(row, col) {
       const n = REG[col][row];
       if (!n) throw new Error(`B1700: reserved register row ${row} col ${col}`);

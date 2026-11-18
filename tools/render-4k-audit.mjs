@@ -64,6 +64,7 @@ const SHOTS = [
   { name: "49-systolic82-vlsi-4k", id: "systolic82", preset: "iso", cutaway: true },
   { name: "50-fugaku20-sve-4k", id: "fugaku20", preset: "iso", cutaway: true },
   { name: "51-qspin-silicon-dot-4k", id: "qspin", preset: "iso", cutaway: true },
+  { name: "52-b1700-console-4k", id: "b1700", preset: "iso", cutaway: true },
 ];
 
 const srv = await startServer(0);

@@ -105,6 +105,7 @@
     eniac46: "thermionic_tube",
     pdp8: "bipolar_rtl_ttl_ecl",
     s360: "bipolar_rtl_ttl_ecl",
+    b1700: "bipolar_rtl_ttl_ecl",
     cdc6600: "bipolar_rtl_ttl_ecl",
     agc66: "bipolar_rtl_ttl_ecl",
     unix70: "bipolar_rtl_ttl_ecl",

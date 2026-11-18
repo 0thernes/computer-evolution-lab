@@ -158,7 +158,7 @@ async function runRiscvUnitChecks() {
 
 async function runHeadlessBrowserSuite() {
   console.log(
-    "\n[3/4] Headless Chrome WebGL2 Full 48-Machine + 528-Layer (1,584 Sub-Lens) + Audio Verification",
+    "\n[3/4] Headless Chrome WebGL2 Full 49-Machine + 539-Layer (1,617 Sub-Lens) + Audio Verification",
   );
 
   const bin = findBrowserBinary();
@@ -196,8 +196,8 @@ async function runHeadlessBrowserSuite() {
 
     assert(bootInfo.webgl2, "WebGL2 context was not active");
     assert(
-      bootInfo.machines.length === 48,
-      `Expected 48 machines, got ${bootInfo.machines.length}`,
+      bootInfo.machines.length === 49,
+      `Expected 49 machines, got ${bootInfo.machines.length}`,
     );
     assert(
       session.pageExceptions.length === 0,
@@ -209,10 +209,10 @@ async function runHeadlessBrowserSuite() {
     );
     ok(
       "HTTP WebGL2 boot & StudioFX composer",
-      `48 machines, maxTex=${bootInfo.maxTex}, exposure=${bootInfo.exposure}`,
+      `49 machines, maxTex=${bootInfo.maxTex}, exposure=${bootInfo.exposure}`,
     );
 
-    // Verify all 48 machines: select, step frames, m.test(), and 11-layer selfCheck()
+    // Verify all 49 machines: select, step frames, m.test(), and 11-layer selfCheck()
     let totalLayersChecked = 0;
     const stepFrames = isSoftwareCI ? 2 : 6;
     for (const id of bootInfo.machines) {
@@ -262,8 +262,8 @@ async function runHeadlessBrowserSuite() {
       );
     }
     ok(
-      "All 528 Hardware/Software primary layer canvases verified",
-      `${totalLayersChecked}/528 live, non-blank & part-matched (1,584 sub-lens views)`,
+      "All 539 Hardware/Software primary layer canvases verified",
+      `${totalLayersChecked}/539 live, non-blank & part-matched (1,617 sub-lens views)`,
     );
 
     // Deep Modern Mini PC (pc20), Sub-Lens Gate Bench, 3D Bus Wave-Packets & 5-Tab Roofline Atlas checks
