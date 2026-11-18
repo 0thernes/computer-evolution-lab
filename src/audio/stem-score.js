@@ -119,7 +119,7 @@ var STEM_CUES = {
   },
 };
 
-// The repo has 48 machines; the 30 without their own cue borrow the closest one by era and timbre.
+// The repo has 49 machines; the 31 without their own cue borrow the closest one by era and timbre.
 var STEM_CUE_FOR = {
   eniac46: "tube",
   cdc6600: "tube",

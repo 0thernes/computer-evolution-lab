@@ -93,7 +93,7 @@
   const fx = new Qu(renderer, scene, camera, keyLight);
   const slicer = new CrossSectionSlicer(renderer, scene);
 
-  // ---- 2. Instantiate All 48 Functional Machines Across 4 Grand Circles ----
+  // ---- 2. Instantiate All 49 Functional Machines Across 4 Grand Circles ----
   const factories = [
     zm,
     qm,
@@ -2166,7 +2166,7 @@
     ["[ / ]", "Step abstraction layer down / up"],
     ["\\", "Switch Hardware ↔ Software layer stack"],
     ["← / →", "Previous / next era machine"],
-    ["H", "Return to the 49-scene 4-Circle Hub Campus"],
+    ["H", "Return to the 50-scene 4-Circle Hub Campus"],
     ["Esc", "Close part card / modal / tour"],
   ];
 

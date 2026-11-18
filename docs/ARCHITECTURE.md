@@ -21,7 +21,7 @@ flowchart TD
   RV32 --> LAYERS
   EXP_SIM --> LAYERS_EXP["src/layers/layers-expansion.js (Domain Canvases & Expansion Rungs)"]
   LAYERS --> LAYERS_EXP
-  HW_SIM --> GATE_ENG["src/layers/hardwired-gate-engine.js (HardWiredNetlistSolver + 528 Primary / 1,584 Sub-Lens Rungs)"]
+  HW_SIM --> GATE_ENG["src/layers/hardwired-gate-engine.js (HardWiredNetlistSolver + 539 Primary / 1,617 Sub-Lens Rungs)"]
   LAYERS_EXP --> GATE_ENG
   GATE_ENG --> CMP["src/app/compare-modal.js (5-Tab CS Roofline & Physics Atlas)"]
   HTML --> SFX["assets/audio/sfx-clips.js"]
@@ -33,9 +33,10 @@ flowchart TD
   RV32 --> M3["src/machines/machine-pc20.js (Dual-Engine RV32IM + WebGL2 Modern PC)"]
   STAGE --> M4["src/machines/machines-frontier.js (aibox, bci, quantum, m6502, photonic, alife)"]
   STAGE --> M5["src/machines/machines-servers.js (Circle II: s360, unix70, tandem77, vax78, sun90, blade04, cloud10, zmain20)"]
+  STAGE --> M5B["src/machines/machine-b1700.js + src/sim/b1700-sim.js (Circle II: b1700 micro-machine, MIL assembler, S-machine)"]
   STAGE --> M6["src/machines/machines-super.js (Circle III: cdc6600, cray1, systolic82, cm2, ascired97, bgene, fugaku20, exascale, gb200)"]
   STAGE --> M7["src/machines/machines-quantum-age.js (Circle IV: qion, qanneal, qatom, qtransmon, qspin, qphotonic, qtopo, qomega)"]
-  M1 --> MAIN["src/app/lab-main.js (IIFE 4-Circle 48-Machine + BusPulse3D Orchestrator -> window.LAB)"]
+  M1 --> MAIN["src/app/lab-main.js (IIFE 4-Circle 49-Machine + BusPulse3D Orchestrator -> window.LAB)"]
   M1B --> MAIN
   M1C --> MAIN
   M2 --> MAIN
@@ -50,12 +51,12 @@ flowchart TD
 
 ---
 
-## 2. Four-Circle Spatial Campus Topology (`48` Operational Machines)
+## 2. Four-Circle Spatial Campus Topology (`49` Operational Machines)
 
-`src/app/lab-main.js` arranges the 48 machines chronologically across 4 Grand Plazas (`PLAZAS.c1..c4`) over the derivative-antialiased metric floor, linked by live 3D light-bridge wave-packets (`BusPulse3D`):
+`src/app/lab-main.js` arranges the 49 machines chronologically across 4 Grand Plazas (`PLAZAS.c1..c4`) over the derivative-antialiased metric floor, linked by live 3D light-bridge wave-packets (`BusPulse3D`):
 
 - **Circle I (`[0, 0, -7.2]`, `22` machines)**: Personal, Hard-Wired, Symbolic & Wafer-Scale Frontier surrounding **★ 1975 MOS 6502 (`m6502`)** on a raised central dais (`turing`, `z1`, `eniac46`, `analog`, `tube`, `pdp8`, `agc66`, `alto73`, `altair`, `m6502`, `home80`, `lisp83`, `pc90`, `pc00`, `arm07`, `pc10`, `pc20`, `aibox`, `bci`, `wse24`, `alife`, `photonic`).
-- **Circle II (`[-19.2, 0, 5.8]`, `8` machines)**: Mainframes & Enterprise Servers surrounding **★ 1964 IBM System/360 (`s360`)** (`s360`, `unix70`, `tandem77`, `vax78`, `sun90`, `blade04`, `cloud10`, `zmain20`).
+- **Circle II (`[-19.2, 0, 5.8]`, `9` machines)**: Mainframes & Enterprise Servers surrounding **★ 1964 IBM System/360 (`s360`)** (`s360`, `b1700`, `unix70`, `tandem77`, `vax78`, `sun90`, `blade04`, `cloud10`, `zmain20`).
 - **Circle III (`[19.2, 0, 5.8]`, `9` machines)**: Supercomputers surrounding **★ 1976 Cray-1 Vector (`cray1`)** (`cdc6600`, `cray1`, `systolic82`, `cm2`, `ascired97`, `bgene`, `fugaku20`, `exascale`, `gb200`).
 - **Circle IV (`[0, 0, 16.4]`, `9` machines)**: The Age of Quantum Computers surrounding **★ 2045+ OMEGA-Q Horizon (`qomega`)** (`qion`, `quantum`, `qanneal`, `qatom`, `qtransmon`, `qspin`, `qphotonic`, `qtopo`, `qomega`).
 

@@ -9,7 +9,7 @@
 [![Assets](https://img.shields.io/badge/assets-CC0%201.0-16a34a)](CREDITS.md)
 [![6502](https://img.shields.io/badge/6502-Dormann%20functional%20test%20in%20CI-f59e0b)](tools/dormann-6502.mjs)
 
-> **48 hard-wired operational computers across 4 Grand Circles + a 49-scene 4K HDR 3D interactive museum** — spanning **Personal, Hard-Wired & Wafer-Scale Foundations (`22`)**, **Mainframes & Enterprise Servers (`8`)**, **Supercomputers (`9`)**, and **The Age of Quantum Computers (`9` Physical Modalities)**, complete with a **5-Tab MIT/Stanford/Caltech CS Roofline & Physics Atlas**, live **RISC-V `RV32IM` + WebGL2 GPU Modern Mini PC**, **gate bench + eye-diagram scope driven by 8 switching-family templates (`528` primary rungs / `1,584` sub-lens views)**, **3D Hardware Bus Wave-Packet Propagation (`BusPulse3D`)**, **X/Y/Z CAD Laser-Reticle Cross-Section Slicer**, an **original orchestral score sampled from the CC0 VSCO 2 CE orchestra** (with a procedural WebAudio fallback), and **CC0 ambientCG PBR textures + Poly Haven HDRI lighting** with GTAO, SMAA, selective bloom and close-up depth of field.
+> **49 hard-wired operational computers across 4 Grand Circles + a 50-scene 4K HDR 3D interactive museum** — spanning **Personal, Hard-Wired & Wafer-Scale Foundations (`22`)**, **Mainframes & Enterprise Servers (`9`)**, **Supercomputers (`9`)**, and **The Age of Quantum Computers (`9` Physical Modalities)**, complete with a **5-Tab MIT/Stanford/Caltech CS Roofline & Physics Atlas**, live **RISC-V `RV32IM` + WebGL2 GPU Modern Mini PC**, **gate bench + eye-diagram scope driven by 8 switching-family templates (`539` primary rungs / `1,617` sub-lens views)**, **3D Hardware Bus Wave-Packet Propagation (`BusPulse3D`)**, **X/Y/Z CAD Laser-Reticle Cross-Section Slicer**, an **original orchestral score sampled from the CC0 VSCO 2 CE orchestra** (with a procedural WebAudio fallback), and **CC0 ambientCG PBR textures + Poly Haven HDRI lighting** with GTAO, SMAA, selective bloom and close-up depth of field.
 >
 > - **Launch Live in Browser (Zero Install)**: **[https://0thernes.github.io/computer-evolution-lab/](https://0thernes.github.io/computer-evolution-lab/)**
 > - **Download Standalone Windows `.exe`**: **[GitHub Releases (`Computer Evolution Lab.exe`)](https://github.com/0thernes/computer-evolution-lab/releases/latest)**
@@ -77,12 +77,13 @@ On phones the lab picks a lower quality tier from device capabilities, shows lig
 | Cray-1 cycle counts    | Closed-form timing model, labelled in the UI                                                                   | —                                     |
 | Apollo AGC             | Conceptual model (7-word rope, 4 opcodes, scripted 1202), labelled in the UI                                   | —                                     |
 | Gate bench / eye scope | 8 switching-family templates, labelled in the UI                                                               | `tests/simulators.test.mjs`           |
+| Burroughs B1700        | Micro-instruction emulator from the B 1700 Systems Reference Manual and the MIL manual; SAM S-language is lab-defined; interpretations listed in [`docs/B1700.md`](docs/B1700.md) | `tests/b1700.test.mjs`                |
 
 Design decisions are recorded in [`docs/adr/`](docs/adr/).
 
 ---
 
-## The 4 Grand Circles — 48 Hard-Wired Operational Machines
+## The 4 Grand Circles — 49 Hard-Wired Operational Machines
 
 Each Grand Circle in the 3D Campus surrounds its **★ Capital Breakthrough Monument** on an illuminated central dais, with real-time 3D wave-packets (`BusPulse3D`) flying across active hardware buses:
 
@@ -113,11 +114,12 @@ Each Grand Circle in the 3D Campus surrounds its **★ Capital Breakthrough Monu
 | `alife`    | 2006+ | **Wet Reaction-Diffusion & DNA Gate**            | Gray–Scott PDE (`128×128`), Belousov–Zhabotinsky waves & Seelig 2006 DNA toehold `AND` kinetics                                                                                                                                                  |
 | `photonic` | 2017+ | **Programmable Nanophotonic Mesh**               | Clements `4×4` unitary Mach–Zehnder interferometer waveguide matrix (`U·x` by light interference)                                                                                                                                                |
 
-### Circle II — Mainframes & Enterprise Servers (`8` Machines · ★ Capital: `1964` IBM System/360)
+### Circle II — Mainframes & Enterprise Servers (`9` Machines · ★ Capital: `1964` IBM System/360)
 
 | ID         | Era  | Machine                                           | Live Computational Engine                                                                                                                   |
 | :--------- | :--- | :------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------ |
 | `s360` ★   | 1964 | **IBM System/360 Model 50 (★ Capital)**           | 32-bit GPR + Packed-BCD `AP` decimal ledger, ROS microcode control store, storage keys & autonomous `CCW` Tape/Disk/1403 I/O Channels       |
+| `b1700`    | 1972 | **Burroughs B 1726 (B1700 series)**               | User-microprogrammable: 16-bit micro-instructions (MIL) on a 24-bit variable-width function box over bit-addressable memory; a microcoded interpreter runs a small S-language in binary or decimal |
 | `unix70`   | 1973 | **DEC PDP-11/70 UNIX v6 & ARPANET Server**        | Kernel/User 22-bit APR MMU relocation, `fork`/`exec`/`pipe` process table, hierarchical inode FS, UNIX shell (`ps`, `ls \| wc`, `cat`)      |
 | `tandem77` | 1977 | **Tandem NonStop-16 Fault-Tolerant Cluster**      | Share-nothing 4-CPU `Process Pairs`, dual `Dynabus X/Y`, mirrored RAID-1 & Jim Gray `WAL` `UNDO`/`REDO` preserving exact `$1,000,000` ACID  |
 | `vax78`    | 1978 | **DEC VAX-11/780 32-Bit Virtual-Memory Server**   | Canonical `1.0 MIPS` CISC reference: `4 GiB` virtual space (`P0`/`P1`/`S0`), 2-way `TB` TLB, two-handed Working-Set clock & `K/E/S/U` rings |
@@ -156,9 +158,9 @@ Each Grand Circle in the 3D Campus surrounds its **★ Capital Breakthrough Monu
 
 ---
 
-## 11-Rung × 3-Sub-Lens Deep Layer Stack (`528` Primary Rungs · `1,584` Interactive Views)
+## 11-Rung × 3-Sub-Lens Deep Layer Stack (`539` Primary Rungs · `1,617` Interactive Views)
 
-Every single one of the **48 machines** exposes **11 primary hardware & software abstraction rungs** (`6 Hardware`: _Physical Substrate_, _Transistor & Gate Switch_, _Combinational & ALU_, _Clock, Bus & Interconnect_, _Memory & Storage Hierarchy_, _I/O, Peripherals & Chassis_; `5 Software`: _Microcode & Control Signals_, _ISA & Machine Code_, _Assembler, Compiler & ABI_, _Kernel, Scheduler & Runtime_, _Live Application & Telemetry_), and **every rung** can be drilled into across **3 live Sub-Layer Lenses** (`src/layers/layer-stack.js`, `src/layers/hardwired-gate-engine.js`):
+Every single one of the **49 machines** exposes **11 primary hardware & software abstraction rungs** (`6 Hardware`: _Physical Substrate_, _Transistor & Gate Switch_, _Combinational & ALU_, _Clock, Bus & Interconnect_, _Memory & Storage Hierarchy_, _I/O, Peripherals & Chassis_; `5 Software`: _Microcode & Control Signals_, _ISA & Machine Code_, _Assembler, Compiler & ABI_, _Kernel, Scheduler & Runtime_, _Live Application & Telemetry_), and **every rung** can be drilled into across **3 live Sub-Layer Lenses** (`src/layers/layer-stack.js`, `src/layers/hardwired-gate-engine.js`):
 
 1. **`◈ Rung View`**: Domain-specific architecture & telemetry visualizer matched to highlighted 3D hardware sub-assemblies.
 2. **`⚡ Gate Bench` (`HardWiredNetlistSolver`)**: Interactive 6-gate full-adder / reversible Feynman–Toffoli netlist bench across 8 physical switching-family **templates** (mechanical sliding plates, thermionic vacuum triodes, bipolar RTL/TTL/ECL, depletion NMOS, planar CMOS, FinFET/GAA wafer-scale, bio/photonic wave-plates, and reversible quantum gates) — click input pins `[A, B, CIN, MODE]` directly on the canvas or couple live to the running CPU bus!
@@ -171,7 +173,7 @@ Every single one of the **48 machines** exposes **11 primary hardware & software
 
 Press `G` or click `📊 CS Atlas` in the top toolbar to open the **5-tab** comparative engineering reference ([`src/app/compare-modal.js`](src/app/compare-modal.js)):
 
-1. **Quantitative Plot & Primary-Source Specs (48 Machines)**: Filter by Grand Circle (`All 48`, `Circle I`, `Circle II`, `Circle III`, `Circle IV`) and plot Transistor/Element Scale, Clock/Rate, Memory Capacity, Power Envelope, and System Price on calibrated logarithmic scales (with `—` preserved strictly where historical/speculative figures are undocumented).
+1. **Quantitative Plot & Primary-Source Specs (49 Machines)**: Filter by Grand Circle (`All 49`, `Circle I`, `Circle II`, `Circle III`, `Circle IV`) and plot Transistor/Element Scale, Clock/Rate, Memory Capacity, Power Envelope, and System Price on calibrated logarithmic scales (with `—` preserved strictly where historical/speculative figures are undocumented).
 2. **Big-Drop Years vs. Quiet / Winter Bottleneck Years (`1936–2045+`)**: Contrasts explosive single-year bursts (`1946` ENIAC, `1964` S/360 + CDC 6600, `1966` Apollo AGC, `1973` C/UNIX + Alto + Ethernet, `1975–78` Altair/6502/Cray-1/Tandem/VAX, `1982–83` Systolic VLSI + Symbolics LISP, `2004–07` x86-64 VT-x + Mobile ARM SoC, `2020–25` Fugaku SVE + Exascale + WSE-3 + NVL72 + `²⁸Si` Spin + QEC threshold) against physical & software bottleneck periods.
 3. **Mainframe vs. Server vs. Supercomputer vs. Quantum Matrix**: Side-by-side systems engineering comparison across Optimization Target, Failure Philosophy, I/O vs. FLOPS Balance, Memory Hierarchy, Canonical Workloads, and Flagship Lab Machines.
 4. **⚛️ 9 Quantum Eras & Modalities (`1995–2045+`)**: Compares all 9 physical quantum architectures side-by-side (`qion`, `quantum`, `qanneal`, `qatom`, `qtransmon`, `qspin`, `qphotonic`, `qtopo`, `qomega`) across Qubit Encoding, Operating Temperature, Entangling Physics, Connectivity, Error Regime, and Live Lab Simulation.
@@ -181,7 +183,7 @@ Press `G` or click `📊 CS Atlas` in the top toolbar to open the **5-tab** comp
 
 ## Tests
 
-Automated verification covers static symbol/DOM integrity, standalone Node `RV32IM` + frontier/enterprise/HPC/quantum + universal netlist unit tests, full headless Chrome WebGL2 execution across all **48 machines** and **528 primary layer visualizers (`1,584` sub-lens views)**, `BusPulse3D` 3D wave-packets, `X/Y/Z` cross-section slicing, 7 mood palettes, and direct `file://` double-click loading:
+Automated verification covers static symbol/DOM integrity, standalone Node `RV32IM` + frontier/enterprise/HPC/quantum + universal netlist unit tests, full headless Chrome WebGL2 execution across all **49 machines** and **539 primary layer visualizers (`1,617` sub-lens views)**, `BusPulse3D` 3D wave-packets, `X/Y/Z` cross-section slicing, 7 mood palettes, and direct `file://` double-click loading:
 
 ```bash
 # Unit tests: simulators, RV32 pipeline vs ISS, golden values, security, analog compiler, version sync
@@ -196,7 +198,7 @@ npx prettier@3.10.1 --check "**/*.{html,css,js,mjs,json,md,yml}"
 # Run exhaustive static symbol, PBR helper, SFX, and HTML ID audit
 node tools/audit-exhaustive.mjs
 
-# Run full headless WebGL2 48-machine + 528-layer (1,584 sub-lens) + audio + file:// verification suite
+# Run full headless WebGL2 49-machine + 539-layer (1,617 sub-lens) + audio + file:// verification suite
 npm test
 
 # Render 51 4K UHD (3840x2160) & UI visual audit PNGs + white-clipping report

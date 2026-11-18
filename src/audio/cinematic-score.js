@@ -101,7 +101,6 @@ var us = {
     mood: "propulsive spiccato strings, noble horns & mainframe timpani",
   },
   b1700: {
-    film: "The Conversation & Three Days of the Condor",
     style: "mind",
     mood: "intricate piano ostinato, muted brass & ticking 1970s machine-room pulse",
   },

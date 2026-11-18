@@ -1,5 +1,5 @@
 // Universal Hard-Wired Gate-Level Netlist Engine, Signal-Integrity Eye Scope & 11-Rung Layer Expansion (v5.0.0)
-// Expands all 48 machines × 11 primary rungs = 528 primary layers (and × 3 interactive sub-lenses = 1,584 live views).
+// Expands all 49 machines × 11 primary rungs = 539 primary layers (and × 3 interactive sub-lenses = 1,617 live views).
 //
 // HONESTY NOTE (review finding C9): the gate bench and eye scope are driven by
 // 8 generic switching-family TEMPLATES below, not per-machine netlists. Every

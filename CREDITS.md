@@ -4,7 +4,7 @@ Every media file in this repository is CC0 1.0 or public domain. Code is the aut
 
 ## Music
 
-18 original cues: the melodies, progressions and arrangements were written for this lab (`tools/score/cues.py`). They were rendered offline from the CC0 samples below by `tools/score/build.py`, as 3 stems per cue (bed, pulse, lead). The other 30 scenes reuse the cue of the closest machine (`STEM_CUE_FOR` in `src/audio/stem-score.js`). The standard tier ships Opus "lite" stems in `assets/music/lite/`; the full tier (release zip) has full-bitrate stems. Without them (on `file://`, or if Opus can't be decoded) the live procedural WebAudio score in `src/audio/cinematic-score.js` plays instead.
+18 original cues: the melodies, progressions and arrangements were written for this lab (`tools/score/cues.py`). They were rendered offline from the CC0 samples below by `tools/score/build.py`, as 3 stems per cue (bed, pulse, lead). The other 31 scenes reuse the cue of the closest machine (`STEM_CUE_FOR` in `src/audio/stem-score.js`). The standard tier ships Opus "lite" stems in `assets/music/lite/`; the full tier (release zip) has full-bitrate stems. Without them (on `file://`, or if Opus can't be decoded) the live procedural WebAudio score in `src/audio/cinematic-score.js` plays instead.
 
 | Cue                      | Scenes                                                         | Key      | BPM | Texture                                            |
 | :----------------------- | :------------------------------------------------------------- | :------- | --: | :------------------------------------------------- |
@@ -13,7 +13,7 @@ Every media file in this repository is CC0 1.0 or public domain. Code is the aut
 | Sliding Plates           | z1                                                             | F minor  |  96 | mechanical 3+3+2 spiccato, clockwork               |
 | Integrators              | analog                                                         | E minor  | 112 | swirling spiccato, low brass, timpani              |
 | Three Thousand Valves    | tube, eniac46, cdc6600                                         | C minor  | 120 | relentless pedal strings, heartbeat drums          |
-| Core Planes              | pdp8, agc66, s360, unix70                                      | B♭ major | 132 | counting piano in 3/4, flute and strings           |
+| Core Planes              | pdp8, agc66, s360, b1700, unix70                               | B♭ major | 132 | counting piano in 3/4, flute and strings           |
 | Switches and Lamps       | altair, alto73, tandem77                                       | E♭ major |  80 | warm horns, harp, glockenspiel                     |
 | Raster Lines             | home80, lisp83, vax78, cray1, systolic82                       | A minor  | 120 | synth arpeggiator with orchestra                   |
 | Rain on Beige            | pc90, sun90, cm2, ascired97                                    | F dorian |  66 | slow synth brass, bells, long reverb               |
@@ -65,6 +65,12 @@ Everything else is synthesized in the browser; see `SOUNDS.md`.
 | Image-based lighting and reflections | `assets/hdri/studio_1k.hdr` (2K in the full tier) | Studio Small 09 | Sergej Majboroda (Poly Haven) | CC0 1.0 | https://polyhaven.com/a/studio_small_09   |
 
 Procedural (generated in the browser): PCB artwork, chip markings, the 6502 die floorplan and its transistor-scale close-zoom detail, keycap legends, panel lettering, CRT/LCD shading.
+
+Burroughs B1700 scene: every texture is drawn in code for this lab (console legend plate, raised-floor tiles, printer paper, the lab-instrument screen) and the console lamps use a small self-written shader patch. No photograph, scan or logo file is bundled. Burroughs catalogue photographs and the B 1726 brochure on bitsavers were used only as visual references for proportions and colours; the "Burroughs" nameplate is set in a generic serif font.
+
+## Historical sources (B1700)
+
+The B1700 emulator and dossier cite Burroughs manuals, brochures, a patent, papers and a newspaper clipping, all linked from [`docs/B1700.md`](docs/B1700.md). Nothing from them is redistributed; they are referenced by URL (mostly bitsavers.org).
 
 ## Data fetched at run time (not bundled)
 

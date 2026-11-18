@@ -8,7 +8,7 @@ function Dc(selectMachine) {
   });
 
   const WING_META = {
-    all: { label: "All 48 Machines", color: "#58c4ff" },
+    all: { label: "All 49 Machines", color: "#58c4ff" },
     personal: { label: "Circle I · Personal & Bio/Wafer (22)", color: "#ffb347" },
     servers: { label: "Circle II · Mainframes & Servers (8)", color: "#38bdf8" },
     super: { label: "Circle III · Supercomputers (9)", color: "#f97316" },
@@ -999,7 +999,7 @@ function Dc(selectMachine) {
     roofline: rooflinePane,
   };
   const tabDefs = [
-    ["quant", "📊 Quantitative Plot & Specs (48)"],
+    ["quant", "📊 Quantitative Plot & Specs (49)"],
     ["timeline", "⚡ Big-Drop vs. Quiet / Winter Years"],
     ["matrix", "🏛️ Mainframe vs. Server vs. Super vs. Quantum"],
     ["qmod", "⚛️ 9 Quantum Modalities"],
@@ -1037,7 +1037,7 @@ function Dc(selectMachine) {
       q(
         "h2",
         {},
-        "Computer Science & Engineering Atlas — 4 Circles · 48 Hard-Wired Operational Machines",
+        "Computer Science & Engineering Atlas — 4 Circles · 49 Hard-Wired Operational Machines",
       ),
       q("div", { class: "row", style: { marginBottom: "8px" } }, ...tabButtons),
       tabBody,
