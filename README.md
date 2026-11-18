@@ -66,17 +66,17 @@ On phones the lab picks a lower quality tier from device capabilities, shows lig
 
 ## What is real and what is modelled
 
-| Claim                  | Status                                                                                                         | How it's checked                      |
-| :--------------------- | :------------------------------------------------------------------------------------------------------------- | :------------------------------------ |
-| 6502 behavioural core  | Passes Klaus Dormann's 6502 functional test, decimal mode included                                             | `node tools/dormann-6502.mjs` (in CI) |
-| 6502 transistor mode   | Real visual6502 netlist, fetched on request, pinned and SHA-256-verified                                       | in-app                                |
-| RV32IM pipeline        | Cycle-stepped 5-stage pipeline; architectural state identical to an ISS on 200 random programs and all presets | `tests/rv32-pipeline.test.mjs`        |
-| Shor                   | Exact state-vector simulation with FFT; odd composites up to N = 255, refuses above                            | `tests/golden.test.mjs`               |
-| H₂                     | STO-3G exact integrals + 2×2 full CI; R_e 0.735 Å (basis-set error vs. 0.741 Å)                                | `tests/simulators.test.mjs`           |
-| CM-2, Cray-1 kernels   | Compared with independent reference computations                                                               | `tests/golden.test.mjs`               |
-| Cray-1 cycle counts    | Closed-form timing model, labelled in the UI                                                                   | —                                     |
-| Apollo AGC             | Conceptual model (7-word rope, 4 opcodes, scripted 1202), labelled in the UI                                   | —                                     |
-| Gate bench / eye scope | 8 switching-family templates, labelled in the UI                                                               | `tests/simulators.test.mjs`           |
+| Claim                  | Status                                                                                                                                                                            | How it's checked                      |
+| :--------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------ |
+| 6502 behavioural core  | Passes Klaus Dormann's 6502 functional test, decimal mode included                                                                                                                | `node tools/dormann-6502.mjs` (in CI) |
+| 6502 transistor mode   | Real visual6502 netlist, fetched on request, pinned and SHA-256-verified                                                                                                          | in-app                                |
+| RV32IM pipeline        | Cycle-stepped 5-stage pipeline; architectural state identical to an ISS on 200 random programs and all presets                                                                    | `tests/rv32-pipeline.test.mjs`        |
+| Shor                   | Exact state-vector simulation with FFT; odd composites up to N = 255, refuses above                                                                                               | `tests/golden.test.mjs`               |
+| H₂                     | STO-3G exact integrals + 2×2 full CI; R_e 0.735 Å (basis-set error vs. 0.741 Å)                                                                                                   | `tests/simulators.test.mjs`           |
+| CM-2, Cray-1 kernels   | Compared with independent reference computations                                                                                                                                  | `tests/golden.test.mjs`               |
+| Cray-1 cycle counts    | Closed-form timing model, labelled in the UI                                                                                                                                      | —                                     |
+| Apollo AGC             | Conceptual model (7-word rope, 4 opcodes, scripted 1202), labelled in the UI                                                                                                      | —                                     |
+| Gate bench / eye scope | 8 switching-family templates, labelled in the UI                                                                                                                                  | `tests/simulators.test.mjs`           |
 | Burroughs B1700        | Micro-instruction emulator from the B 1700 Systems Reference Manual and the MIL manual; SAM S-language is lab-defined; interpretations listed in [`docs/B1700.md`](docs/B1700.md) | `tests/b1700.test.mjs`                |
 
 Design decisions are recorded in [`docs/adr/`](docs/adr/).
@@ -116,17 +116,17 @@ Each Grand Circle in the 3D Campus surrounds its **★ Capital Breakthrough Monu
 
 ### Circle II — Mainframes & Enterprise Servers (`9` Machines · ★ Capital: `1964` IBM System/360)
 
-| ID         | Era  | Machine                                           | Live Computational Engine                                                                                                                   |
-| :--------- | :--- | :------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------ |
-| `s360` ★   | 1964 | **IBM System/360 Model 50 (★ Capital)**           | 32-bit GPR + Packed-BCD `AP` decimal ledger, ROS microcode control store, storage keys & autonomous `CCW` Tape/Disk/1403 I/O Channels       |
+| ID         | Era  | Machine                                           | Live Computational Engine                                                                                                                                                                          |
+| :--------- | :--- | :------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `s360` ★   | 1964 | **IBM System/360 Model 50 (★ Capital)**           | 32-bit GPR + Packed-BCD `AP` decimal ledger, ROS microcode control store, storage keys & autonomous `CCW` Tape/Disk/1403 I/O Channels                                                              |
 | `b1700`    | 1972 | **Burroughs B 1726 (B1700 series)**               | User-microprogrammable: 16-bit micro-instructions (MIL) on a 24-bit variable-width function box over bit-addressable memory; a microcoded interpreter runs a small S-language in binary or decimal |
-| `unix70`   | 1973 | **DEC PDP-11/70 UNIX v6 & ARPANET Server**        | Kernel/User 22-bit APR MMU relocation, `fork`/`exec`/`pipe` process table, hierarchical inode FS, UNIX shell (`ps`, `ls \| wc`, `cat`)      |
-| `tandem77` | 1977 | **Tandem NonStop-16 Fault-Tolerant Cluster**      | Share-nothing 4-CPU `Process Pairs`, dual `Dynabus X/Y`, mirrored RAID-1 & Jim Gray `WAL` `UNDO`/`REDO` preserving exact `$1,000,000` ACID  |
-| `vax78`    | 1978 | **DEC VAX-11/780 32-Bit Virtual-Memory Server**   | Canonical `1.0 MIPS` CISC reference: `4 GiB` virtual space (`P0`/`P1`/`S0`), 2-way `TB` TLB, two-handed Working-Set clock & `K/E/S/U` rings |
-| `sun90`    | 1993 | **Sun SPARCcenter RISC SMP & RAID-5 Server**      | 4-CPU snooping `MESI` (`M/E/S/I`) XDBus coherence FSM (`BusRd`, `BusRdX`, `BusUpgr`) + 5-disk SCSI RAID-5 live XOR parity reconstruction    |
-| `blade04`  | 2004 | **Dual-Opteron x86-64 Hypervisor & ccNUMA Blade** | 24-access 2D Nested Page Table (`EPT`/`RVI`) walk + VPID TLB, `KSM` RAM deduplication, HyperTransport `ccNUMA` & `O(1)` `epoll` C10K engine |
-| `cloud10`  | 2014 | **Open-Compute Cloud Rack & Raft Cluster**        | 5-node `Raft` consensus FSM (leader election, split-brain quorum halt, `AppendEntries` WAL) + 48V busbar & 25.6 Tbps Clos Leaf-Spine        |
-| `zmain20`  | 2022 | **Telum z16 Zero-Downtime Enterprise Mainframe**  | 2 GB Virtual L3/L4 cache ring, 5-channel `RAIM` full-DIMM failover, `PR/SM` LPARs & inline `<1 ms` neural fraud scoring inside ACID TPS     |
+| `unix70`   | 1973 | **DEC PDP-11/70 UNIX v6 & ARPANET Server**        | Kernel/User 22-bit APR MMU relocation, `fork`/`exec`/`pipe` process table, hierarchical inode FS, UNIX shell (`ps`, `ls \| wc`, `cat`)                                                             |
+| `tandem77` | 1977 | **Tandem NonStop-16 Fault-Tolerant Cluster**      | Share-nothing 4-CPU `Process Pairs`, dual `Dynabus X/Y`, mirrored RAID-1 & Jim Gray `WAL` `UNDO`/`REDO` preserving exact `$1,000,000` ACID                                                         |
+| `vax78`    | 1978 | **DEC VAX-11/780 32-Bit Virtual-Memory Server**   | Canonical `1.0 MIPS` CISC reference: `4 GiB` virtual space (`P0`/`P1`/`S0`), 2-way `TB` TLB, two-handed Working-Set clock & `K/E/S/U` rings                                                        |
+| `sun90`    | 1993 | **Sun SPARCcenter RISC SMP & RAID-5 Server**      | 4-CPU snooping `MESI` (`M/E/S/I`) XDBus coherence FSM (`BusRd`, `BusRdX`, `BusUpgr`) + 5-disk SCSI RAID-5 live XOR parity reconstruction                                                           |
+| `blade04`  | 2004 | **Dual-Opteron x86-64 Hypervisor & ccNUMA Blade** | 24-access 2D Nested Page Table (`EPT`/`RVI`) walk + VPID TLB, `KSM` RAM deduplication, HyperTransport `ccNUMA` & `O(1)` `epoll` C10K engine                                                        |
+| `cloud10`  | 2014 | **Open-Compute Cloud Rack & Raft Cluster**        | 5-node `Raft` consensus FSM (leader election, split-brain quorum halt, `AppendEntries` WAL) + 48V busbar & 25.6 Tbps Clos Leaf-Spine                                                               |
+| `zmain20`  | 2022 | **Telum z16 Zero-Downtime Enterprise Mainframe**  | 2 GB Virtual L3/L4 cache ring, 5-channel `RAIM` full-DIMM failover, `PR/SM` LPARs & inline `<1 ms` neural fraud scoring inside ACID TPS                                                            |
 
 ### Circle III — Supercomputers (`9` Machines · ★ Capital: `1976` Cray-1 Vector)
 

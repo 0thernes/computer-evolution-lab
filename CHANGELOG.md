@@ -18,7 +18,7 @@ All notable changes to **Computer Evolution Lab** are documented in this file.
     - a cassette reader, the operator table with the 9340 console printer, a 9480-2 disk cartridge subsystem and a 9419-1 96-column data recorder;
     - a labelled lab-instrument screen.
   - **11-rung layer stack** with 3 B1700 visualisers (bit-addressed S-memory, function box, micro-instruction stream).
-  - **A sourced in-app dossier**: dates, people, papers with DOIs, manuals, S-language specs, ads, brochures, the CBI *B1700 Presentation* film, and what was searched for and not found. `tools/check-b1700-links.mjs` re-checks every link.
+  - **A sourced in-app dossier**: dates, people, papers with DOIs, manuals, S-language specs, ads, brochures, the CBI _B1700 Presentation_ film, and what was searched for and not found. `tools/check-b1700-links.mjs` re-checks every link.
   - `tests/b1700.test.mjs` (12 tests).
 
 ### Changed

@@ -68,10 +68,78 @@
 
   // Register select matrix, Table 4-1 [SRM 4-1]: REG[col][row].
   const REG = [
-    ["TA", "TB", "TC", "TD", "TE", "TF", "CA", "CB", "LA", "LB", "LC", "LD", "LE", "LF", "CC", "CD"],
-    ["FU", "FT", "FLC", "FLD", "FLE", "FLF", "BICN", "FLCN", "TOPM", null, null, null, "XYCN", "XYST", "INCN", "CPU"],
-    ["X", "Y", "T", "L", "A", "M", "BR", "LR", "FA", "FB", "FL", "TAS", "CP", "MSM", "READ", "WRIT"],
-    ["SUM", "CMPX", "CMPY", "XANY", "XEOY", "MSKX", "MSKY", "XORY", "DIFF", "MAXS", "MAXM", "U", "MBR", "DATA", "CMND", "NULL"],
+    [
+      "TA",
+      "TB",
+      "TC",
+      "TD",
+      "TE",
+      "TF",
+      "CA",
+      "CB",
+      "LA",
+      "LB",
+      "LC",
+      "LD",
+      "LE",
+      "LF",
+      "CC",
+      "CD",
+    ],
+    [
+      "FU",
+      "FT",
+      "FLC",
+      "FLD",
+      "FLE",
+      "FLF",
+      "BICN",
+      "FLCN",
+      "TOPM",
+      null,
+      null,
+      null,
+      "XYCN",
+      "XYST",
+      "INCN",
+      "CPU",
+    ],
+    [
+      "X",
+      "Y",
+      "T",
+      "L",
+      "A",
+      "M",
+      "BR",
+      "LR",
+      "FA",
+      "FB",
+      "FL",
+      "TAS",
+      "CP",
+      "MSM",
+      "READ",
+      "WRIT",
+    ],
+    [
+      "SUM",
+      "CMPX",
+      "CMPY",
+      "XANY",
+      "XEOY",
+      "MSKX",
+      "MSKY",
+      "XORY",
+      "DIFF",
+      "MAXS",
+      "MAXM",
+      "U",
+      "MBR",
+      "DATA",
+      "CMND",
+      "NULL",
+    ],
   ];
   const REG_POS = {};
   REG.forEach((col, c) =>
@@ -79,7 +147,26 @@
       if (name) REG_POS[name] = { row: r, col: c };
     }),
   );
-  const SOURCE_ONLY = new Set(["BICN", "FLCN", "XYCN", "XYST", "INCN", "SUM", "CMPX", "CMPY", "XANY", "XEOY", "MSKX", "MSKY", "XORY", "DIFF", "MAXS", "MAXM", "U", "NULL"]);
+  const SOURCE_ONLY = new Set([
+    "BICN",
+    "FLCN",
+    "XYCN",
+    "XYST",
+    "INCN",
+    "SUM",
+    "CMPX",
+    "CMPY",
+    "XANY",
+    "XEOY",
+    "MSKX",
+    "MSKY",
+    "XORY",
+    "DIFF",
+    "MAXS",
+    "MAXM",
+    "U",
+    "NULL",
+  ]);
   const GP4 = ["X", "Y", "T", "L"]; // 2-bit register field of 7NNN / BNNN / 02NN [SRM 4-9]
 
   // ---------------------------------------------------------------------------
@@ -94,8 +181,12 @@
       this.reset();
     }
     reset() {
-      this.X = 0; this.Y = 0; this.T = 0; this.L = 0;
-      this.FA = 0; this.FB = 0; // FB = FU(4) FT(4) FL(16)
+      this.X = 0;
+      this.Y = 0;
+      this.T = 0;
+      this.L = 0;
+      this.FA = 0;
+      this.FB = 0; // FB = FU(4) FT(4) FL(16)
       this.C = 0x000018; // CA CB CC CD | CYF CPU CPL ; CPL=24 binary
       this.A = 0; // 14-bit micro-instruction word address [SRM 3-2]
       this.M = 0; // current micro-instruction
@@ -118,26 +209,59 @@
       this.lastFromCM = true;
       this.opCounts = {};
       this.trace = [];
-      this.U = 0; this.DATA = 0; this.CMND = 0; this.INCN = 0;
+      this.U = 0;
+      this.DATA = 0;
+      this.CMND = 0;
+      this.INCN = 0;
       this.consoleReg = 0;
     }
 
     // ---- C register sub-fields [SRM 3-9..3-11] ----
-    get CP() { return this.C & 0xff; }
-    set CP(v) { this.C = (this.C & 0xffff00) | (v & 0xff); }
-    get CYF() { return (this.C >> 7) & 1; }
-    set CYF(v) { this.C = (this.C & ~0x80) | ((v & 1) << 7); }
-    get CPU() { return (this.C >> 5) & 3; }
-    set CPU(v) { this.C = (this.C & ~0x60) | ((v & 3) << 5); }
-    get CPL() { return this.C & 31; }
-    set CPL(v) { this.C = (this.C & ~31) | (v & 31); }
-    get FL() { return this.FB & 0xffff; }
-    set FL(v) { this.FB = (this.FB & 0xff0000) | (v & 0xffff); }
-    get FU() { return (this.FB >> 20) & 15; }
-    get FT() { return (this.FB >> 16) & 15; }
-    get SFL() { return this.pad[1] & 0xffff; } // right 16 bits of S00B
-    get SFU() { return (this.pad[1] >> 20) & 15; }
-    get len() { return Math.min(24, this.CPL); }
+    get CP() {
+      return this.C & 0xff;
+    }
+    set CP(v) {
+      this.C = (this.C & 0xffff00) | (v & 0xff);
+    }
+    get CYF() {
+      return (this.C >> 7) & 1;
+    }
+    set CYF(v) {
+      this.C = (this.C & ~0x80) | ((v & 1) << 7);
+    }
+    get CPU() {
+      return (this.C >> 5) & 3;
+    }
+    set CPU(v) {
+      this.C = (this.C & ~0x60) | ((v & 3) << 5);
+    }
+    get CPL() {
+      return this.C & 31;
+    }
+    set CPL(v) {
+      this.C = (this.C & ~31) | (v & 31);
+    }
+    get FL() {
+      return this.FB & 0xffff;
+    }
+    set FL(v) {
+      this.FB = (this.FB & 0xff0000) | (v & 0xffff);
+    }
+    get FU() {
+      return (this.FB >> 20) & 15;
+    }
+    get FT() {
+      return (this.FB >> 16) & 15;
+    }
+    get SFL() {
+      return this.pad[1] & 0xffff;
+    } // right 16 bits of S00B
+    get SFU() {
+      return (this.pad[1] >> 20) & 15;
+    }
+    get len() {
+      return Math.min(24, this.CPL);
+    }
 
     // ---- 24-bit function box [SRM 3-12..3-16]: results exist continuously ----
     unitAdd(x, y, cin, sub) {
@@ -145,7 +269,7 @@
       const n = this.len;
       if (cpu === 0) {
         const m = mask(n);
-        const r = sub ? (x & m) + ((~y) & m) + (cin ? 0 : 1) : (x & m) + (y & m) + cin;
+        const r = sub ? (x & m) + (~y & m) + (cin ? 0 : 1) : (x & m) + (y & m) + cin;
         return { v: r & m, c: n ? (r >>> n) & 1 : 0 };
       }
       if (cpu === 2) return { v: 0, c: 0, undef: true }; // CPU=10 undefined [SRM]
@@ -165,13 +289,17 @@
           if (d > 9) d -= 10;
         }
         let unitVal = d & 15;
-        if (unit === 8) unitVal |= (((x >>> sh) | (y >>> sh)) & 0xf0); // zone = inclusive OR [SRM 3-14]
+        if (unit === 8) unitVal |= ((x >>> sh) | (y >>> sh)) & 0xf0; // zone = inclusive OR [SRM 3-14]
         out |= unitVal << sh;
       }
       return { v: out >>> 0, c: carry };
     }
-    get SUM() { return this.unitAdd(this.X, this.Y, this.CYF, false).v; }
-    get CYL() { return this.unitAdd(this.X, this.Y, this.CYF, false).c; }
+    get SUM() {
+      return this.unitAdd(this.X, this.Y, this.CYF, false).v;
+    }
+    get CYL() {
+      return this.unitAdd(this.X, this.Y, this.CYF, false).c;
+    }
     get DIFF() {
       if (this.CPU === 0) {
         const m = mask(this.len);
@@ -180,116 +308,242 @@
       return this.unitAdd(this.X, this.Y, this.CYF, true).v;
     }
     // CYD is generated from all 24 bits of X and Y, not controlled by CPL [SRM 3-14]
-    get CYD() { return this.X - this.Y - this.CYF < 0 ? 1 : 0; }
-    get CMPX() { return ~this.X & mask(this.len); }
-    get CMPY() { return ~this.Y & mask(this.len); }
-    get XANY() { return this.X & this.Y & mask(this.len); }
-    get XEOY() { return (this.X ^ this.Y) & mask(this.len); }
-    get XORY() { return (this.X | this.Y) & mask(this.len); }
-    get MSKX() { return this.X & mask(this.len); }
-    get MSKY() { return this.Y & mask(this.len); }
+    get CYD() {
+      return this.X - this.Y - this.CYF < 0 ? 1 : 0;
+    }
+    get CMPX() {
+      return ~this.X & mask(this.len);
+    }
+    get CMPY() {
+      return ~this.Y & mask(this.len);
+    }
+    get XANY() {
+      return this.X & this.Y & mask(this.len);
+    }
+    get XEOY() {
+      return (this.X ^ this.Y) & mask(this.len);
+    }
+    get XORY() {
+      return (this.X | this.Y) & mask(this.len);
+    }
+    get MSKX() {
+      return this.X & mask(this.len);
+    }
+    get MSKY() {
+      return this.Y & mask(this.len);
+    }
     lsu(v) {
       if (this.CPU === 0) return v & 1;
       if (this.CPU === 2) return 0;
       return (v & 15) === 9 ? 1 : 0;
     }
-    get BICN() { return (this.lsu(this.Y) << 3) | (this.CYF << 2) | (this.CYD << 1) | this.CYL; }
+    get BICN() {
+      return (this.lsu(this.Y) << 3) | (this.CYF << 2) | (this.CYD << 1) | this.CYL;
+    }
     get XYCN() {
       const msbx = this.CPL ? (this.X >>> (this.len - 1)) & 1 : 0; // bit CPL points to
-      return (msbx << 3) | ((this.X === this.Y) << 2) | ((this.X < this.Y) << 1) | (this.X > this.Y ? 1 : 0);
+      return (
+        (msbx << 3) |
+        ((this.X === this.Y) << 2) |
+        ((this.X < this.Y) << 1) |
+        (this.X > this.Y ? 1 : 0)
+      );
     }
     get INT() {
       const cc = (this.C >> 12) & 15;
       const cd = (this.C >> 8) & 15;
       return this.INCN & 0b1010 || cc & 0b0111 || cd & 0b1001 ? 1 : 0;
     }
-    get XYST() { return (this.lsu(this.X) << 3) | (this.INT << 2) | ((this.Y !== 0) << 1) | (this.X !== 0 ? 1 : 0); }
+    get XYST() {
+      return (
+        (this.lsu(this.X) << 3) |
+        (this.INT << 2) |
+        ((this.Y !== 0) << 1) |
+        (this.X !== 0 ? 1 : 0)
+      );
+    }
     get FLCN() {
       const fl = this.FL;
       const sfl = this.SFL;
-      return ((fl === sfl) << 3) | ((fl > sfl) << 2) | ((fl < sfl) << 1) | (fl !== 0 ? 1 : 0);
+      return (
+        ((fl === sfl) << 3) | ((fl > sfl) << 2) | ((fl < sfl) << 1) | (fl !== 0 ? 1 : 0)
+      );
     }
 
     // ---- register file access by name ----
-    nib(v, i) { return (v >>> (20 - 4 * i)) & 15; }
+    nib(v, i) {
+      return (v >>> (20 - 4 * i)) & 15;
+    }
     setNib(v, i, n) {
       const sh = 20 - 4 * i;
       return ((v & ~(15 << sh)) | ((n & 15) << sh)) & M24;
     }
     get(name) {
       switch (name) {
-        case "X": case "Y": case "T": case "L": case "FA": case "FB": case "BR": case "LR": case "MBR":
-        case "U": case "DATA":
+        case "X":
+        case "Y":
+        case "T":
+        case "L":
+        case "FA":
+        case "FB":
+        case "BR":
+        case "LR":
+        case "MBR":
+        case "U":
+        case "DATA":
           return this[name] >>> 0;
-        case "A": return (this.A << 4) & M24; // [LAB] A seen as a bit address, like TAS
-        case "M": return this.M;
-        case "FL": return this.FL;
-        case "CP": return this.CP;
+        case "A":
+          return (this.A << 4) & M24; // [LAB] A seen as a bit address, like TAS
+        case "M":
+          return this.M;
+        case "FL":
+          return this.FL;
+        case "CP":
+          return this.CP;
         case "TAS": {
           this.asp = (this.asp + 31) & 31; // pop [SRM 3-4]: data not destroyed on removal
           return this.astack[this.asp];
         }
-        case "TOPM": return this.TOPM;
-        case "MAXS": return this.mem.sizeBits & M24;
-        case "MAXM": return (this.cmWords * 16) & M24;
-        case "NULL": return 0;
-        case "READ": case "WRIT": return this.consoleReg;
-        case "MSM": case "CMND": case "CPU": return 0;
-        case "SUM": return this.SUM;
-        case "DIFF": return this.DIFF;
-        case "CMPX": return this.CMPX;
-        case "CMPY": return this.CMPY;
-        case "XANY": return this.XANY;
-        case "XEOY": return this.XEOY;
-        case "XORY": return this.XORY;
-        case "MSKX": return this.MSKX;
-        case "MSKY": return this.MSKY;
-        case "BICN": return this.BICN;
-        case "XYCN": return this.XYCN;
-        case "XYST": return this.XYST;
-        case "FLCN": return this.FLCN;
-        case "INCN": return this.INCN;
-        case "FU": return this.FU;
-        case "FT": return this.FT;
-        case "CA": return (this.C >> 20) & 15;
-        case "CB": return (this.C >> 16) & 15;
-        case "CC": return (this.C >> 12) & 15;
-        case "CD": return (this.C >> 8) & 15;
+        case "TOPM":
+          return this.TOPM;
+        case "MAXS":
+          return this.mem.sizeBits & M24;
+        case "MAXM":
+          return (this.cmWords * 16) & M24;
+        case "NULL":
+          return 0;
+        case "READ":
+        case "WRIT":
+          return this.consoleReg;
+        case "MSM":
+        case "CMND":
+        case "CPU":
+          return 0;
+        case "SUM":
+          return this.SUM;
+        case "DIFF":
+          return this.DIFF;
+        case "CMPX":
+          return this.CMPX;
+        case "CMPY":
+          return this.CMPY;
+        case "XANY":
+          return this.XANY;
+        case "XEOY":
+          return this.XEOY;
+        case "XORY":
+          return this.XORY;
+        case "MSKX":
+          return this.MSKX;
+        case "MSKY":
+          return this.MSKY;
+        case "BICN":
+          return this.BICN;
+        case "XYCN":
+          return this.XYCN;
+        case "XYST":
+          return this.XYST;
+        case "FLCN":
+          return this.FLCN;
+        case "INCN":
+          return this.INCN;
+        case "FU":
+          return this.FU;
+        case "FT":
+          return this.FT;
+        case "CA":
+          return (this.C >> 20) & 15;
+        case "CB":
+          return (this.C >> 16) & 15;
+        case "CC":
+          return (this.C >> 12) & 15;
+        case "CD":
+          return (this.C >> 8) & 15;
       }
       if (/^T[A-F]$/.test(name)) return this.nib(this.T, name.charCodeAt(1) - 65);
       if (/^L[A-F]$/.test(name)) return this.nib(this.L, name.charCodeAt(1) - 65);
-      if (/^FL[C-F]$/.test(name)) return (this.FL >>> (12 - 4 * (name.charCodeAt(2) - 67))) & 15;
+      if (/^FL[C-F]$/.test(name))
+        return (this.FL >>> (12 - 4 * (name.charCodeAt(2) - 67))) & 15;
       throw new Error("B1700: unknown source register " + name);
     }
     set(name, v) {
       v >>>= 0;
       switch (name) {
-        case "X": case "Y": case "T": case "L": case "FA": case "BR": case "LR": case "MBR":
-          this[name] = v & M24; return;
-        case "FB": this.FB = v & M24; return;
-        case "FL": this.FL = v; return;
-        case "A": this.A = (v >>> 4) & 0x3fff; return; // [LAB] bit address -> word address
-        case "M": this.mOr |= v & 0xffff; return; // Bit-OR into the NEXT micro [SRM 4-2]
-        case "CP": this.CP = v; return; // only the low 8 bits are used [SRM 3-10]
-        case "CPU": this.CPU = v; return;
+        case "X":
+        case "Y":
+        case "T":
+        case "L":
+        case "FA":
+        case "BR":
+        case "LR":
+        case "MBR":
+          this[name] = v & M24;
+          return;
+        case "FB":
+          this.FB = v & M24;
+          return;
+        case "FL":
+          this.FL = v;
+          return;
+        case "A":
+          this.A = (v >>> 4) & 0x3fff;
+          return; // [LAB] bit address -> word address
+        case "M":
+          this.mOr |= v & 0xffff;
+          return; // Bit-OR into the NEXT micro [SRM 4-2]
+        case "CP":
+          this.CP = v;
+          return; // only the low 8 bits are used [SRM 3-10]
+        case "CPU":
+          this.CPU = v;
+          return;
         case "TAS":
           this.astack[this.asp] = v & M24;
           this.asp = (this.asp + 1) & 31; // wraps after 32 entries [SRM 3-4]
           return;
-        case "TOPM": this.TOPM = v & 15; return;
-        case "FU": this.FB = (this.FB & ~0xf00000) | ((v & 15) << 20); return;
-        case "FT": this.FB = (this.FB & ~0x0f0000) | ((v & 15) << 16); return;
-        case "CA": this.C = (this.C & ~0xf00000) | ((v & 15) << 20); return;
-        case "CB": this.C = (this.C & ~0x0f0000) | ((v & 15) << 16); return;
-        case "CC": this.C = (this.C & ~0x00f000) | ((v & 15) << 12); return;
-        case "CD": this.C = (this.C & ~0x000f00) | ((v & 15) << 8); return;
-        case "DATA": this.DATA = v & M24; return;
-        case "CMND": this.CMND = v & M24; return;
-        case "READ": case "WRIT": this.consoleReg = v & M24; return;
-        case "NULL": case "MSM": return;
+        case "TOPM":
+          this.TOPM = v & 15;
+          return;
+        case "FU":
+          this.FB = (this.FB & ~0xf00000) | ((v & 15) << 20);
+          return;
+        case "FT":
+          this.FB = (this.FB & ~0x0f0000) | ((v & 15) << 16);
+          return;
+        case "CA":
+          this.C = (this.C & ~0xf00000) | ((v & 15) << 20);
+          return;
+        case "CB":
+          this.C = (this.C & ~0x0f0000) | ((v & 15) << 16);
+          return;
+        case "CC":
+          this.C = (this.C & ~0x00f000) | ((v & 15) << 12);
+          return;
+        case "CD":
+          this.C = (this.C & ~0x000f00) | ((v & 15) << 8);
+          return;
+        case "DATA":
+          this.DATA = v & M24;
+          return;
+        case "CMND":
+          this.CMND = v & M24;
+          return;
+        case "READ":
+        case "WRIT":
+          this.consoleReg = v & M24;
+          return;
+        case "NULL":
+        case "MSM":
+          return;
       }
-      if (/^T[A-F]$/.test(name)) { this.T = this.setNib(this.T, name.charCodeAt(1) - 65, v); return; }
-      if (/^L[A-F]$/.test(name)) { this.L = this.setNib(this.L, name.charCodeAt(1) - 65, v); return; }
+      if (/^T[A-F]$/.test(name)) {
+        this.T = this.setNib(this.T, name.charCodeAt(1) - 65, v);
+        return;
+      }
+      if (/^L[A-F]$/.test(name)) {
+        this.L = this.setNib(this.L, name.charCodeAt(1) - 65, v);
+        return;
+      }
       if (/^FL[C-F]$/.test(name)) {
         const sh = 12 - 4 * (name.charCodeAt(2) - 67);
         this.FL = (this.FL & ~(15 << sh)) | ((v & 15) << sh);
@@ -300,7 +554,14 @@
     // side-effect-free read for the console lamps (TAS would pop on a real move)
     peek(name) {
       if (name === "TAS") return this.astack[(this.asp + 31) & 31];
-      if (name === "READ" || name === "WRIT" || name === "DATA" || name === "CMND" || name === "NULL") return 0;
+      if (
+        name === "READ" ||
+        name === "WRIT" ||
+        name === "DATA" ||
+        name === "CMND" ||
+        name === "NULL"
+      )
+        return 0;
       return this.get(name);
     }
     reg(row, col) {
@@ -308,8 +569,12 @@
       if (!n) throw new Error(`B1700: reserved register row ${row} col ${col}`);
       return n;
     }
-    padGet(n, half) { return this.pad[n * 2 + half]; }
-    padSet(n, half, v) { this.pad[n * 2 + half] = v & M24; }
+    padGet(n, half) {
+      return this.pad[n * 2 + half];
+    }
+    padSet(n, half, v) {
+      this.pad[n * 2 + half] = v & M24;
+    }
 
     // ---- memory protection on FA against BR/LR, flagged in CD [SRM 3-9] ----
     checkBounds(write) {
@@ -378,14 +643,16 @@
       const op = m >>> 12;
       const n11_8 = (m >>> 8) & 15;
       switch (op) {
-        case 0x1: { // Register Move 1NNN [SRM 4-2]
+        case 0x1: {
+          // Register Move 1NNN [SRM 4-2]
           const src = this.reg(n11_8, (m >>> 6) & 3);
           const dst = this.reg(m & 15, (m >>> 4) & 3);
           const v = this.get(src);
           this.set(dst, v);
           return `MOVE ${src} TO ${dst}`;
         }
-        case 0x2: { // Scratchpad Move 2NNN [SRM 4-3]
+        case 0x2: {
+          // Scratchpad Move 2NNN [SRM 4-3]
           const r = this.reg(n11_8, (m >>> 6) & 3);
           const from = (m >>> 5) & 1;
           const half = (m >>> 4) & 1;
@@ -398,7 +665,8 @@
           this.padSet(w, half, this.get(r));
           return `MOVE ${r} TO ${pn}`;
         }
-        case 0x3: { // Four-Bit Manipulate 3NNN [SRM 4-4]
+        case 0x3: {
+          // Four-Bit Manipulate 3NNN [SRM 4-4]
           const r = this.reg(n11_8, (m >>> 7) & 1);
           const v = (m >>> 4) & 7;
           const lit = m & 15;
@@ -406,14 +674,32 @@
           let res;
           let skip = false;
           switch (v) {
-            case 0: res = lit; break;
-            case 1: res = cur & lit; break;
-            case 2: res = cur | lit; break;
-            case 3: res = cur ^ lit; break;
-            case 4: res = cur + lit; break;
-            case 5: res = cur - lit; break;
-            case 6: res = cur + lit; skip = res > 15; break;
-            case 7: res = cur - lit; skip = res < 0; break;
+            case 0:
+              res = lit;
+              break;
+            case 1:
+              res = cur & lit;
+              break;
+            case 2:
+              res = cur | lit;
+              break;
+            case 3:
+              res = cur ^ lit;
+              break;
+            case 4:
+              res = cur + lit;
+              break;
+            case 5:
+              res = cur - lit;
+              break;
+            case 6:
+              res = cur + lit;
+              skip = res > 15;
+              break;
+            case 7:
+              res = cur - lit;
+              skip = res < 0;
+              break;
           }
           this.set(r, res & 15);
           if (skip) this.A = (this.A + 1) & 0x3fff;
@@ -421,7 +707,8 @@
           return `${names[v]} ${r} ${v === 0 ? "TO" : v < 4 ? "WITH" : "BY"} ${lit}${v >= 6 ? " TEST" : ""}`;
         }
         case 0x4:
-        case 0x5: { // Bit Test/Branch on False (4) / True (5) [SRM 4-6]
+        case 0x5: {
+          // Bit Test/Branch on False (4) / True (5) [SRM 4-6]
           const r = this.reg(n11_8, (m >>> 7) & 1);
           const bit = (m >>> 5) & 3;
           const neg = (m >>> 4) & 1;
@@ -431,7 +718,8 @@
           if (val === want) this.A = (this.A + (neg ? -mag : mag)) & 0x3fff;
           return `IF ${r}(${bit}) ${op === 5 ? "TRUE" : "FALSE"} JUMP ${neg ? "-" : "+"}${mag}`;
         }
-        case 0x6: { // Skip When 6NNN [SRM 4-7]
+        case 0x6: {
+          // Skip When 6NNN [SRM 4-7]
           const r = this.reg(n11_8, (m >>> 7) & 1);
           const v = (m >>> 4) & 7;
           const mk = m & 15;
@@ -439,10 +727,18 @@
           const sel = cur & mk;
           let cond;
           switch (v & 3) {
-            case 0: cond = mk !== 0 && sel !== 0; break;
-            case 1: cond = mk === 0 ? true : sel === mk; break;
-            case 2: cond = cur === mk; break;
-            case 3: cond = mk === 0 ? true : sel === mk; break;
+            case 0:
+              cond = mk !== 0 && sel !== 0;
+              break;
+            case 1:
+              cond = mk === 0 ? true : sel === mk;
+              break;
+            case 2:
+              cond = cur === mk;
+              break;
+            case 3:
+              cond = mk === 0 ? true : sel === mk;
+              break;
           }
           if (v === 5 || v === 7) cond = mk === 0 ? false : cond; // NOTE on mask 0000 [SRM 4-8]
           if ((v & 3) === 3 && sel === mk && mk) this.set(r, cur & ~mk);
@@ -450,7 +746,8 @@
           if (skip) this.A = (this.A + 1) & 0x3fff;
           return `SKIP WHEN ${r} ${["ANY", "ALL", "EQL", "ALL CLEAR"][v & 3]}${v >= 4 ? " NOT" : ""} ${mk.toString(2).padStart(4, "0")}`;
         }
-        case 0x7: { // Read/Write Memory 7NNN [SRM 4-9]
+        case 0x7: {
+          // Read/Write Memory 7NNN [SRM 4-9]
           const toMem = (m >>> 11) & 1;
           const variant = (m >>> 8) & 7;
           const r = GP4[(m >>> 6) & 3];
@@ -466,22 +763,34 @@
             this[r] = this.mem.read(this.FA, ln, dir);
           }
           this.countFAFL(variant, ln);
-          const cnt = ["", " INC FA", " INC FL", " INC FA DEC FL", " DEC FA INC FL", " DEC FA", " DEC FL", " DEC FA DEC FL"][variant];
+          const cnt = [
+            "",
+            " INC FA",
+            " INC FL",
+            " INC FA DEC FL",
+            " DEC FA INC FL",
+            " DEC FA",
+            " DEC FL",
+            " DEC FA DEC FL",
+          ][variant];
           return `${toMem ? "WRITE" : "READ"} ${m & 31} BITS ${toMem ? "FROM" : "TO"} ${r}${dir ? " REVERSE" : ""}${cnt}`;
         }
-        case 0x8: { // Move 8-bit Literal 8NNN, column 2 assumed [SRM 4-10]
+        case 0x8: {
+          // Move 8-bit Literal 8NNN, column 2 assumed [SRM 4-10]
           const r = this.reg(n11_8, 2);
           this.set(r, m & 0xff);
           return `MOVE ${m & 0xff} TO ${r}`;
         }
-        case 0x9: { // Move 24-bit Literal 9NNN (+ next 16 bits) [SRM 4-10]
+        case 0x9: {
+          // Move 24-bit Literal 9NNN (+ next 16 bits) [SRM 4-10]
           const r = this.reg(n11_8, 2);
           const lo = this.fetch();
           const v = ((m & 0xff) << 16) | lo;
           this.set(r, v);
           return `MOVE ${v} TO ${r}`;
         }
-        case 0xa: { // Shift or Rotate T Left ANNN [SRM 4-11]
+        case 0xa: {
+          // Shift or Rotate T Left ANNN [SRM 4-11]
           const r = this.reg(n11_8, (m >>> 6) & 3);
           const rot = (m >>> 5) & 1;
           let c = m & 31;
@@ -492,7 +801,8 @@
           this.set(r, c === 0 ? t : v);
           return `${rot ? "ROTATE" : "SHIFT"} T LEFT BY ${m & 31} BITS TO ${r}`;
         }
-        case 0xb: { // Extract from T BNNN [SRM 4-12]
+        case 0xb: {
+          // Extract from T BNNN [SRM 4-12]
           let p = (m >>> 7) & 31; // right bit pointer = rotate count
           const r = GP4[(m >>> 5) & 3];
           const w = m & 31;
@@ -505,13 +815,15 @@
           return `EXTRACT ${w} BITS FROM T(${start}) TO ${r}`;
         }
         case 0xc:
-        case 0xd: { // Branch Forward/Backward [SRM 4-13]
+        case 0xd: {
+          // Branch Forward/Backward [SRM 4-13]
           const d = m & 0xfff;
           this.A = (this.A + (op === 0xc ? d : -d)) & 0x3fff;
           return `JUMP ${op === 0xc ? "+" : "-"}${d}`;
         }
         case 0xe:
-        case 0xf: { // Call Forward/Reverse: push A x 16 [SRM 4-14A]
+        case 0xf: {
+          // Call Forward/Reverse: push A x 16 [SRM 4-14A]
           this.set("TAS", (this.A << 4) & M24);
           const d = m & 0xfff;
           this.A = (this.A + (op === 0xe ? d : -d)) & 0x3fff;
@@ -527,7 +839,8 @@
       const hi = (m >>> 8) & 15;
       const lo8 = m & 0xff;
       switch (hi) {
-        case 0x2: { // Swap Memory 02NN [SRM 4-15]
+        case 0x2: {
+          // Swap Memory 02NN [SRM 4-15]
           const r = GP4[(m >>> 6) & 3];
           const dir = (m >>> 5) & 1;
           let n = m & 31;
@@ -539,7 +852,8 @@
           this.ns += 1334;
           return `SWAP ${m & 31} BITS WITH ${r}`;
         }
-        case 0x3: { // Clear Registers 03NN: bit7..0 = L T Y X FA FL FU CP [SRM 4-16]
+        case 0x3: {
+          // Clear Registers 03NN: bit7..0 = L T Y X FA FL FU CP [SRM 4-16]
           const names = ["CP", "FU", "FL", "FA", "X", "Y", "T", "L"];
           const hit = [];
           for (let b = 0; b < 8; b++) {
@@ -551,7 +865,8 @@
           }
           return `CLEAR ${hit.join(" ")}`;
         }
-        case 0x4: { // Shift/Rotate X or Y 04NN [SRM 4-17]
+        case 0x4: {
+          // Shift/Rotate X or Y 04NN [SRM 4-17]
           const rot = (m >>> 7) & 1;
           const right = (m >>> 6) & 1;
           const r = (m >>> 5) & 1 ? "Y" : "X";
@@ -560,12 +875,16 @@
           c %= 24;
           const v = this[r];
           let o;
-          if (rot) o = right ? ((v >>> c) | (v << (24 - c))) & M24 : ((v << c) | (v >>> (24 - c))) & M24;
+          if (rot)
+            o = right
+              ? ((v >>> c) | (v << (24 - c))) & M24
+              : ((v << c) | (v >>> (24 - c))) & M24;
           else o = right ? v >>> c : (v << c) & M24;
           this[r] = c ? o : v;
           return `${rot ? "ROTATE" : "SHIFT"} ${r} ${right ? "RIGHT" : "LEFT"} BY ${m & 31} BITS`;
         }
-        case 0x5: { // Shift/Rotate X and Y 05NN — [LAB] count in bits 5..0 (MIL "ROTATE XY RIGHT BY 40 BITS")
+        case 0x5: {
+          // Shift/Rotate X and Y 05NN — [LAB] count in bits 5..0 (MIL "ROTATE XY RIGHT BY 40 BITS")
           const rot = (m >>> 7) & 1;
           const right = (m >>> 6) & 1;
           let c = m & 63;
@@ -574,30 +893,37 @@
           let v = (BigInt(this.X) << 24n) | BigInt(this.Y);
           const W = (1n << 48n) - 1n;
           const C = BigInt(c);
-          if (rot) v = right ? ((v >> C) | (v << (48n - C))) & W : ((v << C) | (v >> (48n - C))) & W;
+          if (rot)
+            v = right
+              ? ((v >> C) | (v << (48n - C))) & W
+              : ((v << C) | (v >> (48n - C))) & W;
           else v = right ? v >> C : (v << C) & W;
           this.X = Number(v >> 24n) & M24;
           this.Y = Number(v & 0xffffffn);
           return `${rot ? "ROTATE" : "SHIFT"} XY ${right ? "RIGHT" : "LEFT"} BY ${m & 63} BITS`;
         }
-        case 0x6: { // Count FA/FL 06NN [SRM 4-18A]
+        case 0x6: {
+          // Count FA/FL 06NN [SRM 4-18A]
           const v = (m >>> 5) & 7;
           let n = m & 31;
           if (n === 0) n = this.CPL;
           this.countFAFL(v, n);
           return `COUNT${["", " FA UP", " FL UP", " FA UP AND FL DOWN", " FA DOWN AND FL UP", " FA DOWN", " FL DOWN", " FA AND FL DOWN"][v]} BY ${m & 31}`;
         }
-        case 0x7: { // Exchange Doublepad Word 07NN [SRM 4-19]
+        case 0x7: {
+          // Exchange Doublepad Word 07NN [SRM 4-19]
           const s = (m >>> 4) & 15;
           const d = m & 15;
-          const hFA = this.FA, hFB = this.FB;
+          const hFA = this.FA,
+            hFB = this.FB;
           this.FA = this.pad[s * 2];
           this.FB = this.pad[s * 2 + 1];
           this.pad[d * 2] = hFA;
           this.pad[d * 2 + 1] = hFB;
           return `EXCHANGE DOUBLEPAD S${s} TO F, F TO S${d}`;
         }
-        case 0x8: { // Scratchpad Relate FA 08NN [SRM 4-19]
+        case 0x8: {
+          // Scratchpad Relate FA 08NN [SRM 4-19]
           const sub = (m >>> 4) & 1;
           const w = m & 15;
           this.FA = (this.FA + (sub ? -1 : 1) * this.pad[w * 2]) & M24;
@@ -608,7 +934,9 @@
         case 0x0:
           return this.executeTiny(m);
       }
-      throw new Error(`B1700: reserved micro-instruction ${m.toString(16).padStart(4, "0")}`);
+      throw new Error(
+        `B1700: reserved micro-instruction ${m.toString(16).padStart(4, "0")}`,
+      );
     }
 
     executeTiny(m) {
@@ -617,11 +945,13 @@
       switch (k) {
         case 0:
           switch (n) {
-            case 0: return "NOP";
+            case 0:
+              return "NOP";
             case 1:
               this.halted = true;
               return "HALT";
-            case 2: { // Overlay Control Memory 0002 [SRM 4-24]
+            case 2: {
+              // Overlay Control Memory 0002 [SRM 4-24]
               this.set("TAS", (this.A << 4) & M24); // a. A is moved to TAS
               let cmA = this.L & 0x3fff; // b. L is moved to A (CM word address)
               while (this.FL > 0 && cmA < this.cmWords) {
@@ -633,7 +963,8 @@
               this.A = this.get("TAS") >>> 4; // [LAB] resume after the overlay
               return "OVERLAY";
             }
-            case 3: { // Normalize X 0003 [SRM 4-24]
+            case 3: {
+              // Normalize X 0003 [SRM 4-24]
               const p = Math.max(1, this.len) - 1;
               while (this.FL > 0 && !((this.X >>> p) & 1)) {
                 this.X = (this.X << 1) & M24;
@@ -645,14 +976,24 @@
           break;
         case 2: // Cassette Control 002N [SRM 4-20]: no cassette is modelled
           return `CASSETTE ${["START", "STOP", "STOP IF X NEQ Y"][n & 7] || "RESERVED"}`;
-        case 3: { // Bias 003N [SRM 4-21]
+        case 3: {
+          // Bias 003N [SRM 4-21]
           const v = n & 7;
           const test = (n >>> 3) & 1;
           const unit = v === 2 || v === 3 ? this.SFU : this.FU;
           this.CPU = unit === 4 ? 1 : unit === 8 ? 3 : 0;
-          const fl = this.FL, sfl = this.SFL, cpl = this.CPL;
+          const fl = this.FL,
+            sfl = this.SFL,
+            cpl = this.CPL;
           const choices = [
-            [unit], [24, fl], [24, sfl], [24, fl, sfl], [cpl], [24, cpl, fl], [cpl], [cpl],
+            [unit],
+            [24, fl],
+            [24, sfl],
+            [24, fl, sfl],
+            [cpl],
+            [24, cpl, fl],
+            [cpl],
+            [cpl],
           ][v];
           this.CPL = Math.min(...choices);
           if (test && this.CPL !== 0) this.A = (this.A + 1) & 0x3fff;
@@ -666,7 +1007,8 @@
           this.FA = this.pad[n * 2];
           this.FB = this.pad[n * 2 + 1];
           return `LOAD F FROM DOUBLEPAD S${n}`;
-        case 6: { // Set CYF 006N [SRM 4-23]
+        case 6: {
+          // Set CYF 006N [SRM 4-23]
           if (n === 1) this.CYF = 0;
           else if (n === 2) this.CYF = 1;
           else if (n === 4) this.CYF = this.CYL;
@@ -674,7 +1016,9 @@
           return `CARRY ${{ 1: "0", 2: "1", 4: "SUM", 8: "DIFFERENCE" }[n] || "?"}`;
         }
       }
-      throw new Error(`B1700: reserved micro-instruction ${m.toString(16).padStart(4, "0")}`);
+      throw new Error(
+        `B1700: reserved micro-instruction ${m.toString(16).padStart(4, "0")}`,
+      );
     }
   }
 
@@ -728,31 +1072,61 @@
       throw new Error(`MIL: ${msg} in "${line}"`);
     };
     const pos = (name) => REG_POS[name] || err(`unknown register ${name}`);
-    const label = (name) => (name in labels ? labels[name] : err(`undefined label ${name}`));
+    const label = (name) =>
+      name in labels ? labels[name] : err(`undefined label ${name}`);
     const gp = (name) => {
       const i = GP4.indexOf(name);
       if (i < 0) err(`${name} must be X, Y, T or L`);
       return i;
     };
     const countVariant = (rest) => {
-      const s = rest.join(" ").replace(/\bAND\b/g, "").replace(/\s+/g, " ").trim();
-      const table = { "": 0, "INC FA": 1, "INC FL": 2, "INC FA DEC FL": 3, "DEC FA INC FL": 4, "DEC FA": 5, "DEC FL": 6, "DEC FA DEC FL": 7 };
+      const s = rest
+        .join(" ")
+        .replace(/\bAND\b/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+      const table = {
+        "": 0,
+        "INC FA": 1,
+        "INC FL": 2,
+        "INC FA DEC FL": 3,
+        "DEC FA INC FL": 4,
+        "DEC FA": 5,
+        "DEC FL": 6,
+        "DEC FA DEC FL": 7,
+      };
       if (!(s in table)) err(`bad FA/FL count "${s}"`);
       return table[s];
     };
     switch (T[0]) {
-      case "NOP": return [0x0000];
-      case "HALT": return [0x0001];
-      case "OVERLAY": return [0x0002];
-      case "NORMALIZE": return [0x0003];
-      case "EXIT": return [0x1000 | (11 << 8) | (2 << 6) | (2 << 4) | 4]; // MOVE TAS TO A
-      case "MONITOR": return [0x0900 | (+T[1] & 0xff)];
-      case "CARRY": return [0x0060 | { 0: 1, 1: 2, SUM: 4, DIFFERENCE: 8 }[T[1]]];
-      case "STORE": return [0x0040 | +T[4].replace("S", "")]; // STORE F INTO DOUBLEPAD Sn
-      case "LOAD": return [0x0050 | +T[4].replace("S", "")];
+      case "NOP":
+        return [0x0000];
+      case "HALT":
+        return [0x0001];
+      case "OVERLAY":
+        return [0x0002];
+      case "NORMALIZE":
+        return [0x0003];
+      case "EXIT":
+        return [0x1000 | (11 << 8) | (2 << 6) | (2 << 4) | 4]; // MOVE TAS TO A
+      case "MONITOR":
+        return [0x0900 | (+T[1] & 0xff)];
+      case "CARRY":
+        return [0x0060 | { 0: 1, 1: 2, SUM: 4, DIFFERENCE: 8 }[T[1]]];
+      case "STORE":
+        return [0x0040 | +T[4].replace("S", "")]; // STORE F INTO DOUBLEPAD Sn
+      case "LOAD":
+        return [0x0050 | +T[4].replace("S", "")];
       case "BIAS": {
         const s = T.slice(1).join(" ").replace(" TEST", "");
-        const v = { "BY UNIT": 0, "BY F": 1, "BY SF": 2, "BY F AND SF": 3, "BY CP": 4, "BY F AND CP": 5 }[s];
+        const v = {
+          "BY UNIT": 0,
+          "BY F": 1,
+          "BY SF": 2,
+          "BY F AND SF": 3,
+          "BY CP": 4,
+          "BY F AND CP": 5,
+        }[s];
         if (v === undefined) err("bad BIAS");
         return [0x0030 | v | (/TEST$/.test(line) ? 8 : 0)];
       }
@@ -772,20 +1146,33 @@
         const target = label(T[T.length - 1]);
         const d = target - (pc + 1);
         if (Math.abs(d) > 4095) err("displacement too large");
-        const base = T[0] === "CALL" ? (d >= 0 ? 0xe000 : 0xf000) : d >= 0 ? 0xc000 : 0xd000;
+        const base =
+          T[0] === "CALL" ? (d >= 0 ? 0xe000 : 0xf000) : d >= 0 ? 0xc000 : 0xd000;
         return [base | Math.abs(d)];
       }
-      case "IF": { // IF reg(bit) [TRUE|FALSE] THEN JUMP label  (forward, <= 15 words)
-        const mm = /^IF\s+([A-Z]+)\((\d)\)\s*(TRUE|FALSE)?\s+THEN\s+(?:JUMP|GO TO)\s+(\S+)$/.exec(line);
+      case "IF": {
+        // IF reg(bit) [TRUE|FALSE] THEN JUMP label  (forward, <= 15 words)
+        const mm =
+          /^IF\s+([A-Z]+)\((\d)\)\s*(TRUE|FALSE)?\s+THEN\s+(?:JUMP|GO TO)\s+(\S+)$/.exec(
+            line,
+          );
         if (!mm) err("bad IF");
         const p = pos(mm[1]);
         if (p.col > 1) err("bit test needs a 4-bit register");
         const d = label(mm[4]) - (pc + 1);
         if (d < 0 || d > 15) err("bit-test branch must be forward and <= 15 words");
-        return [((mm[3] === "FALSE" ? 4 : 5) << 12) | (p.row << 8) | (p.col << 7) | (+mm[2] << 5) | d];
+        return [
+          ((mm[3] === "FALSE" ? 4 : 5) << 12) |
+            (p.row << 8) |
+            (p.col << 7) |
+            (+mm[2] << 5) |
+            d,
+        ];
       }
-      case "SKIP": { // SKIP WHEN reg ANY|ALL|EQL|ALLCLR [NOT] mask
-        const mm = /^SKIP WHEN\s+([A-Z]+)\s+(ANY|ALL|EQL|ALLCLR)(\s+NOT)?\s+([01]{4})$/.exec(line);
+      case "SKIP": {
+        // SKIP WHEN reg ANY|ALL|EQL|ALLCLR [NOT] mask
+        const mm =
+          /^SKIP WHEN\s+([A-Z]+)\s+(ANY|ALL|EQL|ALLCLR)(\s+NOT)?\s+([01]{4})$/.exec(line);
         if (!mm) err("bad SKIP");
         const p = pos(mm[1]);
         const v = { ANY: 0, ALL: 1, EQL: 2, ALLCLR: 3 }[mm[2]] | (mm[3] ? 4 : 0);
@@ -805,7 +1192,8 @@
         return [0x3000 | (p.row << 8) | (p.col << 7) | (v << 4) | (lit & 15)];
       }
       case "READ":
-      case "WRITE": { // READ n BITS TO r [REVERSE] [INC FA ...] / WRITE n BITS FROM r ...
+      case "WRITE": {
+        // READ n BITS TO r [REVERSE] [INC FA ...] / WRITE n BITS FROM r ...
         const n = +T[1];
         const r = gp(T[4]);
         let rest = T.slice(5);
@@ -814,13 +1202,29 @@
           dir = 1;
           rest = rest.slice(1);
         }
-        return [0x7000 | ((T[0] === "WRITE") << 11) | (countVariant(rest) << 8) | (r << 6) | (dir << 5) | (n & 31)];
+        return [
+          0x7000 |
+            ((T[0] === "WRITE") << 11) |
+            (countVariant(rest) << 8) |
+            (r << 6) |
+            (dir << 5) |
+            (n & 31),
+        ];
       }
       case "SWAP": // SWAP n BITS WITH r
         return [0x0200 | (gp(T[4]) << 6) | (+T[1] & 31)];
-      case "COUNT": { // COUNT FA UP BY n | COUNT FL DOWN BY n | COUNT FA UP AND FL DOWN BY n ...
+      case "COUNT": {
+        // COUNT FA UP BY n | COUNT FL DOWN BY n | COUNT FA UP AND FL DOWN BY n ...
         const s = T.slice(1, -2).join(" ");
-        const v = { "FA UP": 1, "FL UP": 2, "FA UP AND FL DOWN": 3, "FA DOWN AND FL UP": 4, "FA DOWN": 5, "FL DOWN": 6, "FA AND FL DOWN": 7 }[s];
+        const v = {
+          "FA UP": 1,
+          "FL UP": 2,
+          "FA UP AND FL DOWN": 3,
+          "FA DOWN AND FL UP": 4,
+          "FA DOWN": 5,
+          "FL DOWN": 6,
+          "FA AND FL DOWN": 7,
+        }[s];
         if (!v) err("bad COUNT");
         return [0x0600 | (v << 5) | (+T[T.length - 1] & 31)];
       }
@@ -828,7 +1232,8 @@
       case "ROTATE": {
         const rot = T[0] === "ROTATE" ? 1 : 0;
         const n = +T[4];
-        if (T[1] === "T") { // SHIFT T LEFT BY n BITS TO r
+        if (T[1] === "T") {
+          // SHIFT T LEFT BY n BITS TO r
           const p = pos(T[7] || "T");
           return [0xa000 | (p.row << 8) | (p.col << 6) | (rot << 5) | (n & 31)];
         }
@@ -836,15 +1241,19 @@
         if (T[1] === "XY") return [0x0500 | (rot << 7) | (right << 6) | (n & 63)];
         return [0x0400 | (rot << 7) | (right << 6) | ((T[1] === "Y") << 5) | (n & 31)];
       }
-      case "EXTRACT": { // EXTRACT w BITS FROM T(s) TO r
-        const mm = /^EXTRACT\s+(\d+)\s+BITS\s+FROM\s+T\((\d+)\)\s+TO\s+([XYTL])$/.exec(line);
+      case "EXTRACT": {
+        // EXTRACT w BITS FROM T(s) TO r
+        const mm = /^EXTRACT\s+(\d+)\s+BITS\s+FROM\s+T\((\d+)\)\s+TO\s+([XYTL])$/.exec(
+          line,
+        );
         if (!mm) err("bad EXTRACT");
         const w = +mm[1];
         const p = (+mm[2] + w) % 24;
         return [0xb000 | (p << 7) | (gp(mm[3]) << 5) | w];
       }
       case "ADD":
-      case "SUBTRACT": { // ADD S03A TO FA / SUBTRACT S03A FROM FA
+      case "SUBTRACT": {
+        // ADD S03A TO FA / SUBTRACT S03A FROM FA
         const pr = padRef(T[1]);
         if (!pr || pr.half) err("Scratchpad Relate uses an A (left) word");
         return [0x0800 | ((T[0] === "SUBTRACT") << 4) | pr.w];
@@ -864,7 +1273,9 @@
         const pd = padRef(dst);
         if (ps) {
           const p = pos(dst);
-          return [0x2000 | (p.row << 8) | (p.col << 6) | (1 << 5) | (ps.half << 4) | ps.w];
+          return [
+            0x2000 | (p.row << 8) | (p.col << 6) | (1 << 5) | (ps.half << 4) | ps.w,
+          ];
         }
         if (pd) {
           const p = pos(src);
@@ -887,12 +1298,25 @@
   // is the 5-bit header of the S-program. Variables are 16-bit fields.
   //   0 HALT  1 LIT v  2 LOAD a  3 STORE a  4 ADD a  5 SUB a  6 JNZ t  7 OUT  8 JMP t
   // ---------------------------------------------------------------------------
-  const SAM_OPS = { HALT: 0, LIT: 1, LOAD: 2, STORE: 3, ADD: 4, SUB: 5, JNZ: 6, OUT: 7, JMP: 8 };
+  const SAM_OPS = {
+    HALT: 0,
+    LIT: 1,
+    LOAD: 2,
+    STORE: 3,
+    ADD: 4,
+    SUB: 5,
+    JNZ: 6,
+    OUT: 7,
+    JMP: 8,
+  };
   const SAM_HAS_OPERAND = new Set(["LIT", "LOAD", "STORE", "ADD", "SUB", "JNZ", "JMP"]);
   const toBcd = (n) => parseInt(String(n), 16);
 
   function assembleSAM(src, { width = 8, decimal = false } = {}) {
-    const lines = src.split("\n").map((l) => l.replace(/;.*$/, "").trim()).filter(Boolean);
+    const lines = src
+      .split("\n")
+      .map((l) => l.replace(/;.*$/, "").trim())
+      .filter(Boolean);
     const labels = {};
     let bit = 5; // after the 5-bit width header
     const items = [];
@@ -919,7 +1343,8 @@
       if (SAM_HAS_OPERAND.has(it.op)) {
         let v = it.arg in labels ? labels[it.arg] : +it.arg;
         if (it.op === "LIT" && decimal) v = toBcd(v);
-        if (!Number.isFinite(v) || v < 0 || v > maxv) throw new Error(`SAM: operand ${it.arg} does not fit ${width} bits`);
+        if (!Number.isFinite(v) || v < 0 || v > maxv)
+          throw new Error(`SAM: operand ${it.arg} does not fit ${width} bits`);
         push(v, width);
       }
     }
@@ -1105,7 +1530,10 @@ VADDR:   MOVE X TO T
         p.TOPM = 0; // every micro-instruction comes from main memory
       }
       p.MBR = LAYOUT.MICRO;
-      const sam = assembleSAM(this.programs[name], { width: this.width, decimal: this.decimal });
+      const sam = assembleSAM(this.programs[name], {
+        width: this.width,
+        decimal: this.decimal,
+      });
       this.sam = sam;
       sam.bits.forEach((b, i) => p.mem.setBit(LAYOUT.SPROG + i, b));
       p.padSet(1, 0, LAYOUT.SPROG + 5); // S-PC past the header
@@ -1122,7 +1550,11 @@ VADDR:   MOVE X TO T
     peekSop() {
       const p = this.cpu;
       const pc = p.padGet(1, 0);
-      const op = p.mem.getBit(pc) * 8 + p.mem.getBit(pc + 1) * 4 + p.mem.getBit(pc + 2) * 2 + p.mem.getBit(pc + 3);
+      const op =
+        p.mem.getBit(pc) * 8 +
+        p.mem.getBit(pc + 1) * 4 +
+        p.mem.getBit(pc + 2) * 2 +
+        p.mem.getBit(pc + 3);
       const name = Object.keys(SAM_OPS).find((k) => SAM_OPS[k] === op) || "?";
       let arg = "";
       if (SAM_HAS_OPERAND.has(name)) {

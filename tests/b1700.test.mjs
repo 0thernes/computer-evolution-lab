@@ -8,11 +8,26 @@ import vm from "node:vm";
 import { ROOT_DIR } from "../tools/serve.mjs";
 
 function load() {
-  const sb = { Math, BigInt, Uint8Array, Uint16Array, Uint32Array, Number, String, Object, Array, Set, Error, console };
+  const sb = {
+    Math,
+    BigInt,
+    Uint8Array,
+    Uint16Array,
+    Uint32Array,
+    Number,
+    String,
+    Object,
+    Array,
+    Set,
+    Error,
+    console,
+  };
   sb.window = sb;
   vm.createContext(sb);
   const rel = "src/sim/b1700-sim.js";
-  vm.runInContext(fs.readFileSync(path.join(ROOT_DIR, rel), "utf8"), sb, { filename: rel });
+  vm.runInContext(fs.readFileSync(path.join(ROOT_DIR, rel), "utf8"), sb, {
+    filename: rel,
+  });
   return sb;
 }
 const env = load();
@@ -135,7 +150,9 @@ test("READ/WRITE with FA/FL counting, CPL substitution and BR/LR protection", ()
   assert.equal(p.T, 0xabc123, "length 0 uses CPL (24)");
   assert.equal(p.FA, 124);
   assert.equal(p.FL, 24, "FL decremented by each field length");
-  const q = cpuWith("MOVE 8 TO BR\nMOVE 16 TO LR\nMOVE 40 TO FA\nWRITE 8 BITS FROM X\nHALT").p;
+  const q = cpuWith(
+    "MOVE 8 TO BR\nMOVE 16 TO LR\nMOVE 40 TO FA\nWRITE 8 BITS FROM X\nHALT",
+  ).p;
   q.X = 0xff;
   q.run(10);
   assert.equal(q.mem.read(40, 8), 0, "out-of-bounds write is inhibited");
@@ -180,7 +197,11 @@ test("SAM S-machine interpreter (microcode) runs S-programs to the right answers
       s.load(name, { decimal, inControlMemory: true });
       s.runToHalt();
       assert.ok(s.cpu.halted, `${name} halts`);
-      assert.deepEqual([...s.outputs()], out, `${name} (${decimal ? "decimal" : "binary"})`);
+      assert.deepEqual(
+        [...s.outputs()],
+        out,
+        `${name} (${decimal ? "decimal" : "binary"})`,
+      );
     }
   }
   // the decimal S-machine really stores BCD: 55 is 0x55, the binary one stores 0x37
@@ -201,7 +222,10 @@ test("running the interpreter from main memory costs 4x per fetch (Auerbach 167 
   s.load("Sum 1..10", { inControlMemory: false });
   s.runToHalt();
   assert.equal(s.cpu.micros, micros, "same micro-instruction count");
-  assert.ok(s.cpu.ns > cm * 2.5, `main-memory run (${s.cpu.ns} ns) much slower than CM (${cm} ns)`);
+  assert.ok(
+    s.cpu.ns > cm * 2.5,
+    `main-memory run (${s.cpu.ns} ns) much slower than CM (${cm} ns)`,
+  );
   assert.equal(s.cpu.cmFetches, 0);
 });
 
@@ -209,7 +233,9 @@ test("OVERLAY (0002) copies FL bits from FA into control memory at L", () => {
   const p = new env.B1700Processor({ mainBytes: 4096, cmWords: 1024 });
   p.mem.write(1000, 16, 0, 0x3a5f);
   p.mem.write(1016, 16, 0, 0x0001);
-  const { code } = env.assembleB1700MIL("MOVE 1000 TO FA\nMOVE 32 TO FL\nMOVE 600 TO L\nOVERLAY\nHALT");
+  const { code } = env.assembleB1700MIL(
+    "MOVE 1000 TO FA\nMOVE 32 TO FL\nMOVE 600 TO L\nOVERLAY\nHALT",
+  );
   code.forEach((w, i) => (p.cm[i] = w));
   p.run(10);
   assert.equal(p.cm[600], 0x3a5f);

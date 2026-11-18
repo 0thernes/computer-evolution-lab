@@ -11,7 +11,12 @@
     b17bits(c, w, h, _t, p) {
       c.font = Ce(11, "600");
       c.fillStyle = Z.acc2;
-      c.fillText(`S-memory, addressed to the bit · last field ${p.fieldAddr ?? "—"}+${p.fieldLen ?? 0} bits`, 10, 16, w - 20);
+      c.fillText(
+        `S-memory, addressed to the bit · last field ${p.fieldAddr ?? "—"}+${p.fieldLen ?? 0} bits`,
+        10,
+        16,
+        w - 20,
+      );
       const bits = p.memBits || [];
       const cols = 64;
       const rows = Math.max(1, Math.ceil(bits.length / cols));
@@ -23,19 +28,30 @@
         const a = p.memBase + i;
         let col = b ? "#cbd5e1" : "#141b25";
         if (a >= p.spc && a < p.spc + 4) col = b ? "#fde047" : "#5b4a12";
-        else if (p.fieldAddr != null && a >= p.fieldAddr && a < p.fieldAddr + p.fieldLen) col = b ? "#34d399" : "#0b4d3a";
+        else if (p.fieldAddr != null && a >= p.fieldAddr && a < p.fieldAddr + p.fieldLen)
+          col = b ? "#34d399" : "#0b4d3a";
         c.fillStyle = col;
         c.fillRect(x, y, Math.max(1, cw - 1), Math.max(1, ch - 2));
       });
       c.fillStyle = Z.dim;
       c.font = Ce(10);
-      c.fillText("yellow: 4-bit S-opcode at S-PC · green: last READ/WRITE field (0–24 bits, either direction)", 10, h - 6, w - 20);
+      c.fillText(
+        "yellow: 4-bit S-opcode at S-PC · green: last READ/WRITE field (0–24 bits, either direction)",
+        10,
+        h - 6,
+        w - 20,
+      );
     },
     // 24-bit function box: X, Y and the unit-dependent SUM / DIFF, CPL masking
     b17fbox(c, w, h, _t, p) {
       c.font = Ce(11, "600");
       c.fillStyle = Z.acc2;
-      c.fillText(`24-bit function box · CPU=${p.unit} (${["binary", "4-bit decimal", "8-bit", "reserved"][p.unit]}) · CPL=${p.cpl}`, 10, 16, w - 20);
+      c.fillText(
+        `24-bit function box · CPU=${p.unit} (${["binary", "4-bit decimal", "8-bit", "reserved"][p.unit]}) · CPL=${p.cpl}`,
+        10,
+        16,
+        w - 20,
+      );
       const rows = [
         ["X", p.x, "#60a5fa"],
         ["Y", p.y, "#a78bfa"],
@@ -58,13 +74,23 @@
       });
       c.fillStyle = Z.ok;
       c.font = Ce(10);
-      c.fillText(`BICN ${p.bicn.toString(2).padStart(4, "0")} (LSUY CYF CYD CYL) · XYCN ${p.xycn.toString(2).padStart(4, "0")} (MSBX X=Y X<Y X>Y)`, 10, h - 6, w - 20);
+      c.fillText(
+        `BICN ${p.bicn.toString(2).padStart(4, "0")} (LSUY CYF CYD CYL) · XYCN ${p.xycn.toString(2).padStart(4, "0")} (MSBX X=Y X<Y X>Y)`,
+        10,
+        h - 6,
+        w - 20,
+      );
     },
     // the micro-instruction stream: 16-bit M register decoded, and where it was fetched from
     b17micro(c, w, h, _t, p) {
       c.font = Ce(11, "600");
       c.fillStyle = Z.acc2;
-      c.fillText(`M register ${hex(p.m, 4)} · fetched from ${p.fromCM ? "control memory (167 ns)" : "main memory (667 ns)"}`, 10, 16, w - 20);
+      c.fillText(
+        `M register ${hex(p.m, 4)} · fetched from ${p.fromCM ? "control memory (167 ns)" : "main memory (667 ns)"}`,
+        10,
+        16,
+        w - 20,
+      );
       const cw = (w - 20) / 16;
       for (let b = 0; b < 16; b++) {
         const bit = (p.m >>> (15 - b)) & 1;
@@ -93,12 +119,19 @@
     const recent = [];
     if (!sys.interp._byAddr) {
       sys.interp._byAddr = {};
-      for (const row of sys.interp.listing || []) sys.interp._byAddr[row.addr] = row.text.trim();
+      for (const row of sys.interp.listing || [])
+        sys.interp._byAddr[row.addr] = row.text.trim();
     }
     const listing = sys.interp._byAddr;
-    for (let a = Math.max(0, cpu.lastAddr - 4); a <= cpu.lastAddr + 3 && a < sys.interp.code.length; a++) {
+    for (
+      let a = Math.max(0, cpu.lastAddr - 4);
+      a <= cpu.lastAddr + 3 && a < sys.interp.code.length;
+      a++
+    ) {
       const row = listing[a];
-      recent.push(`${a === cpu.lastAddr ? "▶" : " "} ${String(a).padStart(4)}  ${hex(sys.interp.code[a], 4)}  ${row || disassembleB1700(sys.interp.code[a], sys.interp.code[a + 1] || 0)}`);
+      recent.push(
+        `${a === cpu.lastAddr ? "▶" : " "} ${String(a).padStart(4)}  ${hex(sys.interp.code[a], 4)}  ${row || disassembleB1700(sys.interp.code[a], sys.interp.code[a + 1] || 0)}`,
+      );
     }
     return {
       memBits,
