@@ -71,22 +71,24 @@ function makeMachineB1700() {
     }
     c.fillText("REGISTER DISPLAY", 120, 186);
     // indicators (SRM: POWER, RUN, STATE, BOT, PARITY)
+    c.font = '600 14px "JetBrains Mono", monospace';
     ["POWER", "RUN", "STATE", "BOT", "PARITY"].forEach((t, i) => {
-      c.fillText(t, 30, 238 + i * 34);
+      c.fillText(t, 26, 238 + i * 32);
     });
-    // data entry switches legend
-    c.fillText("DATA ENTRY", 120, 300);
-    // pushbuttons (SRM: CLEAR HALT LOAD START INC-A READ/WRITE)
-    ["CLEAR", "HALT", "LOAD", "START", "INC-A", "RD/WRT"].forEach((t, i) => {
-      c.fillText(t, 360 + i * 82, 520);
-    });
-    c.fillText("INT", 286, 520);
-    c.fillText("MODE", 132, 420);
-    c.fillText("STEP  RUN  TAPE", 92, 446);
-    c.fillText("COLUMN", 40, 520);
-    c.fillText("ROW", 200, 520);
-    c.fillText("CASSETTE", 878, 300);
-    c.fillText("REWIND", 878, 520);
+    c.font = '600 15px "JetBrains Mono", monospace';
+    c.fillText("DATA ENTRY", 120, 304);
+    c.font = '600 13px "JetBrains Mono", monospace';
+    c.textAlign = "center";
+    // rotary switches, INT toggle, pushbuttons (SRM 1-10/1-11)
+    [["COLUMN", 200], ["ROW", 290], ["MODE", 380], ["INT", 462]].forEach(([t, u]) => c.fillText(t, u, 540));
+    c.fillText("0 1 2 3", 200, 432);
+    c.fillText("0 … F", 290, 432);
+    c.fillText("STEP RUN TAPE", 380, 432);
+    ["CLEAR", "HALT", "LOAD", "START", "INC-A", "RD/WRT"].forEach((t, i) => c.fillText(t, 548 + i * 60, 528));
+    c.fillText("REWIND", 712, 432);
+    c.fillText("ON/OFF", 784, 432);
+    c.fillText("CASSETTE", 900, 316);
+    c.textAlign = "left";
     panelSurf.tex.needsUpdate = true;
   }
 
@@ -221,7 +223,7 @@ function makeMachineB1700() {
     short: "B1700",
     name: "Burroughs B 1726 (B1700 series) Microprogrammable System",
     group: "servers",
-    view0: 0.42,
+    view0: -0.18,
     blurb:
       "Announced 7 June 1972 (Datapro), designed under Wayne T. Wilner at Burroughs' Santa Barbara plant in Goleta: a 'soft' machine with no fixed instruction set. 16-bit micro-instructions drive a 24-bit datapath whose ALU width (CPL) and unit (binary, 4-bit or 8-bit decimal) change clock by clock, over memory addressable to the bit. Each language gets its own S-machine, interpreted in microcode. Here a real micro-instruction emulator runs a microcoded interpreter for a small lab-defined S-language.",
     diagram: {
@@ -255,19 +257,47 @@ function makeMachineB1700() {
       cassetteHubs = [];
       diskPlatters = [];
       knobs = {};
-      const white = U.plastic(0xe9e5da, 0.42);
-      const walnut = U.plastic(0x3a2e27, 0.5);
+      // Colours matched to the colour photograph on the B 1726 brochure (1059219, June 1972):
+      // cream front faces, dark walnut-grain sides and tops, white floor tiles with dark joints.
+      const white = U.plastic(0xe6dfcc, 0.4);
+      const walnut = U.wood().clone();
+      walnut.color.set(0x5b3c2a);
+      walnut.roughness = 0.55;
       const charcoal = U.metal(0x2a2c31, 0.5);
+      const floorSurf = Bt(512, 512);
+      {
+        const c = floorSurf.ctx;
+        c.fillStyle = "#e9e7e1";
+        c.fillRect(0, 0, 512, 512);
+        for (let i = 0; i < 4; i++)
+          for (let j = 0; j < 4; j++) {
+            c.fillStyle = `rgba(0,0,0,${0.015 + ((i * 7 + j * 3) % 5) * 0.006})`;
+            c.fillRect(i * 128 + 3, j * 128 + 3, 122, 122);
+          }
+        c.strokeStyle = "#4a4a4a";
+        c.lineWidth = 3;
+        for (let k = 0; k <= 512; k += 128) {
+          c.beginPath();
+          c.moveTo(k, 0);
+          c.lineTo(k, 512);
+          c.moveTo(0, k);
+          c.lineTo(512, k);
+          c.stroke();
+        }
+        floorSurf.tex.wrapS = floorSurf.tex.wrapT = os;
+        floorSurf.tex.repeat.set(3.9 / 2.44, 2.9 / 2.44); // 61 cm raised-floor tiles
+      }
+      const floorMat = new Cn({ map: floorSurf.tex, roughness: 0.38, clearcoat: 0.4, clearcoatRoughness: 0.3 });
 
-      // Floor: light vinyl tile island as in the 1972 brochure photograph
-      kit.box(3.9, 0.03, 2.9, U.plastic(0xd9d6cc, 0.62), [0.25, 0.015, 0.35], {
-        name: "Computer-Room Floor Tiles",
-        info: "Light vinyl floor tiles as in Burroughs' 1972 B 1726 brochure photograph (estimate).",
+      // Floor: raised computer-room floor as in the brochure photograph (tile size: standard 61 cm, estimate)
+      kit.box(3.9, 0.03, 2.9, floorMat, [0.25, 0.015, 0.2], {
+        name: "Raised Floor Tiles",
+        info: "White raised-floor tiles with dark joints, as in the B 1726 brochure photograph (tile size is the common 61 cm, an estimate).",
         sharp: true,
       });
 
       // 1. CENTRAL PROCESSOR CABINET — 158.7 x 66 x 148.5 cm (brochure 1059219)
-      const cab = kit.group([-0.85, 0.03, -0.25], {
+      const cab = kit.group([-0.75, 0.03, -0.35], {
         name: "B 1726 Central Processor Cabinet",
         info: "One cabinet holds power supply, I/O controls, memory and processor logic (brochure 1059219). 62.5 in high, 26 in wide, 58.5 in deep, 1,419 lb.",
         live: () => `${mode} · A=${cpu.A} · ${cpu.halted ? "HALTED" : running ? "RUNNING" : "STOPPED"}`,
@@ -281,13 +311,13 @@ function makeMachineB1700() {
         shell: true,
         explode: [-0.45, 0, 0],
       }, cab);
+      // front face stays opaque in cutaway so the console is always readable; sides and top cut away
       kit.box(CW + 0.01, CH, 0.03, white, [0, CH / 2, CD / 2 + 0.01], {
-        name: "Front Panel (white)",
-        info: "Off-white front face carrying the console control panel and cassette reader.",
-        shell: true,
-        explode: [0, 0, 0.5],
+        name: "Front Panel (cream)",
+        info: "Cream front face carrying the console control panel and the cassette reader (brochure colour photograph).",
       }, cab);
-      // Console control panel, inset in the front face
+      // Console control panel, inset in the front face inside a light grey bezel
+      kit.box(0.6, 0.345, 0.014, U.plastic(0xb9b4a8, 0.38), [0, 1.27, CD / 2 + 0.02], {}, cab);
       panelSurf = zi(kit, 0.56, 0.306, [0, 1.27, CD / 2 + 0.028], [1024, 560], {
         name: "Console Control Panel",
         info: "SRM 1057155 section 1: 24 register display lights, POWER/RUN/STATE/BOT/PARITY indicators, 24 data entry switches, CLEAR, HALT, LOAD, START, INC-A and READ/WRITE pushbuttons, INT toggle, register COLUMN and ROW select switches, MODE switch (STEP/RUN/TAPE). Legend placement approximated from photographs.",
@@ -301,7 +331,7 @@ function makeMachineB1700() {
         const g = Math.floor((23 - i) / 4);
         const k = (23 - i) % 4;
         const u = 120 + g * 128 + 14 + k * 29;
-        const lamp = kit.sphere(0.0062, U.led(0xffd9a0), [px(u), py(112), face], {
+        const lamp = kit.sphere(0.0062, b17LampMaterial(0xffd9a0), [px(u), py(112), face], {
           seg: 12,
           name: i === 0 ? "Register Display Lights (24)" : undefined,
           info: "Show the register picked by the COLUMN/ROW select switches, live from the emulator. Warm incandescent colour; glow lag is illustrative.",
@@ -311,7 +341,7 @@ function makeMachineB1700() {
         lamps[i] = lamp;
       }
       ["POWER", "RUN", "STATE", "BOT", "PARITY"].forEach((n, i) => {
-        indicator[n] = kit.sphere(0.0055, U.led(n === "PARITY" ? 0xff5a4a : n === "POWER" ? 0xffffff : 0xffc46b), [px(110), py(232 + i * 34), face], {
+        indicator[n] = kit.sphere(0.0055, b17LampMaterial(n === "PARITY" ? 0xff5a4a : n === "POWER" ? 0xffffff : 0xffc46b), [px(110), py(233 + i * 32), face], {
           seg: 12,
           name: `${n} Indicator`,
           info: {
@@ -328,8 +358,8 @@ function makeMachineB1700() {
         const g = Math.floor((23 - i) / 4);
         const k = (23 - i) % 4;
         const u = 120 + g * 128 + 14 + k * 29;
-        const sw = Ba(kit, [px(u), py(260), face - 0.004], i === 0 ? { name: "Data Entry Switches (24)", info: "Set a 24-bit value; LOAD writes it into the selected register (SRM)." } : {}, cab);
-        sw.scale.setScalar(0.42);
+        const sw = Ba(kit, [px(u), py(272), face - 0.004], i === 0 ? { name: "Data Entry Switches (24)", info: "Set a 24-bit value; LOAD writes it into the selected register (SRM)." } : {}, cab);
+        sw.scale.setScalar(0.34);
         sw.userData.b17 = { kind: "data", bit: i };
         sw.traverse((o) => (o.userData.b17 = sw.userData.b17));
         za(sw, 0);
@@ -337,7 +367,7 @@ function makeMachineB1700() {
       }
       // pushbuttons
       ["CLEAR", "HALT", "LOAD", "START", "INC-A", "RW"].forEach((n, i) => {
-        const b = kit.box(0.034, 0.024, 0.014, U.plastic(n === "HALT" ? 0xc8382f : n === "START" ? 0x2f8f4e : 0xe8e3d6, 0.35), [px(390 + i * 82), py(490), face], {
+        const b = kit.box(0.026, 0.02, 0.012, U.plastic(n === "HALT" ? 0xc8382f : n === "START" ? 0x2f8f4e : 0xe8e3d6, 0.35), [px(548 + i * 60), py(486), face], {
           name: `${n === "RW" ? "READ/WRITE" : n} Pushbutton`,
           info: {
             CLEAR: "Clears processor registers (on the B 1726 a wider set than on the B 1712/1714).",
@@ -349,9 +379,10 @@ function makeMachineB1700() {
           }[n],
         }, cab);
         b.userData.b17 = { kind: "button", name: n };
+        b.traverse((o) => (o.userData.b17 = b.userData.b17));
       });
-      const intSw = Ba(kit, [px(300), py(470), face - 0.004], { name: "INT Toggle", info: "Console interrupt: sets CC bit 0 so software can come to an orderly stop." }, cab);
-      intSw.scale.setScalar(0.5);
+      const intSw = Ba(kit, [px(462), py(486), face - 0.004], { name: "INT Toggle", info: "Console interrupt: sets CC bit 0 so software can come to an orderly stop." }, cab);
+      intSw.scale.setScalar(0.4);
       intSw.traverse((o) => (o.userData.b17 = { kind: "int" }));
       // rotary switches
       const knob = (key, u, v, r, name, info) => {
@@ -359,11 +390,11 @@ function makeMachineB1700() {
         k.traverse((o) => (o.userData.b17 = { kind: "knob", key }));
         knobs[key] = k;
       };
-      knob("col", 70, 470, 0.022, "Register COLUMN Select", "4-position rotary switch choosing column 0-3 of the register matrix (SRM table 1-3). Click to turn.");
-      knob("row", 214, 470, 0.026, "Register ROW Select", "Rotary switch choosing row 0-F of the register matrix. Click to turn.");
-      knob("mode", 150, 380, 0.02, "MODE Switch", "STEP / RUN / TAPE. TAPE (cassette loading) is not emulated. Click to turn.");
+      knob("col", 200, 476, 0.015, "Register COLUMN Select", "4-position rotary switch choosing column 0-3 of the register matrix (SRM table 1-3). Click to turn.");
+      knob("row", 290, 476, 0.017, "Register ROW Select", "Rotary switch choosing row 0-F of the register matrix. Click to turn.");
+      knob("mode", 380, 476, 0.015, "MODE Switch", "STEP / RUN / TAPE. TAPE (cassette loading) is not emulated. Click to turn.");
       // cassette reader (standard on the B 1726 per brochure)
-      const cas = kit.group([px(915), py(400), face - 0.004], {
+      const cas = kit.group([px(900), py(400), face - 0.004], {
         name: "Cassette Reader",
         info: "Standard on the B 1726 (brochure): loads confidence routines and microcode in TAPE mode. Shown, not emulated.",
       }, cab);
@@ -373,6 +404,13 @@ function makeMachineB1700() {
         const hub = kit.cyl(0.011, 0.011, 0.004, U.plastic(0xf2f2f2, 0.3), [sx, 0, 0.006], { rot: [Math.PI / 2, 0, 0], seg: 16 }, cas);
         cassetteHubs.push(hub);
       }
+      const rew = kit.box(0.022, 0.016, 0.01, U.plastic(0xe8e3d6, 0.35), [px(712), py(395), face], {
+        name: "CASSETTE REWIND Pushbutton",
+        info: "Rewinds the tape cassette to BOT (SRM). Cassette not emulated.",
+      }, cab);
+      rew.userData.b17 = { kind: "button", name: "REWIND" };
+      const casSw = Ba(kit, [px(784), py(400), face - 0.004], { name: "CASSETTE ON/OFF Toggle", info: "Power to the tape cassette unit (SRM). Cassette not emulated." }, cab);
+      casSw.scale.setScalar(0.34);
       // Cabinet interior (cutaway): logic card cage, control memory, MOS main memory, power supply
       const cage = kit.group([0, 0.86, 0.05], {
         name: "Processor Logic Card Cage",
@@ -382,9 +420,11 @@ function makeMachineB1700() {
       }, cab);
       const chipGeo = new te(0.018, 0.004, 0.009);
       const chipMat = U.plastic(0x1b1b1d, 0.4);
+      // plain glass-epoxy cards with through-hole DIP packages (no U.pcb: that adds modern SMD parts)
+      const cardMat = U.plastic(0x2c5a3c, 0.55);
       const nBoards = 14;
       for (let b = 0; b < nBoards; b++) {
-        const pcb = kit.box(0.012, 0.32, 0.5, U.pcb(0x1f5a3a), [-0.27 + b * 0.04, 0, 0], b === 0 ? { name: "Logic Cards", info: "Plug-in IC cards in the processor card cage (layout illustrative)." } : {}, cage);
+        const pcb = kit.box(0.012, 0.32, 0.5, cardMat, [-0.27 + b * 0.04, 0, 0], b === 0 ? { name: "Logic Cards", info: "Plug-in IC cards in the processor card cage (layout illustrative)." } : {}, cage);
         const inst = new ut(chipGeo, chipMat, 24);
         const m4 = new nt();
         let n = 0;
@@ -415,11 +455,11 @@ function makeMachineB1700() {
       }, cab);
 
       // 2. OPERATOR TABLE — 67.9 x 132 x 61 cm (brochure)
-      const table = kit.group([-0.5, 0.03, 1.05], {
+      const table = kit.group([-0.45, 0.03, 0.95], {
         name: "Operator Table",
-        info: "Operator table, 26.75 in high, 52 in wide, 24 in deep (brochure 1059219). White top on dark pedestal frame (catalogue photo M B1700-59).",
+        info: "Operator table, 26.75 in high, 52 in wide, 24 in deep (brochure 1059219). Walnut top and pedestal on a dark frame, as in the brochure colour photograph.",
       });
-      kit.box(1.32, 0.03, 0.61, U.plastic(0xeeebe2, 0.35), [0, 0.664, 0], {}, table);
+      kit.box(1.32, 0.03, 0.61, walnut, [0, 0.664, 0], {}, table);
       kit.box(0.5, 0.5, 0.56, walnut, [0.36, 0.4, 0], {}, table);
       kit.box(0.04, 0.62, 0.04, charcoal, [-0.6, 0.33, 0], {}, table);
       kit.box(0.05, 0.02, 0.55, charcoal, [-0.6, 0.01, 0], {}, table);
@@ -441,43 +481,55 @@ function makeMachineB1700() {
         info: "Shows the S-machine's OUT buffer. A lab mirror: the SAM interpreter writes to main memory, it does not drive the 9340.",
       }, spo);
 
-      // 3. Dual disk cartridge drive cabinet (white with two drive bays, from catalogue photos)
-      const dsk = kit.group([0.75, 0.03, -0.55], {
-        name: "Disk Cartridge Drive Cabinet (dual)",
-        info: "Disk cartridge subsystem cabinet as in catalogue photos M B1700-7/-11. Dimensions estimated; not emulated.",
+      // 3. 9480-2 dual disk cartridge subsystem (SRM table 1-2: 4.6 MB, dual). Two stacked drives,
+      // cream fronts and walnut casing as in catalogue photo M B1700-7 and the brochure; size estimated.
+      const dsk = kit.group([0.55, 0.03, -0.75], {
+        name: "9480-2 Disk Cartridge Subsystem (dual)",
+        info: "Dual disk cartridge storage, 4.6 MB (SRM 1057155 table 1-2). Look from catalogue photo M B1700-7; dimensions estimated; not emulated.",
       });
-      kit.box(0.62, 0.95, 0.66, white, [0, 0.475, 0], { shell: true, explode: [0, 0, 0.4] }, dsk);
+      kit.box(0.6, 1.08, 0.7, walnut, [0, 0.56, 0], { shell: true, explode: [0, 0, -0.35] }, dsk);
       for (let d = 0; d < 2; d++) {
-        kit.box(0.5, 0.2, 0.02, U.plastic(0x2b2723, 0.35), [0, 0.32 + d * 0.38, 0.335], {}, dsk);
-        const plat = kit.cyl(0.18, 0.18, 0.012, U.alu(), [0, 0.32 + d * 0.38, 0], { seg: 40, name: d ? undefined : "Disk Cartridge Platters", info: "Spinning disk cartridges (illustrative speed)." }, dsk);
+        const y0 = 0.33 + d * 0.46;
+        kit.box(0.54, 0.4, 0.02, white, [0, y0, 0.355], {}, dsk);
+        kit.box(0.46, 0.08, 0.012, U.plastic(0x1e1b18, 0.3), [0, y0 + 0.1, 0.368], {}, dsk);
+        kit.box(0.2, 0.014, 0.02, U.alu(), [0, y0 - 0.06, 0.372], {}, dsk);
+        const plat = kit.cyl(0.18, 0.18, 0.012, U.metal(0x8c939b, 0.42), [0, y0, 0], { seg: 40, name: d ? undefined : "Disk Cartridge Platters", info: "Disk cartridges (rotation is illustrative)." }, dsk);
         diskPlatters.push(plat);
       }
-      // 4. 96-column card reader on stand (SRM lists the 9319 96-column reader)
-      const rdr = kit.group([1.55, 0.03, -0.35], {
-        name: "96-Column Card Reader",
-        info: "96-column card equipment was new with the B 1700 (1973 Datamation ad); the SRM peripheral table lists the 9319 96-column card reader. Proportions estimated.",
+      for (const [cx, cz] of [[-0.25, -0.3], [0.25, -0.3], [-0.25, 0.3], [0.25, 0.3]]) kit.cyl(0.025, 0.025, 0.03, charcoal, [cx, 0.015, cz], { rot: [0, 0, Math.PI / 2], seg: 12 }, dsk);
+
+      // 4. 9419-1 96-column data recorder on its desk (SRM table 1-2; catalogue photo M B1700-40)
+      const rdr = kit.group([1.45, 0.03, -0.45], {
+        name: "9419-1 96-Column Card Data Recorder",
+        info: "96-column card reader/punch/data recorder, 300/60 cards per minute (SRM table 1-2). On a desk as in catalogue photo M B1700-40; proportions estimated; not emulated.",
       });
-      kit.box(0.7, 0.62, 0.5, walnut, [0, 0.31, 0], {}, rdr);
-      kit.box(0.66, 0.2, 0.42, white, [0, 0.72, 0], {}, rdr);
-      kit.box(0.14, 0.12, 0.08, U.plastic(0x9a8f7a, 0.5), [-0.18, 0.88, 0], { name: "96-col Card Deck", info: "Stack of 96-column cards (smaller than 80-column cards)." }, rdr);
+      kit.box(1.0, 0.03, 0.6, walnut, [0, 0.72, 0], {}, rdr);
+      for (const x of [-0.44, 0.44]) {
+        kit.box(0.04, 0.7, 0.04, charcoal, [x, 0.36, 0], {}, rdr);
+        kit.box(0.05, 0.02, 0.56, charcoal, [x, 0.01, 0], {}, rdr);
+      }
+      kit.box(0.62, 0.16, 0.42, white, [0, 0.815, 0], {}, rdr);
+      kit.box(0.5, 0.05, 0.3, U.plastic(0x23201d, 0.35), [0, 0.92, -0.02], {}, rdr);
+      kit.box(0.1, 0.035, 0.05, U.plastic(0xd9cfb3, 0.6), [-0.16, 0.96, 0], { name: "96-Column Cards", info: "96-column cards: smaller than 80-column cards, punched with round holes in three tiers." }, rdr);
 
       // 5. LAB INSTRUMENT (explicitly not part of the B1700): live emulator state display
-      const inst = kit.group([1.2, 0.03, 0.95], {
+      const inst = kit.group([1.8, 0.03, 0.45], {
+        rot: [0, -0.7, 0],
         name: "Lab Instrument (not B1700 hardware)",
         info: "A lab display added by this project to show the emulator: S-memory bit map, M register, registers and scratchpad. No such screen existed on the B1700.",
       });
-      kit.box(0.06, 1.1, 0.06, charcoal, [0, 0.55, 0], {}, inst);
+      kit.box(0.05, 1.02, 0.05, charcoal, [0, 0.51, 0], {}, inst);
       kit.box(0.4, 0.02, 0.3, charcoal, [0, 0.01, 0], {}, inst);
-      instSurf = zi(kit, 0.86, 0.54, [0, 1.32, 0.02], [1024, 640], {
+      instSurf = zi(kit, 0.72, 0.45, [0, 1.25, 0.02], [1024, 640], {
         lcd: true,
-        rot: [-0.08, -0.35, 0],
+        rot: [-0.08, 0, 0],
         name: "Emulator State Display (lab)",
         info: "Live from src/sim/b1700-sim.js: bits of the S-program (yellow = next S-op, green = last memory field), last micro-instructions, X/Y/T/L/FA/FB, SUM/DIFF, CP, condition registers and scratchpad.",
         live: () => `${sys.lastSop} · ACC ${sys.acc()}`,
       }, inst);
 
       // cable trough from cabinet to peripherals
-      Dt(kit, [[-0.5, 0.05, -0.6], [0.4, 0.05, -0.6]], 0.02, 0x4b5563, { name: "I/O Cables", info: "Peripheral cables to the I/O controllers in the processor cabinet." });
+      Dt(kit, [[-0.42, 0.05, -0.75], [0.25, 0.05, -0.75]], 0.02, 0x4b5563, { name: "I/O Cables", info: "Peripheral cables to the I/O controllers in the processor cabinet." });
 
       drawPanelSkin();
       drawInstrument();
@@ -485,10 +537,10 @@ function makeMachineB1700() {
       syncLamps(1);
     },
 
-    onPick(part) {
-      const tag = part && part.userData && part.userData.b17;
-      let t = tag;
-      if (!t && part) part.traverseAncestors((o) => { if (!t && o.userData && o.userData.b17) t = o.userData.b17; });
+    onPick(part, hit) {
+      let t = null;
+      for (let o = hit && hit.object; o && !t; o = o.parent) if (o.userData && o.userData.b17) t = o.userData.b17;
+      if (!t && part && part.userData) t = part.userData.b17 || null;
       if (!t) return false;
       if (t.kind === "data") {
         dataSwitches ^= 1 << t.bit;
@@ -727,4 +779,25 @@ function openB1700Dossier() {
     ),
   );
   document.body.append(ov);
+}
+
+// Incandescent console lamp: physical material plus a small shader patch that makes the lens
+// brightest at its centre and dim at the rim (a frosted lens over a filament). Self-made.
+function b17LampMaterial(col) {
+  const m = new Cn({
+    color: new Ae(col).multiplyScalar(0.22),
+    emissive: col,
+    emissiveIntensity: 0.05,
+    roughness: 0.35,
+    clearcoat: 0.9,
+    clearcoatRoughness: 0.15,
+  });
+  m.onBeforeCompile = (sh) => {
+    sh.fragmentShader = sh.fragmentShader.replace(
+      "#include <emissivemap_fragment>",
+      "#include <emissivemap_fragment>\n  float b17f = abs(dot(normalize(normal), normalize(vViewPosition)));\n  totalEmissiveRadiance *= mix(0.22, 1.75, pow(b17f, 2.5));",
+    );
+  };
+  m.customProgramCacheKey = () => "b17lamp";
+  return m;
 }

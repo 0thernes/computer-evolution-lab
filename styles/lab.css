@@ -1021,6 +1021,20 @@ kbd {
 .overlay.credits li {
   margin: 5px 0;
 }
+.overlay.b1700 li {
+  margin: 6px 0;
+  line-height: 1.45;
+}
+.overlay.b1700 a {
+  color: #7dd3fc;
+  display: inline-block;
+  min-height: 24px;
+  padding: 2px 0;
+}
+.overlay.b1700 h3 {
+  margin: 14px 0 4px;
+  color: #fbbf24;
+}
 
 @media (max-width: 880px) {
   #app {
