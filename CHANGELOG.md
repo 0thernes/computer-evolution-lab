@@ -4,7 +4,26 @@ All notable changes to **Computer Evolution Lab** are documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- **Burroughs B1700 (`b1700`, 1972), the 49th machine, in Circle II** ([`docs/B1700.md`](docs/B1700.md), [ADR 0007](docs/adr/0007-b1700-emulation-scope.md)):
+  - **Micro-machine emulator** of the B 1726 from the Systems Reference Manual:
+    - memory addressed to the bit, with 0–24-bit fields read or written in either direction;
+    - the 4 × 16 register select matrix, and the 24-bit and 4-bit function boxes (binary, 4-bit decimal and 8-bit units, masked to CPL);
+    - scratchpad, 32-deep A stack, and every documented micro-instruction;
+    - micro-instruction fetch from control memory or main memory, with timing from the Auerbach report.
+  - **A MIL-subset assembler**, and an S-machine interpreter written in MIL that runs SAM, a small S-language defined by the lab. Three programs run in binary or decimal mode, from control memory or main memory.
+  - **Scene** sized and coloured from the June 1972 B 1726 brochure:
+    - the console wired live to the emulator: 24 register lamps with an incandescent lamp shader, data switches, and COLUMN/ROW/MODE switches you can click;
+    - a cassette reader, the operator table with the 9340 console printer, a 9480-2 disk cartridge subsystem and a 9419-1 96-column data recorder;
+    - a labelled lab-instrument screen.
+  - **11-rung layer stack** with 3 B1700 visualisers (bit-addressed S-memory, function box, micro-instruction stream).
+  - **A sourced in-app dossier**: dates, people, papers with DOIs, manuals, S-language specs, ads, brochures, the CBI *B1700 Presentation* film, and what was searched for and not found. `tools/check-b1700-links.mjs` re-checks every link.
+  - `tests/b1700.test.mjs` (12 tests).
+
 ### Changed
+
+- Counts: 49 machines, 50 scenes, 539 primary rungs (1,617 sub-lens views); Circle II has 9 machines.
 
 - CI runs on the latest Node.js only (26.x; current LTS "Lithium" is 26.13.1). Node 20 was removed after its headless WebGL job hung for 25+ minutes on the v6.0.0 push. `engines.node` is now `>=26.0.0`.
 

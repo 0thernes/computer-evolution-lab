@@ -8,3 +8,4 @@
 | [0004](0004-no-code-signing.md)        | Ship the Windows `.exe` unsigned, with SHA-256 checksums                                                 |
 | [0005](0005-mobile-tier-lazy-build.md) | Capability-based quality tier and lazy scene building                                                    |
 | [0006](0006-rv32-pipeline.md)          | The RV32IM core is a real cycle-stepped 5-stage pipeline checked against an ISS                          |
+| [0007](0007-b1700-emulation-scope.md)  | The B1700 is emulated at the micro-instruction level; its demo S-language is lab-defined                 |
