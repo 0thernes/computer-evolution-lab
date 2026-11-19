@@ -711,6 +711,7 @@ function makeMachineB1700() {
           name: "SPO Keyboard",
           info: "Operator keyboard of the console printer. Typewriter layout; the key arrangement is an estimate.",
           rows: B17_PERIOD_KEY_ROWS,
+          leds: false, // the kit's green lock-status LEDs are a modern PC feature
         },
         spo,
       );
@@ -884,15 +885,15 @@ function makeMachineB1700() {
         0.225,
         0.01,
         U.plastic(0x0b0b0a, 0.7),
-        [0, 0.205, fz - 0.012],
+        [0, 0.205, fz - 0.024],
         {},
         td,
       );
-      // curved tube face: spherical cap (radius 0.6 m, estimate) carrying the phosphor canvas
+      // curved tube face: spherical cap (radius 0.9 m, estimate) carrying the phosphor canvas
       const tubeGeo = new mt(0.29, 0.212, 18, 14);
       {
         const pa = tubeGeo.attributes.position;
-        const R = 0.6;
+        const R = 0.9;
         const edge = Math.sqrt(R * R - 0.145 * 0.145 - 0.106 * 0.106);
         for (let i = 0; i < pa.count; i++) {
           const x = pa.getX(i),
@@ -955,6 +956,7 @@ function makeMachineB1700() {
           plateColor: 0x24211d,
           keyColor: 0xe6e0cf,
           rows: B17_PERIOD_KEY_ROWS,
+          leds: false, // the kit's green lock-status LEDs are a modern PC feature
           name: "TD 800 Keyboard",
           info: "Typewriter-style keyboard with a transmit (XMT) key, attached in front of the screen as in Figure 1-2 of manual 1068699 (it could also be a separate module on a 6 ft cable).",
         },
