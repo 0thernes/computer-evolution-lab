@@ -23,7 +23,9 @@ function makeMachineB1700() {
   let toggles = [];
   let knobs = {};
   let panelSurf = null;
-  let instSurf = null;
+  let instSurf = null; // TD 800 CRT phosphor canvas
+  let tdLamps = [];
+  let crtTimer = 0;
   let paperSurf = null;
   let cassetteHubs = [];
   let diskPlatters = [];
@@ -56,10 +58,10 @@ function makeMachineB1700() {
     c.font = '700 26px Georgia, "Times New Roman", serif';
     c.fillText("Burroughs", 44, 45);
     c.fillStyle = "#cfd3da";
-    c.font = '600 30px "Inter", Arial, sans-serif';
+    c.font = "600 30px Helvetica, Arial, sans-serif";
     c.fillText("B 1700", 852, 46);
     // register display legend: bit groups of 4 (TA..TF style), bit weights
-    c.font = '600 15px "JetBrains Mono", monospace';
+    c.font = "600 15px Helvetica, Arial, sans-serif";
     c.fillStyle = "#e7e2d4";
     for (let g = 0; g < 6; g++) {
       const x0 = 120 + g * 128;
@@ -71,13 +73,13 @@ function makeMachineB1700() {
     }
     c.fillText("REGISTER DISPLAY", 120, 186);
     // indicators (SRM: POWER, RUN, STATE, BOT, PARITY)
-    c.font = '600 14px "JetBrains Mono", monospace';
+    c.font = "600 14px Helvetica, Arial, sans-serif";
     ["POWER", "RUN", "STATE", "BOT", "PARITY"].forEach((t, i) => {
       c.fillText(t, 26, 238 + i * 32);
     });
-    c.font = '600 15px "JetBrains Mono", monospace';
+    c.font = "600 15px Helvetica, Arial, sans-serif";
     c.fillText("DATA ENTRY", 120, 304);
-    c.font = '600 13px "JetBrains Mono", monospace';
+    c.font = "600 13px Helvetica, Arial, sans-serif";
     c.textAlign = "center";
     // rotary switches, INT toggle, pushbuttons (SRM 1-10/1-11)
     [
@@ -99,117 +101,91 @@ function makeMachineB1700() {
     panelSurf.tex.needsUpdate = true;
   }
 
+  // TD 800 console display: 24 lines x 80 characters (Datapro 70C-112-04). The canvas is a
+  // 960 x 576 character grid (12 x 24 px cells). Each redraw only partly erases the previous
+  // frame, so changing characters leave a short phosphor afterglow.
   function drawInstrument() {
     if (!instSurf) return;
     const c = instSurf.ctx;
-    const W = 1024,
-      H = 640;
-    c.fillStyle = "#06090f";
+    const W = 960,
+      H = 576,
+      CW = 12,
+      LH = 24;
+    c.fillStyle = "rgba(2,7,3,0.62)";
     c.fillRect(0, 0, W, H);
-    c.fillStyle = "#94a3b8";
-    c.font = '700 18px "JetBrains Mono", monospace';
-    c.fillText("LAB INSTRUMENT — not part of the B1700 · live emulator state", 18, 28);
-    // S-memory bit map: 8 rows x 128 bits around the S-program, FA highlighted
-    const base = B1700_LAYOUT.SPROG;
+    c.font = '700 19px "Courier New", Courier, monospace';
+    c.textBaseline = "top";
+    const rows = [];
+    const put = (t, hi) => rows.push([String(t).slice(0, 80), hi]);
     const spc = cpu.padGet(1, 0);
-    const last = cpu.mem.last;
-    c.font = '600 14px "JetBrains Mono", monospace';
-    c.fillStyle = "#7dd3fc";
-    c.fillText(
-      `S-MEMORY bits ${base}..${base + 1023} (S-program) · S-PC=${spc - base}`,
-      18,
-      56,
+    const base = B1700_LAYOUT.SPROG;
+    put("B 1726  CONSOLE DISPLAY      LAB VIEW OF THE EMULATOR (NOT AN MCP SCREEN)", 1);
+    put(
+      `PROGRAM ${sys.programName.toUpperCase().padEnd(22)} ${sys.decimal ? "DECIMAL" : "BINARY "} S-MACHINE   ${cpu.halted ? "HALTED " : running ? "RUNNING" : "STOPPED"}`,
     );
-    for (let r = 0; r < 8; r++) {
-      for (let b = 0; b < 128; b++) {
-        const a = base + r * 128 + b;
-        const bit = cpu.mem.getBit(a);
-        let col = bit ? "#e2e8f0" : "#1e293b";
-        if (a >= spc && a < spc + 4) col = bit ? "#fde047" : "#854d0e";
-        else if (last && a >= last.addr && a < last.addr + last.len)
-          col = bit ? "#34d399" : "#065f46";
-        c.fillStyle = col;
-        c.fillRect(18 + b * 7.8, 66 + r * 13, 6.6, 11);
-      }
+    put("-".repeat(80));
+    let bits = "",
+      mark = "";
+    for (let b = 0; b < 64; b++) {
+      const a = spc - 16 + b;
+      bits += a >= base ? cpu.mem.getBit(a) : " ";
+      mark += a === spc ? "^" : " ";
     }
-    // M register + disassembly, A / fetch source
-    const y0 = 190;
-    c.fillStyle = "#fbbf24";
-    c.font = '700 20px "JetBrains Mono", monospace';
+    put(`S-MEM ${String(spc - 16).padStart(5)} ${bits}`);
+    put(`S-PC  ${String(spc - base).padStart(5)} ${mark}`, 1);
     const src = cpu.lastFromCM
       ? "CONTROL MEMORY"
-      : `MAIN MEMORY @ ${cpu.lastAddr * 16 + cpu.MBR}`;
-    c.fillText(
-      `A=${cpu.lastAddr.toString().padStart(4)}  M=${cpu.M.toString(16).toUpperCase().padStart(4, "0")}  from ${src}`,
-      18,
-      y0,
+      : `MAIN MEMORY BIT ${cpu.lastAddr * 16 + cpu.MBR}`;
+    put(
+      `A ${String(cpu.lastAddr).padStart(4)}  M ${cpu.M.toString(16).toUpperCase().padStart(4, "0")}  FROM ${src}`,
+      1,
     );
-    c.fillStyle = "#e2e8f0";
-    c.font = '600 18px "JetBrains Mono", monospace';
-    recent.slice(-7).forEach((t, i, arr) => {
-      c.fillStyle = i === arr.length - 1 ? "#fde68a" : "#94a3b8";
-      c.fillText(t.slice(0, 50), 18, y0 + 30 + i * 24);
-    });
-    // registers
-    const regs = [
+    const rec = recent.slice(-6);
+    while (rec.length < 6) rec.unshift("");
+    rec.forEach((t, i) => put(`  ${t}`.slice(0, 60), i === 5));
+    const r1 = [
       ["X", cpu.X],
       ["Y", cpu.Y],
       ["T", cpu.T],
       ["L", cpu.L],
+    ];
+    const r2 = [
       ["FA", cpu.FA],
       ["FB", cpu.FB],
       ["SUM", cpu.SUM],
       ["DIFF", cpu.DIFF],
     ];
-    c.font = '600 17px "JetBrains Mono", monospace';
-    regs.forEach(([n, v], i) => {
-      c.fillStyle = "#a5b4fc";
-      c.fillText(`${n.padEnd(4)} ${hex6(v)}`, 560, y0 + i * 24);
-    });
-    c.fillStyle = "#f0abfc";
-    c.fillText(
-      `CP ${cpu.CP.toString(2).padStart(8, "0")}  CYF ${cpu.CYF} CPU ${cpu.CPU} CPL ${cpu.CPL}`,
-      560,
-      y0 + 8 * 24,
+    put(r1.map(([n, v]) => `${n.padEnd(4)} ${hex6(v)}`).join("   "));
+    put(r2.map(([n, v]) => `${n.padEnd(4)} ${hex6(v)}`).join("   "));
+    put(
+      `CP ${cpu.CP.toString(2).padStart(8, "0")} CYF ${cpu.CYF} CPU ${cpu.CPU} CPL ${String(cpu.CPL).padStart(2)}  BICN ${cpu.BICN.toString(2).padStart(4, "0")} XYCN ${cpu.XYCN.toString(2).padStart(4, "0")} XYST ${cpu.XYST.toString(2).padStart(4, "0")}`,
     );
-    c.fillText(
-      `BICN ${cpu.BICN.toString(2).padStart(4, "0")} XYCN ${cpu.XYCN.toString(2).padStart(4, "0")} XYST ${cpu.XYST.toString(2).padStart(4, "0")}`,
-      560,
-      y0 + 9 * 24,
-    );
-    // scratchpad
-    c.fillStyle = "#86efac";
-    c.font = '600 15px "JetBrains Mono", monospace';
-    c.fillText(
-      "SCRATCHPAD (lab use: S01A S-PC · S02A vars · S02B out · S03A base · S04A width · S05A unit · S06A ACC)",
-      18,
-      470,
-      990,
-    );
-    for (let w = 0; w < 8; w++) {
-      c.fillStyle = "#bbf7d0";
-      c.fillText(
-        `S${String(w).padStart(2, "0")} ${hex6(cpu.padGet(w, 0))}:${hex6(cpu.padGet(w, 1))}`,
-        18 + (w % 4) * 252,
-        496 + Math.floor(w / 4) * 22,
+    put("SCRATCHPAD  S01A S-PC  S02A VARS  S02B OUT  S03A BASE  S04A WIDTH  S06A ACC");
+    for (let r = 0; r < 2; r++)
+      put(
+        [0, 1, 2, 3]
+          .map((k) => {
+            const w = r * 4 + k;
+            return `S${String(w).padStart(2, "0")} ${hex6(cpu.padGet(w, 0))}:${hex6(cpu.padGet(w, 1))}`;
+          })
+          .join("  "),
       );
+    put("-".repeat(80));
+    put(`S-OP ${sys.lastSop || "-"}   ACC ${sys.acc()}`, 1);
+    put(`OUT ${sys.outputs().join(" ")}`);
+    put(
+      `${cpu.micros} MICROS  ${sys.sOps} S-OPS  EST ${(cpu.ns / 1000).toFixed(1)} US ON A B 1726 (AUERBACH 1974)`,
+    );
+    rows.slice(0, 24).forEach(([t, hi], i) => {
+      c.fillStyle = hi ? "#d8ffd8" : "#7dff9a";
+      c.fillText(t, 6, 4 + i * LH, 80 * CW);
+    });
+    // block cursor after the last line, blinking
+    if (((performance.now() / 530) | 0) % 2 === 0) {
+      c.fillStyle = "#7dff9a";
+      c.fillRect(6, 4 + Math.min(rows.length, 23) * LH, CW - 2, LH - 6);
     }
-    c.fillStyle = "#fca5a5";
-    c.font = '700 19px "JetBrains Mono", monospace';
-    c.fillText(
-      `S-op ${sys.lastSop || "—"} · ACC=${sys.acc()} · OUT=[${sys.outputs().join(" ")}]`,
-      18,
-      568,
-      990,
-    );
-    c.fillStyle = "#64748b";
-    c.font = '600 14px "JetBrains Mono", monospace';
-    c.fillText(
-      `${cpu.micros} micros · ${sys.sOps} S-ops · est. ${(cpu.ns / 1000).toFixed(1)} µs on a B 1726 (Auerbach 1974 timings) · ${sys.decimal ? "4-bit DECIMAL" : "BINARY"} S-machine`,
-      18,
-      604,
-      990,
-    );
+    c.textBaseline = "alphabetic";
     instSurf.tex.needsUpdate = true;
   }
 
@@ -320,6 +296,7 @@ function makeMachineB1700() {
       indicator = {};
       cassetteHubs = [];
       diskPlatters = [];
+      tdLamps = [];
       knobs = {};
       // Colours matched to the colour photograph on the B 1726 brochure (1059219, June 1972):
       // cream front faces, dark walnut-grain sides and tops, white floor tiles with dark joints.
@@ -361,7 +338,7 @@ function makeMachineB1700() {
       // Floor: raised computer-room floor as in the brochure photograph (tile size: standard 61 cm, estimate)
       kit.box(3.9, 0.03, 2.9, floorMat, [0.25, 0.015, 0.2], {
         name: "Raised Floor Tiles",
-        info: "White raised-floor tiles with dark joints, as in the B 1726 brochure photograph (tile size is the common 61 cm, an estimate).",
+        info: "White raised-floor tiles with dark joints, as in the B 1726 brochure photograph (tile size is the common 61 cm, an estimate). Peripheral cables run under the raised floor, so none show in the room (brochure photograph).",
         sharp: true,
       });
 
@@ -452,7 +429,7 @@ function makeMachineB1700() {
         indicator[n] = kit.sphere(
           0.0055,
           b17LampMaterial(
-            n === "PARITY" ? 0xff5a4a : n === "POWER" ? 0xffffff : 0xffc46b,
+            n === "PARITY" ? 0xff5a4a : n === "POWER" ? 0xfff0d2 : 0xffc46b,
           ),
           [px(110), py(233 + i * 32), face],
           {
@@ -732,7 +709,8 @@ function makeMachineB1700() {
           bodyColor: 0x2a2b2f,
           keyColor: 0xd9d3c3,
           name: "SPO Keyboard",
-          info: "Operator keyboard of the console printer.",
+          info: "Operator keyboard of the console printer. Typewriter layout; the key arrangement is an estimate.",
+          rows: B17_PERIOD_KEY_ROWS,
         },
         spo,
       );
@@ -845,44 +823,160 @@ function makeMachineB1700() {
         rdr,
       );
 
-      // 5. LAB INSTRUMENT (explicitly not part of the B1700): live emulator state display
-      const inst = kit.group([1.8, 0.03, 0.45], {
-        rot: [0, -0.7, 0],
-        name: "Lab Instrument (not B1700 hardware)",
-        info: "A lab display added by this project to show the emulator: S-memory bit map, M register, registers and scratchpad. No such screen existed on the B1700.",
+      // 5. 9348-32 TD 800 CONSOLE DISPLAY — optional on all B 1700 systems from June 1976
+      // (Datapro 70C-112-04, Aug 1976): 1,920 characters, 24 lines x 80, cable-connected up to 50 ft.
+      // Form follows Figure 1-2 of the TD 700/800 Equipment Reference Manual (1068699, July 1973):
+      // a deep dark hood with top vents, a light bezel around a 71.3 sq in viewing area, and a
+      // keyboard either attached in front or separate. All dimensions are estimates.
+      const tdTable = kit.group([1.55, 0.03, 0.5], {
+        rot: [0, -0.6, 0],
+        name: "Terminal Table",
+        info: "Table for the console display, styled like the operator table (walnut top, dark frame). Size is an estimate.",
       });
-      kit.box(0.05, 1.02, 0.05, charcoal, [0, 0.51, 0], {}, inst);
-      kit.box(0.4, 0.02, 0.3, charcoal, [0, 0.01, 0], {}, inst);
-      instSurf = zi(
-        kit,
-        0.72,
-        0.45,
-        [0, 1.25, 0.02],
-        [1024, 640],
+      kit.box(0.9, 0.03, 0.6, walnut, [0, 0.664, 0], {}, tdTable);
+      for (const x of [-0.4, 0.4]) {
+        kit.box(0.04, 0.62, 0.04, charcoal, [x, 0.33, 0], {}, tdTable);
+        kit.box(0.05, 0.02, 0.55, charcoal, [x, 0.01, 0], {}, tdTable);
+      }
+      const td = kit.group(
+        [0, 0.68, -0.06],
         {
-          lcd: true,
-          rot: [-0.08, 0, 0],
-          name: "Emulator State Display (lab)",
-          info: "Live from src/sim/b1700-sim.js: bits of the S-program (yellow = next S-op, green = last memory field), last micro-instructions, X/Y/T/L/FA/FB, SUM/DIFF, CP, condition registers and scratchpad.",
-          live: () => `${sys.lastSop} · ACC ${sys.acc()}`,
+          name: "9348-32 TD 800 Console Display (optional, from 1976)",
+          info: "Optional CRT console display announced June 1976 for all B 1700 systems (Datapro 70C-112-04, Aug 1976): 24 lines of 80 characters, 5 x 7 dot matrix (TD 700/800 manual 1068699). Not in the 1972 brochure room, whose only console is the 9340 printer. On screen: live emulator state, which is lab content (a real unit showed the MCP job mix and log).",
+          live: () => `${sys.lastSop || "—"} · ACC ${sys.acc()}`,
         },
-        inst,
+        tdTable,
       );
-
-      // cable trough from cabinet to peripherals
-      Dt(
-        kit,
-        [
-          [-0.42, 0.05, -0.75],
-          [0.25, 0.05, -0.75],
-        ],
-        0.02,
-        0x4b5563,
+      const tdBody = U.plastic(0x3a3631, 0.5);
+      const tdBezel = U.plastic(0xc9c4b8, 0.38);
+      const addMesh = (geo, mat, pos, rot) => {
+        const m = new B(geo, mat);
+        m.position.set(...pos);
+        if (rot) m.rotation.set(...rot);
+        m.castShadow = true;
+        m.receiveShadow = true;
+        td.add(m);
+        return m;
+      };
+      // plinth, front hood, tapered rear housing for the tube neck and yoke
+      addMesh(chamferBox(0.4, 0.04, 0.42, 0.012, 2), tdBody, [0, 0.02, -0.02]);
+      addMesh(chamferBox(0.42, 0.33, 0.26, 0.035, 3), tdBody, [0, 0.205, 0.04]);
+      const neck = addMesh(
+        new ke(0.12, 0.24, 0.24, 4, 1),
+        tdBody,
+        [0, 0.2, -0.2],
+        [Math.PI / 2, Math.PI / 4, 0],
+      );
+      neck.scale.set(1, 1, 0.82);
+      // top vent slots, two banks as in Figure 1-2
+      const slatMat = U.plastic(0x15130f, 0.6);
+      for (const sx of [-0.1, 0.1])
+        for (let i = 0; i < 4; i++)
+          kit.box(0.13, 0.004, 0.008, slatMat, [sx, 0.372, 0.03 + i * 0.022], {}, td);
+      // light bezel around the tube face
+      const fz = 0.173;
+      kit.box(0.37, 0.03, 0.012, tdBezel, [0, 0.358 - 0.03, fz], {}, td);
+      kit.box(0.37, 0.03, 0.012, tdBezel, [0, 0.082, fz], {}, td);
+      kit.box(0.034, 0.246, 0.012, tdBezel, [-0.168, 0.205, fz], {}, td);
+      kit.box(0.034, 0.246, 0.012, tdBezel, [0.168, 0.205, fz], {}, td);
+      kit.box(
+        0.31,
+        0.225,
+        0.01,
+        U.plastic(0x0b0b0a, 0.7),
+        [0, 0.205, fz - 0.012],
+        {},
+        td,
+      );
+      // curved tube face: spherical cap (radius 0.6 m, estimate) carrying the phosphor canvas
+      const tubeGeo = new mt(0.29, 0.212, 18, 14);
+      {
+        const pa = tubeGeo.attributes.position;
+        const R = 0.6;
+        const edge = Math.sqrt(R * R - 0.145 * 0.145 - 0.106 * 0.106);
+        for (let i = 0; i < pa.count; i++) {
+          const x = pa.getX(i),
+            y = pa.getY(i);
+          pa.setZ(i, Math.sqrt(R * R - x * x - y * y) - edge);
+        }
+        tubeGeo.computeVertexNormals();
+      }
+      const surf = Bt(960, 576);
+      const tube = new B(tubeGeo, b17PhosphorMaterial(surf.tex));
+      tube.position.set(0, 0.205, fz - 0.016);
+      kit.add(
+        tube,
         {
-          name: "I/O Cables",
-          info: "Peripheral cables to the I/O controllers in the processor cabinet.",
+          name: "TD 800 CRT Screen",
+          info: "Curved glass face of the cathode-ray tube. Phosphor glow, raster lines, bloom and a short afterglow are drawn by a self-made shader. Phosphor colour is not given in the sources; green is an assumption. Text: 24 x 80 characters (Datapro), here the live emulator state.",
+          live: () => `${cpu.micros} micros · ${sys.sOps} S-ops`,
         },
+        td,
       );
+      instSurf = { ...surf, mesh: tube };
+      const glassMat = new Cn({
+        color: 0x000000,
+        roughness: 0.06,
+        metalness: 0,
+        clearcoat: 1,
+        clearcoatRoughness: 0.04,
+        transparent: true,
+        opacity: 0.16,
+        depthWrite: false,
+      });
+      const glass = new B(tubeGeo, glassMat);
+      glass.position.set(0, 0.205, fz - 0.013);
+      td.add(glass);
+      // brightness control (manual 1068699 feature list) and the attached keyboard
+      kit.cyl(
+        0.011,
+        0.011,
+        0.012,
+        U.plastic(0x1a1816, 0.4),
+        [0.15, 0.05, 0.175],
+        {
+          rot: [Math.PI / 2, 0, 0],
+          seg: 16,
+          name: "Brightness Control",
+          info: "Screen brightness knob (TD 700/800 manual feature list). Position estimated.",
+        },
+        td,
+      );
+      addMesh(chamferBox(0.42, 0.045, 0.2, 0.01, 2), tdBody, [0, 0.0225, 0.29]);
+      buildSculptedKeyboard(
+        kit,
+        [0, 0.04, 0.3],
+        {
+          w: 0.38,
+          d: 0.15,
+          h: 0.012,
+          tilt: 0.06,
+          bodyColor: 0x3a3631,
+          plateColor: 0x24211d,
+          keyColor: 0xe6e0cf,
+          rows: B17_PERIOD_KEY_ROWS,
+          name: "TD 800 Keyboard",
+          info: "Typewriter-style keyboard with a transmit (XMT) key, attached in front of the screen as in Figure 1-2 of manual 1068699 (it could also be a separate module on a 6 ft cable).",
+        },
+        td,
+      );
+      // four page indicator lamps on the keyboard (manual 1068699), incandescent
+      for (let i = 0; i < 4; i++)
+        tdLamps.push(
+          kit.sphere(
+            0.004,
+            b17LampMaterial(0xffc46b),
+            [-0.17 + i * 0.016, 0.05, 0.215],
+            i === 0
+              ? {
+                  seg: 8,
+                  name: "Page Lamps (4)",
+                  info: "Four keyboard lamps show which display page is on screen (TD 700/800 manual).",
+                }
+              : { seg: 8 },
+            td,
+          ),
+        );
 
       drawPanelSkin();
       drawInstrument();
@@ -1153,10 +1247,20 @@ function makeMachineB1700() {
             drawPaper();
           }
         }
-        drawInstrument();
         if (machine._syncStats && ((t * 8) | 0) % 2 === 0) machine._syncStats();
       }
+      // CRT text at about 15 Hz (also lets stale characters fade as afterglow)
+      crtTimer += dt;
+      if (crtTimer > 0.066) {
+        crtTimer = 0;
+        drawInstrument();
+      }
       syncLamps(dt);
+      if (instSurf && instSurf.mesh) {
+        const q = typeof window !== "undefined" ? window.__quality : null;
+        instSurf.mesh.material.userData.uQ.value = q === "low" ? 0 : 1;
+      }
+      tdLamps.forEach((l, i) => (l.material.emissiveIntensity = i === 0 ? 2.0 : 0.05));
     },
 
     isRunning: () => running,
@@ -1256,5 +1360,46 @@ function b17LampMaterial(col) {
     );
   };
   m.customProgramCacheKey = () => "b17lamp";
+  return m;
+}
+
+// Typewriter-era key rows (no ESC, Windows or Fn keys). Shared by the 9340 SPO and the TD 800.
+const B17_PERIOD_KEY_ROWS = [
+  ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=", "BKSP"],
+  ["TAB", "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "@", "["],
+  ["CAPS", "A", "S", "D", "F", "G", "H", "J", "K", "L", ";", ":", "ENTER"],
+  ["SHIFT", "Z", "X", "C", "V", "B", "N", "M", ",", ".", "/", "SHIFT"],
+  ["PAGE", "SPACE", "XMT"],
+];
+
+// Monochrome CRT phosphor on curved glass. Self-made: slight barrel warp, raster lines, a soft
+// halo around lit dots, unlit-phosphor grey and edge falloff. No aperture grille (a monochrome
+// tube has none). The quality tier sets the uniform uQ: "low" drops the halo and raster lines.
+function b17PhosphorMaterial(tex) {
+  const m = new xt({ map: tex, toneMapped: false });
+  m.userData.uQ = { value: 1 };
+  m.onBeforeCompile = (sh) => {
+    sh.uniforms.uQ = m.userData.uQ;
+    sh.fragmentShader =
+      "uniform float uQ;\n" +
+      sh.fragmentShader.replace(
+        "#include <map_fragment>",
+        `
+      vec2 cc = vMapUv * 2.0 - 1.0; cc *= 1.0 + 0.025 * dot(cc, cc); vec2 uv = cc * 0.5 + 0.5;
+      float inside = step(0.0, uv.x) * step(uv.x, 1.0) * step(0.0, uv.y) * step(uv.y, 1.0);
+      vec3 base = texture2D(map, uv).rgb;
+      vec3 halo = vec3(0.0);
+      if (uQ > 0.5) {
+        halo = (texture2D(map, uv + vec2(0.003, 0.0)).rgb + texture2D(map, uv - vec2(0.003, 0.0)).rgb
+          + texture2D(map, uv + vec2(0.0, 0.005)).rgb + texture2D(map, uv - vec2(0.0, 0.005)).rgb) * 0.25;
+      }
+      float scan = mix(1.0, 0.68 + 0.32 * pow(abs(sin(uv.y * 288.0 * 3.14159)), 0.5), step(0.5, uQ));
+      float vig = smoothstep(1.45, 0.55, length(cc * vec2(0.85, 1.0)));
+      vec3 col = (base * 1.3 + halo * vec3(0.35, 0.8, 0.45)) * scan * vig * inside + vec3(0.022, 0.026, 0.022);
+      vec4 sampledDiffuseColor = vec4(col, 1.0);
+      diffuseColor *= sampledDiffuseColor;`,
+      );
+  };
+  m.customProgramCacheKey = () => "b17phosphor";
   return m;
 }
