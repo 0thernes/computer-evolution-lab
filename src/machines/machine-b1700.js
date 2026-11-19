@@ -861,7 +861,7 @@ function makeMachineB1700() {
       };
       // plinth, front hood, tapered rear housing for the tube neck and yoke
       addMesh(chamferBox(0.4, 0.04, 0.42, 0.012, 2), tdBody, [0, 0.02, -0.02]);
-      addMesh(chamferBox(0.42, 0.33, 0.26, 0.035, 3), tdBody, [0, 0.205, 0.04]);
+      addMesh(chamferBox(0.42, 0.33, 0.22, 0.035, 3), tdBody, [0, 0.205, 0.02]);
       const neck = addMesh(
         new ke(0.12, 0.24, 0.24, 4, 1),
         tdBody,
@@ -876,10 +876,10 @@ function makeMachineB1700() {
           kit.box(0.13, 0.004, 0.008, slatMat, [sx, 0.372, 0.03 + i * 0.022], {}, td);
       // light bezel around the tube face
       const fz = 0.173;
-      kit.box(0.37, 0.03, 0.012, tdBezel, [0, 0.358 - 0.03, fz], {}, td);
-      kit.box(0.37, 0.03, 0.012, tdBezel, [0, 0.082, fz], {}, td);
-      kit.box(0.034, 0.246, 0.012, tdBezel, [-0.168, 0.205, fz], {}, td);
-      kit.box(0.034, 0.246, 0.012, tdBezel, [0.168, 0.205, fz], {}, td);
+      kit.box(0.37, 0.03, 0.07, tdBezel, [0, 0.358 - 0.03, fz - 0.029], {}, td);
+      kit.box(0.37, 0.03, 0.07, tdBezel, [0, 0.082, fz - 0.029], {}, td);
+      kit.box(0.034, 0.246, 0.07, tdBezel, [-0.168, 0.205, fz - 0.029], {}, td);
+      kit.box(0.034, 0.246, 0.07, tdBezel, [0.168, 0.205, fz - 0.029], {}, td);
       kit.box(
         0.31,
         0.225,
