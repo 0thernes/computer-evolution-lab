@@ -1396,7 +1396,7 @@ function b17PhosphorMaterial(tex) {
           + texture2D(map, uv + vec2(0.0, 0.005)).rgb + texture2D(map, uv - vec2(0.0, 0.005)).rgb) * 0.25;
       }
       float scan = mix(1.0, 0.68 + 0.32 * pow(abs(sin(uv.y * 288.0 * 3.14159)), 0.5), step(0.5, uQ));
-      float vig = smoothstep(1.45, 0.55, length(cc * vec2(0.85, 1.0)));
+      float vig = mix(1.0, smoothstep(1.9, 0.75, length(cc * vec2(0.8, 0.9))), 0.55);
       vec3 col = (base * 1.3 + halo * vec3(0.35, 0.8, 0.45)) * scan * vig * inside + vec3(0.022, 0.026, 0.022);
       vec4 sampledDiffuseColor = vec4(col, 1.0);
       diffuseColor *= sampledDiffuseColor;`,
