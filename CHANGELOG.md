@@ -16,10 +16,18 @@ All notable changes to **Computer Evolution Lab** are documented in this file.
   - **Scene** sized and coloured from the June 1972 B 1726 brochure:
     - the console wired live to the emulator: 24 register lamps with an incandescent lamp shader, data switches, and COLUMN/ROW/MODE switches you can click;
     - a cassette reader, the operator table with the 9340 console printer, a 9480-2 disk cartridge subsystem and a 9419-1 96-column data recorder;
-    - a labelled lab-instrument screen.
+    - the optional 9348-32 TD 800 CRT console display (1976) showing the live emulator state.
   - **11-rung layer stack** with 3 B1700 visualisers (bit-addressed S-memory, function box, micro-instruction stream).
   - **A sourced in-app dossier**: dates, people, papers with DOIs, manuals, S-language specs, ads, brochures, the CBI _B1700 Presentation_ film, and what was searched for and not found. `tools/check-b1700-links.mjs` re-checks every link.
   - `tests/b1700.test.mjs` (12 tests).
+
+### Fixed
+
+- **B1700 anachronisms** ([`docs/B1700.md`](docs/B1700.md) findings 12–16):
+  - The modern flat-panel "lab instrument" monitor on a pole stand is gone. The live emulator state now shows on a 9348-32 TD 800 CRT console display: the optional console Burroughs announced for all B 1700 systems in June 1976 (Datapro 70C-112-04). It has a deep hood, a curved tube face with a self-made monochrome phosphor shader, and an attached typewriter keyboard, following Figure 1-2 of TD 700/800 manual 1068699. The 9340 console printer stays as the required console of 1972.
+  - Keyboards use typewriter-era rows without ESC/WIN/FN keys or green LEDs.
+  - Panel legends no longer use the 2017/2020 typefaces Inter and JetBrains Mono.
+  - Removed the cable lying on the raised floor; the POWER lamp is warm incandescent white.
 
 ### Changed
 

@@ -188,6 +188,15 @@ var B1700_DOSSIER = (() => {
             links: [L("bitsavers", BS + "B1700/Auerbach_Burroughs_B1700_197407.pdf")],
           },
           {
+            text: "Console devices. The B 1726 brochure (1059219, June 1972) says an operator console printer/keyboard is required (the 9340, listed as 'Required' by Auerbach 1974). Datapro (August 1976) adds the optional 9348-32 TD 800 Console Display, announced June 1976: 24 lines of 80 characters. Its form is shown in Figure 1-2 of the TD 700/800 Equipment Reference Manual 1068699 (July 1973).",
+            links: [
+              L(
+                "TD 700/800 manual",
+                "https://www.bitsavers.org/pdf/burroughs/Terminal/1068699_TD700_TD800_Reference_Manual_197307.pdf",
+              ),
+            ],
+          },
+          {
             text: "S-language specifications: COBOL (2201-6729B, 1971), SDL (2201-2389H, 1975), FORTRAN (2201-6737D, 1978), BASIC (24 May 1973).",
             links: [
               L("COBOL", BS + "B1000_Internal_Memos/2201-6729B_COBOL_S-Lang_1971.pdf"),

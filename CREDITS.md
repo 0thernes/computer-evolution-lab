@@ -66,7 +66,7 @@ Everything else is synthesized in the browser; see `SOUNDS.md`.
 
 Procedural (generated in the browser): PCB artwork, chip markings, the 6502 die floorplan and its transistor-scale close-zoom detail, keycap legends, panel lettering, CRT/LCD shading.
 
-Burroughs B1700 scene: every texture is drawn in code for this lab (console legend plate, raised-floor tiles, printer paper, the lab-instrument screen) and the console lamps use a small self-written shader patch. No photograph, scan or logo file is bundled. Burroughs catalogue photographs and the B 1726 brochure on bitsavers were used only as visual references for proportions and colours; the "Burroughs" nameplate is set in a generic serif font.
+Burroughs B1700 scene: every texture is drawn in code for this lab (console legend plate, raised-floor tiles, printer paper, the TD 800 CRT console text) and the console lamps and CRT phosphor use small self-written shader patches. No photograph, scan or logo file is bundled. Burroughs catalogue photographs, the B 1726 brochure and Figure 1-2 of the TD 700/800 manual (1068699) on bitsavers were used only as visual references for proportions and colours; the "Burroughs" nameplate is set in a generic serif font.
 
 ## Historical sources (B1700)
 

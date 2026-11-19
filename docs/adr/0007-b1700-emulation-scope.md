@@ -13,7 +13,7 @@ The B1700 had no fixed instruction set: each language ran on its own S-machine, 
 - Write the demonstration **interpreter in MIL**, assembled by a MIL-subset assembler in `src/sim/b1700-sim.js`, and run it on the emulator. It interprets **SAM**, a small S-language defined by this lab. SAM is labelled as lab-defined everywhere it appears.
 - Where the SRM is ambiguous, choose one reading, mark it `[LAB]` in the source and list it in `docs/B1700.md`.
 - Cassette, MCP, I/O devices and cycle-exact timing are out of scope. Timing is a cost counter using the Auerbach figures.
-- The scene's lab-instrument screen is labelled as not part of the B1700.
+- No object in the 1970s room may be newer than the period. Emulator state shows on the 9348-32 TD 800 CRT console display (optional from June 1976), and its screen says the content is a lab view; there is no flat-panel lab instrument.
 
 ## Consequences
 
