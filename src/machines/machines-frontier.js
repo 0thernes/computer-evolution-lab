@@ -5212,7 +5212,7 @@ DL · DOR`,
             he =
               $ === "board"
                 ? new N(0, 0.81, 0.58)
-                    .applyQuaternion(w.getWorldQuaternion(new ai()))
+                    .applyQuaternion(w.getWorldQuaternion(new THREE.Quaternion()))
                     .add(new N(0, 0.25, 0))
                 : null;
           Y.flyToObjects(se, he);
