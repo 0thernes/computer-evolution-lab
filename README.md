@@ -66,18 +66,20 @@ On phones the lab picks a lower quality tier from device capabilities, shows lig
 
 ## What is real and what is modelled
 
-| Claim                  | Status                                                                                                                                                                            | How it's checked                      |
-| :--------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------ |
-| 6502 behavioural core  | Passes Klaus Dormann's 6502 functional test, decimal mode included                                                                                                                | `node tools/dormann-6502.mjs` (in CI) |
-| 6502 transistor mode   | Real visual6502 netlist, fetched on request, pinned and SHA-256-verified                                                                                                          | in-app                                |
-| RV32IM pipeline        | Cycle-stepped 5-stage pipeline; architectural state identical to an ISS on 200 random programs and all presets                                                                    | `tests/rv32-pipeline.test.mjs`        |
-| Shor                   | Exact state-vector simulation with FFT; odd composites up to N = 255, refuses above                                                                                               | `tests/golden.test.mjs`               |
-| H₂                     | STO-3G exact integrals + 2×2 full CI; R_e 0.735 Å (basis-set error vs. 0.741 Å)                                                                                                   | `tests/simulators.test.mjs`           |
-| CM-2, Cray-1 kernels   | Compared with independent reference computations                                                                                                                                  | `tests/golden.test.mjs`               |
-| Cray-1 cycle counts    | Closed-form timing model, labelled in the UI                                                                                                                                      | —                                     |
-| Apollo AGC             | Conceptual model (7-word rope, 4 opcodes, scripted 1202), labelled in the UI                                                                                                      | —                                     |
-| Gate bench / eye scope | 8 switching-family templates, labelled in the UI                                                                                                                                  | `tests/simulators.test.mjs`           |
-| Burroughs B1700        | Micro-instruction emulator from the B 1700 Systems Reference Manual and the MIL manual; SAM S-language is lab-defined; interpretations listed in [`docs/B1700.md`](docs/B1700.md) | `tests/b1700.test.mjs`                |
+| Claim                    | Status                                                                                                                                                                            | How it's checked                      |
+| :----------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------ |
+| 6502 behavioural core    | Passes Klaus Dormann's 6502 functional test, decimal mode included                                                                                                                | `node tools/dormann-6502.mjs` (in CI) |
+| Intel 8080 core (Altair) | Passes TST8080, 8080PRE and SuperSoft CPUTEST with instruction and cycle totals identical to a published reference; 8080EXM via `--exm`                                           | `node tools/i8080-cpm.mjs` (in CI)    |
+| PDP-8 core               | Link carry, page addressing, auto-index, JMS, ISZ, Group 1 event order and Group 2 skip sense checked against DEC's documented semantics                                          | `tests/pdp8.test.mjs`                 |
+| 6502 transistor mode     | Real visual6502 netlist, fetched on request, pinned and SHA-256-verified                                                                                                          | in-app                                |
+| RV32IM pipeline          | Cycle-stepped 5-stage pipeline; architectural state identical to an ISS on 200 random programs and all presets                                                                    | `tests/rv32-pipeline.test.mjs`        |
+| Shor                     | Exact state-vector simulation with FFT; odd composites up to N = 255, refuses above                                                                                               | `tests/golden.test.mjs`               |
+| H₂                       | STO-3G exact integrals + 2×2 full CI; R_e 0.735 Å (basis-set error vs. 0.741 Å)                                                                                                   | `tests/simulators.test.mjs`           |
+| CM-2, Cray-1 kernels     | Compared with independent reference computations                                                                                                                                  | `tests/golden.test.mjs`               |
+| Cray-1 cycle counts      | Closed-form timing model, labelled in the UI                                                                                                                                      | —                                     |
+| Apollo AGC               | Conceptual model (7-word rope, 4 opcodes, scripted 1202), labelled in the UI                                                                                                      | —                                     |
+| Gate bench / eye scope   | 8 switching-family templates, labelled in the UI                                                                                                                                  | `tests/simulators.test.mjs`           |
+| Burroughs B1700          | Micro-instruction emulator from the B 1700 Systems Reference Manual and the MIL manual; SAM S-language is lab-defined; interpretations listed in [`docs/B1700.md`](docs/B1700.md) | `tests/b1700.test.mjs`                |
 
 Design decisions are recorded in [`docs/adr/`](docs/adr/).
 
@@ -191,6 +193,9 @@ node --test tests/*.test.mjs
 
 # Klaus Dormann 6502 functional test (downloads the GPL-3 binary at a pinned commit; not vendored)
 node tools/dormann-6502.mjs
+
+# Intel 8080 CP/M diagnostics (downloads the test programs at a pinned commit; not vendored)
+node tools/i8080-cpm.mjs
 
 # Formatting
 npx prettier@3.10.1 --check "**/*.{html,css,js,mjs,json,md,yml}"

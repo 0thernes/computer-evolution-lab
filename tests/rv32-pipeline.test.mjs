@@ -215,3 +215,53 @@ test("assembler rejects out-of-range immediates and resolves forward .word label
   const bytes = c.dataBytes.slice(0, 4).map((b) => b[1]);
   assert.equal(JSON.stringify(bytes), "[4,0,0,0]");
 });
+
+// RISC-V Unprivileged ISA, "M" extension, table "Semantics for division by zero and division
+// overflow", plus MULH/MULHSU/MULHU sign handling. The differential test above cannot catch a
+// semantic slip shared by both models, so these values come from the specification, not the ISS.
+test("RV32M division-by-zero, overflow and high-multiply semantics match the specification", () => {
+  const env = loadRV32();
+  const src = [
+    "li t0, 7",
+    "li t1, 0",
+    "lui t2, 0x80000", // INT32_MIN
+    "li t3, -1",
+    "div a0, t0, t1", // x/0  -> -1
+    "divu a1, t0, t1", // x/0  -> 2^32-1
+    "rem a2, t0, t1", // x%0  -> x
+    "remu a3, t0, t1", // x%0  -> x
+    "div a4, t2, t3", // MIN/-1 -> MIN
+    "rem a5, t2, t3", // MIN%-1 -> 0
+    "li t4, -7",
+    "li t5, 2",
+    "div a6, t4, t5", // rounds toward zero -> -3
+    "rem a7, t4, t5", // sign of dividend -> -1
+    "mulh s2, t3, t3", // (-1)(-1) = 1 -> high 0
+    "mulhu s3, t3, t3", // (2^32-1)^2 -> high 0xFFFFFFFE
+    "mulhsu s4, t3, t3", // (-1)(2^32-1) -> high -1
+    "mulh s5, t2, t2", // MIN*MIN = 2^62 -> high 0x40000000
+    "ebreak",
+  ].join("\n");
+  const expect = {
+    10: -1,
+    11: -1,
+    12: 7,
+    13: 7,
+    14: -2147483648,
+    15: 0,
+    16: -3,
+    17: -1,
+    18: 0,
+    19: -2,
+    20: -1,
+    21: 0x40000000,
+  };
+  for (const [name, run] of [
+    ["ISS", runISS],
+    ["pipeline", runPipe],
+  ]) {
+    const sys = run(new env.RV32ModernSystem(), src);
+    for (const [x, v] of Object.entries(expect))
+      assert.equal(sys.regs[x] | 0, v, `${name}: x${x}`);
+  }
+});

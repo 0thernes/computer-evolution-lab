@@ -78,6 +78,7 @@ The B1700 emulator and dossier cite Burroughs manuals, brochures, a patent, pape
 
 - **visual6502 netlist** (`segdefs.js`, `transdefs.js`, `nodenames.js`), © Greg James, Brian Silverman, Barry Silverman, **CC BY-NC-SA 3.0**, https://github.com/trebonian/visual6502. Downloaded only when you switch the 6502 to transistor mode; pinned to commit `d8ecc129b34e0eaf320e0400fcf33329475bdb1e` and verified by SHA-256.
 - **Klaus Dormann 6502 functional test** binary, **GPL-3.0**, https://github.com/Klaus2m5/6502_65C02_functional_tests. Downloaded by `tools/dormann-6502.mjs` (CI only), pinned to commit `fe99e561` and verified by SHA-256.
+- **Intel 8080 CP/M CPU tests** (TST8080 © 1980 Microcosm Associates; 8080PRE/8080EXM by Ian Bartholomew and Frank Cringles; CPUTEST © 1981 SuperSoft Associates), from https://github.com/superzazu/8080 (MIT repository). Downloaded by `tools/i8080-cpm.mjs` (CI only), pinned to commit `274ffd70` and verified by SHA-256; the reference instruction and cycle totals come from that repository's README.
 
 ## Code
 

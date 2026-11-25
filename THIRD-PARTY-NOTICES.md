@@ -45,6 +45,7 @@ All textures (ambientCG), the HDRI (Poly Haven), the orchestral samples and impu
 
 - **visual6502 netlist** (Greg James, Brian Silverman, Barry Silverman), **CC BY-NC-SA 3.0**. It is downloaded from `raw.githubusercontent.com/trebonian/visual6502` at a pinned commit, and verified by SHA-256, only when you turn on the 6502's transistor-level mode. It is not included in this repository or the `.exe`. The procedural die artwork and the behavioural 6502 core are original work. Eric Schlaepfer's MOnSter 6502 inspired the discrete-board model.
 - **Klaus Dormann 6502 functional test**, **GPL-3.0**. `tools/dormann-6502.mjs` downloads it in CI to test the 6502 core. It is not included in this repository.
+- **Intel 8080 CPU test programs**: TST8080 (© 1980 Microcosm Associates), 8080PRE and 8080EXM (Ian Bartholomew and Frank Cringles), CPUTEST (© 1981 SuperSoft Associates). `tools/i8080-cpm.mjs` downloads them in CI from `superzazu/8080` at a pinned commit to test the Altair's 8080 core. They are not included in this repository.
 
 ---
 

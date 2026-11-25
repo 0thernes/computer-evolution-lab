@@ -47,5 +47,8 @@ jobs:
       - name: Klaus Dormann 6502 functional test (GPL-3 binary fetched at CI time, not vendored)
         run: node tools/dormann-6502.mjs
 
+      - name: Intel 8080 CP/M diagnostics (TST8080, 8080PRE, CPUTEST; fetched at CI time, not vendored)
+        run: node tools/i8080-cpm.mjs
+
       - name: Modular HTML/JS & headless WebGL2 suite
         run: node tools/run-tests.mjs --ci-headless-optional

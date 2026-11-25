@@ -20,6 +20,7 @@ Thank you for exploring **Computer Evolution Lab**! Every exhibit in this reposi
    ```bash
    node --test tests/*.test.mjs
    node tools/dormann-6502.mjs
+   node tools/i8080-cpm.mjs
    node tools/audit-exhaustive.mjs
    node tools/run-tests.mjs
    npx prettier@3.10.1 --check "**/*.{html,css,js,mjs,json,md,yml}"

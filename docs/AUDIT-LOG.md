@@ -108,6 +108,14 @@ Scope: the 49-row README roster (years, names) and the claims most often repeate
 - H043 (problem, fixed): all harness timeouts were fixed constants (15 s for the DevTools endpoint, 60 s boot, 90 s per call). On an overloaded host Chrome start-up alone can exceed 15 s, which matches the earlier "aborted on unrelated scenes" reports. Added `CEL_TIMEOUT_SCALE` (≥ 1) applied to every harness timeout.
 - H044 (issue, fixed): accessibility had no regression test. The headless suite now checks dialog role/name, focus entering and returning, single Atlas overlay, `aria-pressed`, no unnamed visible buttons, and the data-derived Circle II count.
 
+### 12 — Emulator correctness against primary or published references
+
+- 6502: Dormann functional test still passes (decimal mode included).
+- H045 (issue, fixed): the Altair's Intel 8080 core had only hand-written smoke tests. `tools/i8080-cpm.mjs` now runs TST8080, 8080PRE and SuperSoft CPUTEST under a two-function BDOS shim. The binaries are fetched at a pinned commit and checked by SHA-256, not vendored. All three pass, and their instruction totals (651; 1,061; 33,971,311) match the published reference exactly. Cycle totals are exactly 3 states lower in each case, which is the HLT (7) versus OUT (10) stop vector, so every instruction's timing matches. The test runs in CI; the hours-long 8080EXM is opt-in (`--exm`).
+- H046 (issue, fixed): the PDP-8 core had a single assembler smoke test. `tests/pdp8.test.mjs` now checks it against DEC's documented semantics: TAD link complement, current-page and page-zero addressing, auto-index 0010–0017, JMS/JMP I linkage, ISZ skip, Group 1 event order (CLL before IAC carry), RAL/RTR through the link, Group 2 OR/AND skip sense, and the assembler's octal encodings. No defect was found.
+- H047 (issue, fixed): the RV32IM pipeline is checked against an ISS by the same author, so a semantic slip shared by both would pass. A new test asserts the ISA manual's division-by-zero and overflow table and the MULH/MULHSU/MULHU sign cases on both models. Both comply.
+- Not covered here: the B1700 already has `tests/b1700.test.mjs`, which cites the MIL manual's worked examples and tables (Table 2-1, Table 4-1). The CDC 6600 scoreboard and the other teaching models have no external conformance suite to run.
+
 ## Findings register
 
 | ID   | Class    | Status   | Evidence / disposition                                              |
@@ -156,3 +164,6 @@ Scope: the 49-row README roster (years, names) and the claims most often repeate
 | H042 | bug      | fixed    | Uncleared 90 s timer per CDP evaluation                             |
 | H043 | problem  | fixed    | `CEL_TIMEOUT_SCALE` for loaded hosts                                |
 | H044 | issue    | fixed    | Headless a11y contract test                                         |
+| H045 | issue    | fixed    | 8080 core: TST8080/8080PRE/CPUTEST with reference counts            |
+| H046 | issue    | fixed    | PDP-8 conformance test                                              |
+| H047 | issue    | fixed    | RV32M spec-table test (not just differential)                       |
