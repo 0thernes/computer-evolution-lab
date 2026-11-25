@@ -3,7 +3,7 @@
 [![CI](https://github.com/0thernes/computer-evolution-lab/actions/workflows/ci.yml/badge.svg)](https://github.com/0thernes/computer-evolution-lab/actions/workflows/ci.yml)
 [![Live Demo](https://img.shields.io/badge/live%204K%20web%20lab-0thernes.github.io-0284c7)](https://0thernes.github.io/computer-evolution-lab/)
 [![Windows x64 .exe](https://img.shields.io/badge/Windows%20x64-Standalone%20.exe-2563eb)](https://github.com/0thernes/computer-evolution-lab/releases/latest)
-[![Coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2F0thernes%2Fcomputer-evolution-lab%2Fmain%2Fdocs%2Fbadges%2Fcoverage.json)](docs/badges/coverage.json)
+[![Headless-verified exhibits](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2F0thernes%2Fcomputer-evolution-lab%2Fmain%2Fdocs%2Fbadges%2Fcoverage.json)](docs/badges/coverage.json)
 [![License](https://img.shields.io/badge/license-Cosmogonic%20Non--Commercial-0f766e)](LICENSE)
 [![Version](https://img.shields.io/badge/version-6.0.0-7c3aed)](CHANGELOG.md)
 [![Assets](https://img.shields.io/badge/assets-CC0%201.0-16a34a)](CREDITS.md)
@@ -200,6 +200,8 @@ node tools/audit-exhaustive.mjs
 
 # Run full headless WebGL2 49-machine + 539-layer (1,617 sub-lens) + audio + file:// verification suite
 npm test
+# On a busy machine, stretch every harness timeout instead of editing code:
+CEL_TIMEOUT_SCALE=3 npm test
 
 # Render 52 scene PNGs at 3840x2160 + 3 UI PNGs at 1920x1080, with a white-clipping report
 npm run audit:4k

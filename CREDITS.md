@@ -64,6 +64,8 @@ Everything else is synthesized in the browser; see `SOUNDS.md`.
 | Concrete gallery floor               | `concrete_c/_n/_r`                                | Concrete034     | ambientCG (Lennart Demes)     | CC0 1.0 | https://ambientcg.com/view?id=Concrete034 |
 | Image-based lighting and reflections | `assets/hdri/studio_1k.hdr` (2K in the full tier) | Studio Small 09 | Sergej Majboroda (Poly Haven) | CC0 1.0 | https://polyhaven.com/a/studio_small_09   |
 
+Own renders: `assets/icon/computer-evolution-lab.ico` (rendered from the lab by `tools/build-icon.mjs`) and `docs/screenshots/*.jpg` (headless renders of the lab).
+
 Procedural (generated in the browser): PCB artwork, chip markings, the 6502 die floorplan and its transistor-scale close-zoom detail, keycap legends, panel lettering, CRT/LCD shading.
 
 Burroughs B1700 scene: every texture is drawn in code for this lab (console legend plate, raised-floor tiles, printer paper, the TD 800 CRT console text) and the console lamps and CRT phosphor use small self-written shader patches. No photograph, scan or logo file is bundled. Burroughs catalogue photographs, the B 1726 brochure and Figure 1-2 of the TD 700/800 manual (1068699) on bitsavers were used only as visual references for proportions and colours; the "Burroughs" nameplate is set in a generic serif font.
@@ -79,4 +81,4 @@ The B1700 emulator and dossier cite Burroughs manuals, brochures, a patent, pape
 
 ## Code
 
-three.js r170 (MIT), bundled in `vendor/three-bundle.js` by `tools/build-vendor.mjs` with esbuild (MIT). Build-time tools that are not shipped: Prettier (MIT), Playwright (Apache-2.0), numpy/scipy/soundfile (BSD), ffmpeg/libopus (LGPL/BSD).
+three.js r170 (MIT), bundled in `vendor/three-bundle.js` by `tools/build-vendor.mjs` with esbuild (MIT). Build-time tools that are not shipped: Prettier (MIT), ESLint (MIT), Playwright (Apache-2.0, used only by `tools/gen-hub-proxy-sizes.mjs`), numpy/scipy/soundfile (BSD), ffmpeg/libopus (LGPL/BSD).

@@ -3,6 +3,12 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
+// Multiplies every harness timeout. A loaded machine (shared CI runner, a box running other jobs)
+// can take longer than the defaults to start Chrome or finish a frame; set e.g.
+// CEL_TIMEOUT_SCALE=3 instead of editing timeouts. Values below 1 are ignored.
+export const TIMEOUT_SCALE = Math.max(1, Number(process.env.CEL_TIMEOUT_SCALE) || 1);
+const scaled = (ms) => Math.round(ms * TIMEOUT_SCALE);
+
 export function findBrowserBinary() {
   if (process.env.CHROME_PATH && fs.existsSync(process.env.CHROME_PATH)) {
     return process.env.CHROME_PATH;
@@ -72,7 +78,7 @@ export async function launchHeadlessSession({
     let stderrBuf = "";
     const timer = setTimeout(() => {
       reject(new Error("Timed out waiting for Chrome DevTools endpoint.\n" + stderrBuf));
-    }, 15000);
+    }, scaled(15000));
 
     proc.stderr.on("data", (chunk) => {
       stderrBuf += chunk.toString("utf8");
@@ -173,6 +179,7 @@ export async function launchHeadlessSession({
   });
 
   function send(method, params = {}, timeoutMs = 90000) {
+    timeoutMs = scaled(timeoutMs);
     return new Promise((resolve, reject) => {
       if (ws.readyState !== WebSocket.OPEN) {
         reject(new Error(`Cannot send ${method}: CDP WebSocket is not open.`));
@@ -217,20 +224,17 @@ export async function launchHeadlessSession({
   }
 
   async function evalValue(expression, timeoutMs = 90000) {
-    const res = await Promise.race([
-      send(
-        "Runtime.evaluate",
-        {
-          expression,
-          awaitPromise: true,
-          returnByValue: true,
-        },
-        timeoutMs,
-      ),
-      new Promise((_, rej) =>
-        setTimeout(() => rej(new Error(`Timeout evaluating expression`)), timeoutMs),
-      ),
-    ]);
+    // send() already enforces (and clears) its own timeout. A second racing setTimeout here was
+    // never cleared, so every evaluation left a live 90 s timer behind.
+    const res = await send(
+      "Runtime.evaluate",
+      {
+        expression,
+        awaitPromise: true,
+        returnByValue: true,
+      },
+      timeoutMs,
+    );
     if (res.exceptionDetails) {
       const desc =
         res.exceptionDetails.exception?.description ||
@@ -242,6 +246,7 @@ export async function launchHeadlessSession({
   }
 
   async function waitForLabBoot(timeoutMs = 60000) {
+    timeoutMs = scaled(timeoutMs);
     const start = Date.now();
     while (Date.now() - start < timeoutMs) {
       const status = await evalValue(`({

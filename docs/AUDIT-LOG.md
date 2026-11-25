@@ -94,6 +94,20 @@ Scope: the 49-row README roster (years, names) and the claims most often repeate
 - H037 (error, fixed): the Tandem exhibit said it was "Designed by Jimmy Treybig, Mike Green, and Jim Gray" and dated 1977. Tandem was founded in 1974 by Treybig, Green, Katzman and Loustaunou; the first Tandem/16 shipped to Citibank in May 1976 (Datapro 1979 report; Wikipedia); Gray joined in 1980 and TMF logging came in the early 1980s. Era, blurb, spec-row year, Atlas text, glossary, SUMMARY and README corrected; the internal id `tandem77` is kept for saved links.
 - H038 (issue, fixed): "mirrored RAID-1" in Tandem text used a term coined in 1987 for a 1976 design; now "mirrored disks".
 
+### 10 — Licensing and attribution
+
+- Re-checked every external asset licence on its source page on 2026-11-24: 9 Freesound recordings (all CC0 1.0), 5 Wikimedia Commons files (all CC0), 6 ambientCG material ids (pages resolve; ambientCG is CC0), the Poly Haven HDRI (author Sergej Majboroda, CC0). The visual6502 netlist (CC BY-NC-SA) and Dormann binary (GPL-3) are fetched at run/CI time only, never vendored. Literature citations in `THIRD-PARTY-NOTICES.md` checked for volume/page (Kagan 2022, Izhikevich 2003, Clements 2016, Shen 2017, Seelig 2006).
+- H039 (issue, fixed): `CREDITS.md` did not state the provenance of the icon and README screenshots, and omitted ESLint among build-time tools.
+- H040 (problem, fixed): the README "coverage" badge reports exhibits verified by the headless suite, not code coverage, but was labelled "coverage". Relabelled "headless-verified exhibits".
+
+### 11 — Tests and the headless harness under load
+
+- Full headless suite on the audit box under load average 12–14: 62 passed, 0 failed (≈3.5 min), before the pass 10–11 changes.
+- Node's built-in coverage over `tests/*.test.mjs` only measures files loaded as modules (`tools/serve.mjs` 88 % lines, `gen-audit-index.mjs` 97 %); the classic browser scripts run through `vm` are not counted. H041 (issue, deferred): no line-coverage figure exists for `src/`; measuring it needs V8 coverage through CDP in the headless run, which is new tooling.
+- H042 (bug, fixed): `evalValue()` raced `send()` against a second `setTimeout` that was never cleared, so each of the hundreds of evaluations left a live 90 s timer; with `process.exitCode` (not `exit`) the runner could linger up to 90 s after printing its summary.
+- H043 (problem, fixed): all harness timeouts were fixed constants (15 s for the DevTools endpoint, 60 s boot, 90 s per call). On an overloaded host Chrome start-up alone can exceed 15 s, which matches the earlier "aborted on unrelated scenes" reports. Added `CEL_TIMEOUT_SCALE` (≥ 1) applied to every harness timeout.
+- H044 (issue, fixed): accessibility had no regression test. The headless suite now checks dialog role/name, focus entering and returning, single Atlas overlay, `aria-pressed`, no unnamed visible buttons, and the data-derived Circle II count.
+
 ## Findings register
 
 | ID   | Class    | Status   | Evidence / disposition                                              |
@@ -136,3 +150,9 @@ Scope: the 49-row README roster (years, names) and the claims most often repeate
 | H036 | error    | fixed    | Frontier HPL dates                                                  |
 | H037 | error    | fixed    | Tandem founders and first-ship date                                 |
 | H038 | issue    | fixed    | Anachronistic "RAID-1"                                              |
+| H039 | issue    | fixed    | Icon/screenshot provenance, ESLint credit                           |
+| H040 | problem  | fixed    | Badge relabelled                                                    |
+| H041 | issue    | deferred | No line coverage for `src/` classic scripts                         |
+| H042 | bug      | fixed    | Uncleared 90 s timer per CDP evaluation                             |
+| H043 | problem  | fixed    | `CEL_TIMEOUT_SCALE` for loaded hosts                                |
+| H044 | issue    | fixed    | Headless a11y contract test                                         |

@@ -353,6 +353,57 @@ async function runHeadlessBrowserSuite() {
       `${pc20Deep.clippedMats} sliced meshes, ${pc20Deep.hitBoxCount} clickable gate pins, ${pc20Deep.tourLen} tour steps`,
     );
 
+    // Accessibility contract (AUDIT-LOG pass 08): dialog semantics, focus in/out, toggle state,
+    // and Atlas filter counts derived from the data.
+    const a11y = await session.evalValue(`(async () => {
+      const opener = document.querySelector("#tb-cmp");
+      opener.focus();
+      LAB.openCompare();
+      LAB.openCompare();
+      const atlasCount = document.querySelectorAll(".overlay.atlas").length;
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      const dlg = document.querySelector(".overlay.atlas [role=dialog]");
+      const named = !!dlg && dlg.getAttribute("aria-modal") === "true" && !!dlg.getAttribute("aria-label");
+      const focusIn = !!dlg && dlg.contains(document.activeElement);
+      const serversLabel = [...document.querySelectorAll(".overlay.atlas button")]
+        .map((b) => b.textContent).find((t) => t.includes("Mainframes & Servers")) || "";
+      document.querySelector(".overlay.atlas").remove();
+      const focusBack = document.activeElement === opener;
+      const cut = document.querySelector("#tb-cut");
+      cut.click();
+      const pressedOn = cut.getAttribute("aria-pressed");
+      cut.click();
+      const pressedOff = cut.getAttribute("aria-pressed");
+      const unnamed = [...document.querySelectorAll("button")].filter(
+        (b) => b.offsetParent !== null && !(b.getAttribute("aria-label") || b.textContent.trim() || b.title),
+      ).length;
+      return { atlasCount, named, focusIn, focusBack, serversLabel, pressedOn, pressedOff, unnamed };
+    })()`);
+    assert(
+      a11y.atlasCount === 1,
+      `Atlas opened ${a11y.atlasCount} overlays for two G presses`,
+    );
+    assert(
+      a11y.named && a11y.focusIn && a11y.focusBack,
+      `Dialog a11y: ${JSON.stringify(a11y)}`,
+    );
+    assert(
+      /\(9\)/.test(a11y.serversLabel),
+      `Circle II filter label: ${a11y.serversLabel}`,
+    );
+    assert(
+      a11y.pressedOn === "true" && a11y.pressedOff === "false",
+      `aria-pressed on Cutaway: ${a11y.pressedOn}/${a11y.pressedOff}`,
+    );
+    assert(
+      a11y.unnamed === 0,
+      `${a11y.unnamed} visible buttons without an accessible name`,
+    );
+    ok(
+      "Accessibility contract",
+      "dialog role/name, focus in and back, aria-pressed, no unnamed buttons, data-derived Atlas counts",
+    );
+
     // Cinematic Orchestral Audio Engine checks
     const audioCheck = await session.evalValue(`(async () => {
       LAB.select("pc20");
