@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Report a security vulnerability privately
+    url: https://github.com/0thernes/computer-evolution-lab/blob/main/.github/SECURITY.md
+    about: Please do not open public issues for vulnerabilities; see SECURITY.md for the private address.

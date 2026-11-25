@@ -4,6 +4,14 @@ title: "Computer Evolution Lab"
 type: software
 version: 6.0.0
 date-released: 2026-11-13
+abstract: >-
+  An interactive, browser-based museum of 49 historical and frontier computers in four
+  Circles (personal and hard-wired machines, mainframes and servers, supercomputers, and
+  quantum computers), each shown as a 3D scene with an 11-rung abstraction stack from
+  physics to software. Many exhibits run working emulators or simulators, including a 6502
+  core that passes Klaus Dormann's functional test, an Intel 8080 core that passes the
+  classic CP/M CPU diagnostics, a cycle-stepped RV32IM pipeline, a PDP-8, and a Burroughs
+  B1700 micro-machine built from its Systems Reference Manual.
 authors:
   - name: "0thernes LLC"
     email: "0_0@0thernes.art"

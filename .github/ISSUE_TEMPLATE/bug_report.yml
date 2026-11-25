@@ -25,3 +25,24 @@ body:
       placeholder: "Chrome 134, Windows 11, RTX 5070 Ti"
     validations:
       required: true
+  - type: input
+    id: version
+    attributes:
+      label: Lab version
+      description: Shown in the README badge, the `VERSION` file, or the .exe's file properties.
+      placeholder: "6.0.0 (web) / 6.0.0 (.exe)"
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected vs actual
+      description: What you expected to happen, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: console
+    attributes:
+      label: Browser console output (optional)
+      description: Errors from DevTools (F12 → Console), if any.
+      render: shell

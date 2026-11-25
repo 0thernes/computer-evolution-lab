@@ -116,6 +116,13 @@ Scope: the 49-row README roster (years, names) and the claims most often repeate
 - H047 (issue, fixed): the RV32IM pipeline is checked against an ISS by the same author, so a semantic slip shared by both would pass. A new test asserts the ISA manual's division-by-zero and overflow table and the MULH/MULHSU/MULHU sign cases on both models. Both comply.
 - Not covered here: the B1700 already has `tests/b1700.test.mjs`, which cites the MIL manual's worked examples and tables (Table 2-1, Table 4-1). The CDC 6600 scoreboard and the other teaching models have no external conformance suite to run.
 
+### 13 — Repository hygiene (citation, templates, contributor path)
+
+- H048 (issue, fixed): `CITATION.cff` had no `abstract`, so citation managers and the GitHub "Cite this repository" panel had no description. Added a factual abstract. Version and date stay tied to `VERSION` and the top CHANGELOG release by `tests/version.test.mjs`.
+- H049 (issue, fixed): there was no pull-request template. Added one listing the local checks, a source-citation prompt for historical figures, the ADR 0002 rule and the asset-licence rule.
+- H050 (issue, fixed): the bug template asked for neither the lab version, expected vs actual behaviour, nor console output. Added all three; the console field is optional.
+- H051 (problem, fixed): nothing in the issue chooser pointed to the private security address, so a vulnerability could be filed as a public issue. Added `ISSUE_TEMPLATE/config.yml` with a contact link to `SECURITY.md`.
+
 ## Findings register
 
 | ID   | Class    | Status   | Evidence / disposition                                              |
@@ -167,3 +174,7 @@ Scope: the 49-row README roster (years, names) and the claims most often repeate
 | H045 | issue    | fixed    | 8080 core: TST8080/8080PRE/CPUTEST with reference counts            |
 | H046 | issue    | fixed    | PDP-8 conformance test                                              |
 | H047 | issue    | fixed    | RV32M spec-table test (not just differential)                       |
+| H048 | issue    | fixed    | CITATION abstract                                                   |
+| H049 | issue    | fixed    | Pull-request template                                               |
+| H050 | issue    | fixed    | Bug template: version, expected/actual, console                     |
+| H051 | problem  | fixed    | Security contact link in issue chooser                              |
