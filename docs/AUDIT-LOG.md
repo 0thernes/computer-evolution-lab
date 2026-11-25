@@ -205,3 +205,7 @@ Scope: the 49-row README roster (years, names) and the claims most often repeate
 | H052 | problem  | fixed    | Hidden audio callback errors now counted and asserted               |
 | H053 | issue    | fixed    | 229 unreferenced Three.js aliases removed                           |
 | H054 | issue    | fixed    | Dead `COL_NAMES` (`Um` was live; removal reverted)                  |
+
+### H055 — conflict (fixed)
+
+The pass-13 PR template conflicted with the maintainer's standing rule: no PRs, commit straight to `main`, with history kept in the CHANGELOG and GitHub Issues. The template was removed again, as it had been in 5275964.

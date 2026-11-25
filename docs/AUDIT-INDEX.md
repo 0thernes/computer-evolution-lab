@@ -216,7 +216,6 @@ Indexed files (excluding this generated index): **203** · text lines: **85,176*
 | `.github/ISSUE_TEMPLATE/config.yml`          |            5 | (no header comment — see file)                                                          |
 | `.github/ISSUE_TEMPLATE/feature_request.yml` |           12 | Architectural Exhibit or Feature Proposal                                               |
 | `.github/SECURITY.md`                        |           25 | Security Policy                                                                         |
-| `.github/pull_request_template.md`           |           19 | What and why                                                                            |
 | `CHANGELOG.md`                               |          243 | Changelog                                                                               |
 | `CITATION.cff`                               |           27 | Citation File Format metadata for academic citation                                     |
 | `CREDITS.md`                                 |           85 | Credits and licenses                                                                    |

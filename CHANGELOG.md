@@ -60,7 +60,7 @@ A whole-repository audit in 15 numbered passes, one lens per pass. The index is 
 - **Facts:** MOnSter 6502, Frontier HPL dates, and the Tandem founders and first-ship year (1976) were corrected against primary or reference sources. Score text no longer names composers or films (ADR 0002).
 - **Docs and repo:**
   - Script counts, the render-pipeline section and the Atlas counts are derived from code, and docs-consistency tests are added.
-  - Added a CITATION abstract, a PR template, richer bug reports and a private security contact link.
+  - Added a CITATION abstract, richer bug reports and a private security contact link.
   - Added `CEL_TIMEOUT_SCALE` for headless runs on slow hosts.
 
 ## [6.0.0] - 2026-11-13
