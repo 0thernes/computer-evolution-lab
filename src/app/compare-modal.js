@@ -1,18 +1,35 @@
 // 5-Tab MIT / Stanford / Caltech CS Engineering Atlas, Roofline Lab & Quantitative Era Comparator
 function Dc(selectMachine) {
+  const existing = document.querySelector(".overlay.atlas");
+  if (existing) return existing; // G pressed twice: don't stack a second atlas
   const overlay = q("div", {
-    class: "overlay",
+    class: "overlay atlas",
     onclick: (ev) => {
       if (ev.target === overlay) overlay.remove();
     },
   });
 
+  // Counts come from the spec rows themselves, so adding a machine can't leave a stale label.
+  const wingCount = (w) =>
+    w === "all" ? p0.length : p0.filter((r) => (r.wing || "personal") === w).length;
   const WING_META = {
-    all: { label: "All 49 Machines", color: "#58c4ff" },
-    personal: { label: "Circle I · Personal & Bio/Wafer (22)", color: "#ffb347" },
-    servers: { label: "Circle II · Mainframes & Servers (8)", color: "#38bdf8" },
-    super: { label: "Circle III · Supercomputers (9)", color: "#f97316" },
-    quantum: { label: "Circle IV · Quantum Age (9)", color: "#c084fc" },
+    all: { label: `All ${wingCount("all")} Machines`, color: "#58c4ff" },
+    personal: {
+      label: `Circle I · Personal & Bio/Wafer (${wingCount("personal")})`,
+      color: "#ffb347",
+    },
+    servers: {
+      label: `Circle II · Mainframes & Servers (${wingCount("servers")})`,
+      color: "#38bdf8",
+    },
+    super: {
+      label: `Circle III · Supercomputers (${wingCount("super")})`,
+      color: "#f97316",
+    },
+    quantum: {
+      label: `Circle IV · Quantum Age (${wingCount("quantum")})`,
+      color: "#c084fc",
+    },
   };
   const CAPITALS = new Set(["m6502", "s360", "cray1", "qomega"]);
 
@@ -85,7 +102,7 @@ function Dc(selectMachine) {
       ctx.restore();
 
       if (!(val > 0)) {
-        ctx.fillStyle = "#48566a";
+        ctx.fillStyle = "#8b98a9"; // 6.8:1 on the plot background (was 2.7:1)
         ctx.fillText("—", bx + colW * 0.5 - 3, H - 60);
         return;
       }
@@ -1044,6 +1061,7 @@ function Dc(selectMachine) {
     ),
   );
   document.body.append(overlay);
+  asModalDialog(overlay, "Computer Science and Engineering Atlas");
   requestAnimationFrame(drawPlot);
   return overlay;
 }

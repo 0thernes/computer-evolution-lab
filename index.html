@@ -204,11 +204,18 @@
           <button
             id="tb-audio"
             class="tog"
-            title="Orchestral score, composer theme & hardware SFX (M)"
+            title="Orchestral score, mood palette &amp; hardware SFX (M mutes)"
+            aria-label="Audio settings"
           >
             🔊
           </button>
-          <button id="tb-help" title="Help & keyboard shortcuts (?)">?</button>
+          <button
+            id="tb-help"
+            title="Help &amp; keyboard shortcuts (?)"
+            aria-label="Help"
+          >
+            ?
+          </button>
         </div>
 
         <div id="slice-ctl" hidden>
@@ -231,7 +238,7 @@
         </div>
 
         <div id="card" hidden>
-          <button id="card-x" aria-label="close">×</button>
+          <button id="card-x" aria-label="Close part card">×</button>
           <h3></h3>
           <div class="body"></div>
         </div>
@@ -240,9 +247,9 @@
           <div class="tt"></div>
           <div class="tx"></div>
           <div class="row">
-            <button id="tour-prev" class="btn">◀</button>
-            <button id="tour-pause" class="btn">❚❚</button>
-            <button id="tour-next" class="btn">▶</button>
+            <button id="tour-prev" class="btn" aria-label="Previous layer">◀</button>
+            <button id="tour-pause" class="btn" aria-label="Pause tour">❚❚</button>
+            <button id="tour-next" class="btn" aria-label="Next layer">▶</button>
             <button id="tour-stop" class="btn">End tour</button>
           </div>
         </div>

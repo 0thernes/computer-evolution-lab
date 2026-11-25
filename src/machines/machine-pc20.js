@@ -1297,9 +1297,19 @@ function d1() {
         mouseVec.y = (1 - (ev.clientY - rect.top) / Math.max(1, rect.height)) * xi;
         if (down !== void 0) mouseVec.z = down ? 1 : 0;
       };
-      uiRefs.view.addEventListener("pointerdown", (ev) => updateMouse(ev, !0));
+      // ui() runs on every visit, so release is tracked with pointer capture on the canvas
+      // itself instead of a window listener that would pile up once per visit.
+      uiRefs.view.addEventListener("pointerdown", (ev) => {
+        updateMouse(ev, !0);
+        try {
+          uiRefs.view.setPointerCapture(ev.pointerId);
+        } catch {}
+      });
       uiRefs.view.addEventListener("pointermove", (ev) => updateMouse(ev));
-      window.addEventListener("pointerup", () => (mouseVec.z = 0));
+      const release = () => (mouseVec.z = 0);
+      uiRefs.view.addEventListener("pointerup", release);
+      uiRefs.view.addEventListener("pointercancel", release);
+      uiRefs.view.addEventListener("lostpointercapture", release);
 
       uiRefs.gpuStats = Pt([
         ["inv", "threads/frame"],

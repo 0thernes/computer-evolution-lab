@@ -64,6 +64,26 @@ class: bug, error, issue, problem, dilemma, or conflict. Tags do not add classes
 - H023 (bug, fixed): `tools/dormann-6502.mjs` cached the download before verifying it, so one corrupt download failed every later run until `.cache/` was cleared by hand. It now verifies first and deletes a bad cache entry.
 - H024 (dilemma, accepted): `visual6502Verify` skips the hash when `crypto.subtle` is unavailable (insecure contexts). The commit pin still fixes the content, and refusing would disable the feature on plain-http LAN hosting. Recorded rather than changed.
 
+### 07 — Performance, memory and listener lifetime
+
+- Reviewed `ensureBuilt`/`touchGPU` (lazy build and LRU geometry release), every `window`/`document` listener and every `requestAnimationFrame`/timer outside the main loop.
+- The LRU branch that skips the active machine looked like a leak but is unreachable (the active machine is always pushed last), so it was left unchanged.
+- H025 (bug, fixed): `machine-pc20.js` `ui()` added a `window` `pointerup` listener on every visit to the Modern PC; each one kept its closure alive. Replaced with pointer capture on the GPU canvas (`pointerup`, `pointercancel`, `lostpointercapture`).
+- H026 (issue, deferred): the proxy-mode LRU frees geometry only; textures and materials of left machines stay resident. Disposing shared `U.*` textures would force re-uploads for visible machines and needs a measured device test (ADR 0005), so it is out of scope for a text-only pass.
+- Toolchain note: compile-checking `desktop/Program.cs` needs the .NET 10 SDK with Windows targeting. Installing it on the audit box filled the shared disk (see pass 08 note), so the C# change in H022 is reviewed but not compiled here; CI does not build the desktop app either (H027).
+- H027 (issue, deferred): no CI job compiles `desktop/`. A `windows-latest` job would need ≈ 1 min plus the WebView2 restore; deferred to keep CI on one runner until the maintainer decides.
+
+### 08 — Accessibility (WCAG 2.2) and UI counts
+
+- Checked focus styles, reduced motion (CSS and the hub auto-spin honour it), live region, accessible names, toggle state, dialogs, and text contrast of every CSS `color:` against the panel colours (all ≥ 4.5:1 except dark-on-light active buttons, which are ≥ 7:1 against their own fill).
+- H028 (bug, fixed): the Atlas filter read "Circle II · Mainframes & Servers (8)" after the B1700 joined (9 rows). Filter labels now count the spec rows.
+- H029 (issue, fixed): the three overlays (Atlas, Help, Sound credits) had no dialog role, name or focus handling; keyboard focus stayed behind the overlay. New `asModalDialog()` sets `role="dialog"`, `aria-modal`, a name, moves focus in, keeps Tab inside, and restores focus on every close path.
+- H030 (issue, fixed): toggle buttons (Cutaway, Slice, Labels, Spin, Flip) showed state only by colour; they now carry `aria-pressed`. The active timeline machine gets `aria-current`.
+- H031 (issue, fixed): icon-only tour buttons (◀ ❚❚ ▶) had no accessible names; the pause button's name now follows its state. The audio button's name tracks mute.
+- H032 (conflict, fixed): the audio button's tooltip still said "composer theme" (ADR 0002); now "mood palette".
+- H033 (bug, fixed): pressing `G` twice stacked two Atlas overlays.
+- H034 (issue, fixed): the Atlas plot drew its "no data" dash at 2.7:1 contrast; raised to 6.8:1.
+
 ## Findings register
 
 | ID   | Class    | Status   | Evidence / disposition                                              |
@@ -92,3 +112,13 @@ class: bug, error, issue, problem, dilemma, or conflict. Tags do not add classes
 | H022 | issue    | fixed    | Desktop server refuses dot-segments                                 |
 | H023 | bug      | fixed    | Dormann cache verified before write                                 |
 | H024 | dilemma  | accepted | visual6502 hash check fails open without SubtleCrypto               |
+| H025 | bug      | fixed    | pc20 window listener per visit                                      |
+| H026 | issue    | deferred | LRU frees geometry but not textures                                 |
+| H027 | issue    | deferred | No CI compile of `desktop/`                                         |
+| H028 | bug      | fixed    | Atlas Circle II count 8 → computed                                  |
+| H029 | issue    | fixed    | Modal dialog semantics and focus                                    |
+| H030 | issue    | fixed    | `aria-pressed`, `aria-current`                                      |
+| H031 | issue    | fixed    | Accessible names for icon buttons                                   |
+| H032 | conflict | fixed    | "composer theme" tooltip                                            |
+| H033 | bug      | fixed    | Duplicate Atlas overlay                                             |
+| H034 | issue    | fixed    | Plot "no data" contrast                                             |

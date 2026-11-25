@@ -25,8 +25,8 @@ test("documented classic-script count matches index.html", () => {
 });
 
 test("documented entry-page size matches index.html", () => {
-  const kb = (Buffer.byteLength(html) / 1024).toFixed(1);
-  assert.match(read("docs/SUMMARY.md"), new RegExp(`\`${kb.replace(".", "\\.")} KB\``));
+  const kb = Math.round(Buffer.byteLength(html) / 1024);
+  assert.match(read("docs/SUMMARY.md"), new RegExp(`about \`${kb} KB\``));
 });
 
 test("ADR index and docs index list every document", () => {

@@ -980,6 +980,8 @@
     document.querySelectorAll("#timeline button").forEach((btn) => {
       const isOn = btn.dataset.id === id;
       btn.classList.toggle("on", isOn);
+      if (isOn) btn.setAttribute("aria-current", "true");
+      else btn.removeAttribute("aria-current");
       if (isOn) btn.scrollIntoView({ inline: "center", block: "nearest" });
     });
 
@@ -1421,17 +1423,23 @@
   const sliceOffRange = $("#tb-slice-off");
   const sliceFlipBtn = $("#tb-slice-flip");
 
+  // Toggle buttons expose their state to assistive tech, not only through the .on colour.
+  function setPressed(el, on) {
+    if (!el) return;
+    el.classList.toggle("on", on);
+    el.setAttribute("aria-pressed", on ? "true" : "false");
+  }
+
   function syncToolbar() {
-    $("#tb-cut").classList.toggle("on", cutawayOn);
+    setPressed($("#tb-cut"), cutawayOn);
     $("#tb-exp").value = explodeTarget;
-    $("#tb-lab").classList.toggle("on", labelsOn);
-    $("#tb-spin").classList.toggle("on", controls.autoRotate);
-    const sliceBtn = $("#tb-slice");
-    if (sliceBtn) sliceBtn.classList.toggle("on", slicer.enabled);
+    setPressed($("#tb-lab"), labelsOn);
+    setPressed($("#tb-spin"), controls.autoRotate);
+    setPressed($("#tb-slice"), slicer.enabled);
     if (sliceCtl) sliceCtl.hidden = !slicer.enabled;
     if (sliceAxisSel) sliceAxisSel.value = slicer.axis;
     if (sliceOffRange) sliceOffRange.value = slicer.offset;
-    if (sliceFlipBtn) sliceFlipBtn.classList.toggle("on", slicer.flip);
+    setPressed(sliceFlipBtn, slicer.flip);
   }
 
   $("#tb-cut").onclick = () => {
@@ -1865,6 +1873,7 @@
     if (!tourState) return;
     tourState.paused = !tourState.paused;
     ev.target.textContent = tourState.paused ? "▶" : "❚❚";
+    ev.target.setAttribute("aria-label", tourState.paused ? "Resume tour" : "Pause tour");
   };
 
   // ---- 10. Cinematic Orchestral Audio UI & Score Selector ----
@@ -1892,6 +1901,10 @@
     const themeSel = $("#ap-theme");
     if (themeSel) themeSel.value = Ut.scoreOverride || "auto";
     audioBtn.textContent = Ut.muted ? "🔇" : "🔊";
+    audioBtn.setAttribute(
+      "aria-label",
+      Ut.muted ? "Audio settings (muted)" : "Audio settings",
+    );
     audioBtn.classList.toggle("on", !Ut.muted && Ut.ok);
 
     const trackEl = $("#ap-track");
@@ -2041,6 +2054,7 @@
       ),
     );
     document.body.append(ov);
+    asModalDialog(ov, "Sound credits");
   }
 
   if (audioBtn) {
@@ -2204,6 +2218,7 @@
       ),
     );
     document.body.append(ov);
+    asModalDialog(ov, "Help and keyboard shortcuts");
   }
 
   document.addEventListener("keydown", (ev) => {

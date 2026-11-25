@@ -375,3 +375,43 @@ function yt(canvas) {
 
 var bt = (n, pad = 2) => (n >>> 0).toString(16).toUpperCase().padStart(pad, "0"),
   Kn = (n, pad = 4) => (n >>> 0).toString(8).padStart(pad, "0");
+
+// Make an .overlay behave as a modal dialog (WCAG 2.2 SC 2.1.2, 2.4.3, 4.1.2): role and name on
+// the .modal box, focus moved inside on open, Tab cycles within it, and focus returns to the
+// control that opened it when the overlay is removed by any path (×, backdrop, Escape).
+function asModalDialog(overlay, label) {
+  const box = overlay.querySelector(".modal") || overlay;
+  box.setAttribute("role", "dialog");
+  box.setAttribute("aria-modal", "true");
+  box.setAttribute("aria-label", label);
+  const closeBtn = box.querySelector(".mx");
+  if (closeBtn) closeBtn.setAttribute("aria-label", "Close");
+  const opener = document.activeElement;
+  const nativeRemove = overlay.remove.bind(overlay);
+  overlay.remove = () => {
+    nativeRemove();
+    if (opener && typeof opener.focus === "function" && document.contains(opener)) {
+      opener.focus({ preventScroll: true });
+    }
+  };
+  overlay.addEventListener("keydown", (ev) => {
+    if (ev.key !== "Tab") return;
+    const items = [
+      ...box.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      ),
+    ].filter((el) => !el.disabled && el.offsetParent !== null);
+    if (!items.length) return;
+    const first = items[0];
+    const last = items[items.length - 1];
+    if (ev.shiftKey && document.activeElement === first) {
+      ev.preventDefault();
+      last.focus();
+    } else if (!ev.shiftKey && document.activeElement === last) {
+      ev.preventDefault();
+      first.focus();
+    }
+  });
+  requestAnimationFrame(() => (closeBtn || box).focus({ preventScroll: true }));
+  return overlay;
+}
