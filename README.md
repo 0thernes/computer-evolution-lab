@@ -183,7 +183,7 @@ Press `G` or click `📊 CS Atlas` in the top toolbar to open the **5-tab** comp
 
 ## Tests
 
-Automated verification covers static symbol/DOM integrity, standalone Node `RV32IM` + frontier/enterprise/HPC/quantum + universal netlist unit tests, full headless Chrome WebGL2 execution across all **49 machines** and **539 primary layer visualizers (`1,617` sub-lens views)**, `BusPulse3D` 3D wave-packets, `X/Y/Z` cross-section slicing, 7 mood palettes, and direct `file://` double-click loading:
+Automated verification covers static symbol/DOM integrity, standalone Node `RV32IM` + frontier/enterprise/HPC/quantum + universal netlist unit tests, full headless Chrome WebGL2 execution across all **49 machines** and **539 primary layer visualizers (`1,617` sub-lens views)**, `BusPulse3D` 3D wave-packets, `X/Y/Z` cross-section slicing, all 8 score palettes (auto + 7 moods), and direct `file://` double-click loading:
 
 ```bash
 # Unit tests: simulators, RV32 pipeline vs ISS, golden values, security, analog compiler, version sync
@@ -201,7 +201,7 @@ node tools/audit-exhaustive.mjs
 # Run full headless WebGL2 49-machine + 539-layer (1,617 sub-lens) + audio + file:// verification suite
 npm test
 
-# Render 51 4K UHD (3840x2160) & UI visual audit PNGs + white-clipping report
+# Render 52 scene PNGs at 3840x2160 + 3 UI PNGs at 1920x1080, with a white-clipping report
 npm run audit:4k
 ```
 

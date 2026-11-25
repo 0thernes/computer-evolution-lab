@@ -360,7 +360,7 @@ async function runHeadlessBrowserSuite() {
       try { await LAB.audio.ac.resume(); } catch {}
       const notes0 = LAB.audio.stats.notes;
       const themesTested = [];
-      for (const t of ["epic", "noble", "clockwork", "suspended", "elegiac", "synthnoir", "auto"]) {
+      for (const t of SCORE_THEMES.map((row) => row[0])) {
         LAB.audio.set("scoreOverride", t);
         for (let i = 0; i < 6; i++) LAB.audio.tick(0.12, 0.55);
         const np = LAB.audio.nowPlaying || {};

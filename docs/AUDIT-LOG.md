@@ -37,6 +37,23 @@ class: bug, error, issue, problem, dilemma, or conflict. Tags do not add classes
 - H007 (issue, fixed): no manual re-run trigger; added `workflow_dispatch`.
 - H008 (dilemma, accepted): `npx --yes prettier@3.10.1` / `eslint@9.39.5` are version-pinned but not integrity-pinned. A lockfile would add a `node_modules` install to a zero-dependency repo; kept as-is and recorded.
 
+### 04 — Documentation accuracy against code
+
+- Compared README, `docs/ARCHITECTURE.md`, `docs/SUMMARY.md`, `docs/INDEX.md`, the glossary and the ADR index with `index.html`, `studio-stage.js`, `lab-main.js`, `run-tests.mjs` and `render-4k-audit.mjs`.
+- H009 (conflict, fixed): ARCHITECTURE, SUMMARY and INDEX said 26 classic scripts; `index.html` loads 36.
+- H010 (conflict, fixed): ARCHITECTURE §4 described bloom `threshold 0.90 / strength 0.22`, SMAA as an MSAA fallback, a fixed 2048 shadow map and a non-existent `calibrateDielectricColor()`. Rewritten from code: bloom `0.42 / 0.4 / 1.2`, SMAA on Medium+, tier shadow maps 512–4096, plus a tier table.
+- H011 (bug, fixed): the `pbr-materials.js` row in ARCHITECTURE's module table had an unescaped `|` inside code, which split the row into an extra column.
+- H012 (conflict, fixed): README said the 4K audit renders 51 PNGs; the shot list has 52 scene renders (49 machines + hub + two extra `pc20` views) plus 3 UI captures at 1920×1080.
+- H013 (conflict, fixed): SUMMARY claimed "`0.00%` white clipping across 51 4K audit renders". No current measurement backs the number, so the claim now points at the report the tool produces.
+- H014 (issue, fixed): `docs/INDEX.md` did not list `B1700.md`, ADR 0007, the audit documents or `CITATION.cff`.
+- H015 (issue, fixed): no mechanical check that these documented counts track the code. Added `tests/docs-consistency.test.mjs` (script count, entry-page size, ADR/docs index completeness, circle rosters = 49 distinct ids, ADR 0002 name ban).
+
+### 05 — Score attribution (ADR 0002) and audio test coverage
+
+- H016 (conflict, fixed): SUMMARY advertised the score with six composer names, the exact practice ADR 0002 forbids.
+- H017 (conflict, fixed): `src/audio/cinematic-score.js` still carried 49 unused `film:` fields naming films, film-named cue keys (`interstellar`, `oppenheimer`, `inception`, `tron`, `blade`, `matrix`, `exmachina`, `annihilation`, `imitation`, `mind`, `glass`) and comments naming composers ("Daft Punk / Joseph Trapanese", "Philip Glass"). Removed the dead fields; renamed the cues to their mood names (`epic`, `clockwork`, `slowbuild`, `gridarp`, `synthnoir`, `hybridpulse`, `crystalline`, `organic`, `intimate`, `noble`, `shimmer`), which also removes the five alias assignments. Saved v5 preferences still migrate through `SCORE_THEME_MIGRATION`.
+- H018 (issue, fixed): the headless audio check iterated a hand-written list of 7 palettes and skipped `slowbuild`. It now iterates `SCORE_THEMES` (all 8).
+
 ## Findings register
 
 | ID   | Class    | Status   | Evidence / disposition                            |
@@ -49,3 +66,13 @@ class: bug, error, issue, problem, dilemma, or conflict. Tags do not add classes
 | H006 | issue    | fixed    | Timeout and concurrency                           |
 | H007 | issue    | fixed    | `workflow_dispatch`                               |
 | H008 | dilemma  | accepted | Version- but not integrity-pinned npx tools       |
+| H009 | conflict | fixed    | Script count 26 → 36 in three docs                |
+| H010 | conflict | fixed    | ARCHITECTURE §4 rewritten from code               |
+| H011 | bug      | fixed    | Escaped table pipe                                |
+| H012 | conflict | fixed    | 4K audit PNG count                                |
+| H013 | conflict | fixed    | Unbacked 0.00 % clipping claim removed            |
+| H014 | issue    | fixed    | Docs index completed                              |
+| H015 | issue    | fixed    | `tests/docs-consistency.test.mjs`                 |
+| H016 | conflict | fixed    | Composer names removed from SUMMARY               |
+| H017 | conflict | fixed    | Film/composer names removed from score engine     |
+| H018 | issue    | fixed    | Audio check covers all 8 palettes                 |

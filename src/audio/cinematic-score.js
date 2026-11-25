@@ -6,252 +6,203 @@ var Xy = window.LAB_SFX_CLIPS || {};
 
 var us = {
   hub: {
-    film: "The Thin Red Line & Interstellar",
     style: "gallery",
     mood: "elegiac divisi strings, felt piano & cathedral organ",
   },
   turing: {
-    film: "The Imitation Game",
-    style: "imitation",
+    style: "intimate",
     mood: "intimate felt piano ostinato & solo cello",
   },
   z1: {
-    film: "The Imitation Game & Hugo",
-    style: "imitation",
+    style: "intimate",
     mood: "clockwork piano arpeggios & warm chamber strings",
   },
   analog: {
-    film: "Oppenheimer",
-    style: "oppenheimer",
+    style: "clockwork",
     mood: "propulsive spiccato strings, timpani & brass swells",
   },
   tube: {
-    film: "Oppenheimer & Dunkirk",
-    style: "oppenheimer",
+    style: "clockwork",
     mood: "clockwork tension, contrabasses & noble horns",
   },
   pdp8: {
-    film: "A Beautiful Mind",
-    style: "mind",
+    style: "noble",
     mood: "kaleidoscopic piano triplets & luminous wordless choir",
   },
   altair: {
-    film: "Apollo 13 & A Beautiful Mind",
-    style: "mind",
+    style: "noble",
     mood: "noble French horns, celesta & soaring strings",
   },
   home80: {
-    film: "Tron: Legacy",
-    style: "tron",
+    style: "gridarp",
     mood: "orchestral strings over precision analog arpeggiator",
   },
   pc90: {
-    film: "Blade Runner",
-    style: "blade",
+    style: "synthnoir",
     mood: "CS-80 brass ribbon lead, rain bells & deep symphonic pad",
   },
   pc00: {
-    film: "Inception",
-    style: "inception",
+    style: "slowbuild",
     mood: "Time-style slow building cello/horn ostinato & low brass",
   },
   pc10: {
-    film: "Inception & The Social Network",
-    style: "inception",
+    style: "slowbuild",
     mood: "driving ostinato, pocket-watch pulse & cathedral brass",
   },
   pc20: {
-    film: "Blade Runner 2049 & Dunkirk",
-    style: "matrix",
+    style: "hybridpulse",
     mood: "hybrid orchestral pulse, CS-80 sub-bass & soaring strings",
   },
   aibox: {
-    film: "Ex Machina & Interstellar",
-    style: "exmachina",
+    style: "crystalline",
     mood: "crystalline harmonic piano, choir & deep pedal organ",
   },
   quantum: {
-    film: "Interstellar",
-    style: "interstellar",
+    style: "epic",
     mood: "majestic cathedral pipe organ, breathing arpeggios & strings",
   },
   bci: {
-    film: "The Thin Red Line & Arrival",
-    style: "annihilation",
+    style: "organic",
     mood: "luminous suspended divisi strings & human formant choir",
   },
   alife: {
-    film: "The Tree of Life & Annihilation",
-    style: "annihilation",
+    style: "organic",
     mood: "cathedral suspensions, glass harmonics & warm celli",
   },
   photonic: {
-    film: "Arrival & Solaris",
-    style: "glass",
-    mood: "shimmering Philip Glass-style harmonic waves & choir",
+    style: "shimmer",
+    mood: "shimmering minimalist harmonic waves & choir",
   },
   m6502: {
-    film: "Apollo 13 & Tron: Legacy",
     style: "chiphero",
     mood: "heroic French horns, orchestral strings & pure pulse voice",
   },
   s360: {
-    film: "Apollo 13 & Oppenheimer",
-    style: "oppenheimer",
+    style: "clockwork",
     mood: "propulsive spiccato strings, noble horns & mainframe timpani",
   },
   b1700: {
-    style: "mind",
+    style: "noble",
     mood: "intricate piano ostinato, muted brass & ticking 1970s machine-room pulse",
   },
   unix70: {
-    film: "A Beautiful Mind & All the President's Men",
-    style: "mind",
+    style: "noble",
     mood: "flowing piano triplets, warm horns & Bell Labs choir",
   },
   sun90: {
-    film: "Blade Runner & Heat",
-    style: "blade",
+    style: "synthnoir",
     mood: "CS-80 brass ribbon, celesta bells & nocturnal strings",
   },
   cloud10: {
-    film: "Inception & The Social Network",
-    style: "inception",
+    style: "slowbuild",
     mood: "driving cello ostinato, cathedral brass & optical pulse",
   },
   zmain20: {
-    film: "Blade Runner 2049 & Tenet",
-    style: "matrix",
+    style: "hybridpulse",
     mood: "hybrid orchestral ostinato, low brass swells & precision pulse",
   },
   cray1: {
-    film: "Apollo 13 & Tron: Legacy",
     style: "chiphero",
     mood: "soaring French horns, concert timpani & 80 MHz vector pulse",
   },
   cm2: {
-    film: "Tron: Legacy & Contact",
-    style: "tron",
+    style: "gridarp",
     mood: "symphonic strings over 65,536-PE hypercube arpeggiator",
   },
   bgene: {
-    film: "The Thin Red Line & Inception",
-    style: "inception",
+    style: "slowbuild",
     mood: "cathedral brass build & synchronous torus ostinato",
   },
   exascale: {
-    film: "Oppenheimer & Interstellar",
-    style: "matrix",
+    style: "hybridpulse",
     mood: "titan low brass, spiccato strings & exascale timpani",
   },
   gb200: {
-    film: "Ex Machina & Blade Runner 2049",
-    style: "exmachina",
+    style: "crystalline",
     mood: "crystalline harmonic piano, organ pedal & neural choir",
   },
   qtransmon: {
-    film: "Interstellar",
-    style: "interstellar",
+    style: "epic",
     mood: "15 mK cathedral pipe organ, felt piano & breathing strings",
   },
   qatom: {
-    film: "Arrival & A Beautiful Mind",
-    style: "glass",
+    style: "shimmer",
     mood: "shimmering optical-tweezer harmonic waves & celesta",
   },
   qphotonic: {
-    film: "Solaris & Arrival",
-    style: "glass",
+    style: "shimmer",
     mood: "luminous 1550 nm glass harmonics, choir & triplet piano",
   },
   qtopo: {
-    film: "The Tree of Life & Annihilation",
     style: "suspended",
     mood: "suspended Majorana divisi strings, organ & formant choir",
   },
   qomega: {
-    film: "Interstellar & 2001: A Space Odyssey",
     style: "epic",
     mood: "grand cathedral organ, solo cello, French horns & horizon choir",
   },
   agc66: {
-    film: "Apollo 13 & First Man",
     style: "noble",
     mood: "noble mission brass, solo trumpet, luminous choir & felt piano",
   },
   alto73: {
-    film: "The Imitation Game & Steve Jobs",
-    style: "imitation",
+    style: "intimate",
     mood: "intimate felt piano arpeggios, solo cello & chamber strings",
   },
   arm07: {
-    film: "Ex Machina & Her",
-    style: "exmachina",
+    style: "crystalline",
     mood: "warm felt grand piano, glass harmonics & intimate strings",
   },
   vax78: {
-    film: "JFK & All the President's Men",
     style: "elegiac",
     mood: "elegiac adagio strings, noble solo brass & concert snare",
   },
   cdc6600: {
-    film: "Oppenheimer & Hidden Figures",
     style: "clockwork",
     mood: "clockwork spiccato strings, Freon-era horns & concert timpani",
   },
   ascired97: {
-    film: "Crimson Tide & Inception",
-    style: "inception",
+    style: "slowbuild",
     mood: "driving cello ostinato, TeraFLOPS low brass & cathedral horns",
   },
   qion: {
-    film: "Arrival & Contact",
-    style: "glass",
+    style: "shimmer",
     mood: "crystalline trapped-ion harmonic waves, celesta & choir",
   },
   qanneal: {
-    film: "Interstellar & Sunshine",
     style: "suspended",
     mood: "15 mK cathedral pedal organ, suspended strings & solo cello",
   },
   eniac46: {
-    film: "Oppenheimer & The Imitation Game",
-    style: "oppenheimer",
+    style: "clockwork",
     mood: "100 kHz clockwork spiccato strings, contrabasses & brass",
   },
   lisp83: {
-    film: "A Beautiful Mind & Tron: Legacy",
-    style: "mind",
+    style: "noble",
     mood: "recursive felt piano triplets, celesta & wordless choir",
   },
   wse24: {
-    film: "Ex Machina & Blade Runner 2049",
-    style: "exmachina",
+    style: "crystalline",
     mood: "crystalline harmonic piano, organ pedal & wafer-scale pulse",
   },
   tandem77: {
-    film: "All the President's Men & JFK",
     style: "elegiac",
     mood: "elegiac adagio strings, noble solo trumpet & steady snare",
   },
   blade04: {
-    film: "The Social Network & Inception",
-    style: "inception",
+    style: "slowbuild",
     mood: "driving ostinato, pocket-watch pulse & datacenter brass",
   },
   systolic82: {
-    film: "Tron: Legacy & Apollo 13",
     style: "chiphero",
     mood: "rhythmic systolic arpeggiator, French horns & strings",
   },
   fugaku20: {
-    film: "Inception & Oppenheimer",
-    style: "matrix",
+    style: "hybridpulse",
     mood: "titan low brass, spiccato strings & concert timpani",
   },
   qspin: {
-    film: "Arrival & Interstellar",
-    style: "glass",
+    style: "shimmer",
     mood: "crystalline silicon-spin harmonic waves, choir & organ",
   },
 };
@@ -386,7 +337,7 @@ var CINEMATIC_CUES = {
   },
 
   // Epic organ-and-strings palette: Am -> Fmaj7/A -> C/G -> G6(add11)
-  interstellar: {
+  epic: {
     bpm: 96,
     subdiv: 4,
     barsPerChord: 1,
@@ -486,7 +437,7 @@ var CINEMATIC_CUES = {
   },
 
   // Intimate piano and solo strings (C minor -> Abmaj7 -> Fm9 -> G7sus4)
-  imitation: {
+  intimate: {
     bpm: 100,
     subdiv: 4,
     barsPerChord: 1,
@@ -569,7 +520,7 @@ var CINEMATIC_CUES = {
   },
 
   // Clockwork palette: propulsive spiccato tension
-  oppenheimer: {
+  clockwork: {
     bpm: 132,
     subdiv: 4,
     barsPerChord: 1,
@@ -665,7 +616,7 @@ var CINEMATIC_CUES = {
   },
 
   // Noble palette: flowing piano figures, luminous choir and horns
-  mind: {
+  noble: {
     bpm: 88,
     subdiv: 3, // 12 steps/bar (flowing compound 12/8 triplet feel!)
     barsPerChord: 1,
@@ -760,7 +711,7 @@ var CINEMATIC_CUES = {
   },
 
   // Slow-build palette: Em -> G/D -> Bm7 -> Cmaj7 crescendo
-  inception: {
+  slowbuild: {
     bpm: 72,
     subdiv: 4,
     barsPerChord: 1,
@@ -811,8 +762,8 @@ var CINEMATIC_CUES = {
     },
   },
 
-  // Daft Punk / Joseph Trapanese "Tron: Legacy" symphonic strings + precision arpeggiator
-  tron: {
+  // Grid-arpeggio palette: symphonic strings + precision arpeggiator
+  gridarp: {
     bpm: 110,
     subdiv: 4,
     barsPerChord: 1,
@@ -888,7 +839,7 @@ var CINEMATIC_CUES = {
   },
 
   // Synth-noir palette: CS-80-style symphonic brass and bells
-  blade: {
+  synthnoir: {
     bpm: 62,
     subdiv: 4,
     barsPerChord: 2,
@@ -928,8 +879,8 @@ var CINEMATIC_CUES = {
     },
   },
 
-  // Modern Workstation / 2049 / Dunkirk hybrid orchestral engine
-  matrix: {
+  // Hybrid-pulse palette: modern workstation hybrid orchestral engine
+  hybridpulse: {
     bpm: 108,
     subdiv: 4,
     barsPerChord: 1,
@@ -984,8 +935,8 @@ var CINEMATIC_CUES = {
     },
   },
 
-  // Ex Machina / Interstellar crystalline ambient symphony
-  exmachina: {
+  // Crystalline palette: ambient symphony
+  crystalline: {
     bpm: 76,
     subdiv: 4,
     barsPerChord: 2,
@@ -1025,7 +976,7 @@ var CINEMATIC_CUES = {
   },
 
   // Organic palette: luminous choir and suspended strings
-  annihilation: {
+  organic: {
     bpm: 58,
     subdiv: 4,
     barsPerChord: 2,
@@ -1052,8 +1003,8 @@ var CINEMATIC_CUES = {
     },
   },
 
-  // Philip Glass / Arrival shimmering harmonic waves
-  glass: {
+  // Shimmer palette: minimalist shimmering harmonic waves
+  shimmer: {
     bpm: 104,
     subdiv: 3, // 12 steps triplet wave!
     barsPerChord: 1,
@@ -1279,12 +1230,7 @@ var CINEMATIC_CUES = {
   },
 };
 
-// Mood-palette aliases so both UI SCORE_THEMES and automated tests resolve directly
-CINEMATIC_CUES.epic = CINEMATIC_CUES.interstellar;
-CINEMATIC_CUES.noble = CINEMATIC_CUES.mind;
-CINEMATIC_CUES.clockwork = CINEMATIC_CUES.oppenheimer;
-CINEMATIC_CUES.synthnoir = CINEMATIC_CUES.blade;
-CINEMATIC_CUES.slowbuild = CINEMATIC_CUES.inception;
+// Cue keys are mood names, so every SCORE_THEMES palette resolves directly (ADR 0002).
 
 var OrchestralScoreEngine = class {
   constructor(host) {
