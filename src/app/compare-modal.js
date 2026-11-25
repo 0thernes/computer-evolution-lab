@@ -296,7 +296,7 @@ function Dc(selectMachine) {
       badge: "🔥 THE 36-MONTH EXPLOSION",
       title:
         "Altair 8800 · $25 MOS 6502 · Cray-1 Vector · Tandem NonStop ACID · DEC VAX-11/780 32-Bit VM",
-      body: "Five revolutions detonated back-to-back: Jan 1975 MITS Altair 8800 launches personal kits; Sept 1975 Chuck Peddle's team ships the 3,510-transistor MOS 6502 for $25; 1976 Seymour Cray delivers Cray-1 #1 (80 MHz, vector chaining); 1977 Treybig & Jim Gray ship Tandem NonStop share-nothing Process Pairs + Write-Ahead Logging for zero-downtime OLTP; 1977/78 DEC ships VAX-11/780 32-bit virtual memory.",
+      body: "Five revolutions detonated back-to-back: Jan 1975 MITS Altair 8800 launches personal kits; Sept 1975 Chuck Peddle's team ships the 3,510-transistor MOS 6502 for $25; 1976 Seymour Cray delivers Cray-1 #1 (80 MHz, vector chaining); May 1976 Treybig's Tandem ships the first NonStop (Tandem/16) to Citibank: share-nothing process pairs for zero-downtime OLTP (TMF write-ahead logging followed in the early 1980s); 1977/78 DEC ships VAX-11/780 32-bit virtual memory.",
       ids: ["altair", "m6502", "cray1", "tandem77", "vax78"],
     },
     {

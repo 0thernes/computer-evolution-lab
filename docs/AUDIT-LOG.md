@@ -84,6 +84,16 @@ class: bug, error, issue, problem, dilemma, or conflict. Tags do not add classes
 - H033 (bug, fixed): pressing `G` twice stacked two Atlas overlays.
 - H034 (issue, fixed): the Atlas plot drew its "no data" dash at 2.7:1 contrast; raised to 6.8:1.
 
+### 09 — Historical and numeric claims (sampled against primary or reference sources)
+
+Scope: the 49-row README roster (years, names) and the claims most often repeated in code and docs. Not every sentence in 85 k lines was checked; unchecked text is not claimed to be verified.
+
+- Confirmed: Landauer `k_B T ln 2` at 300 K = 2.87 zJ; 6502 introduced Sept 1975 at $25 with 3,510 transistors; Cray-1 80 MHz (1976); VAX-11/780 (announced 1977, shipped 1978); ASCI Red first TFLOPS (1997); DishBrain (2022); Frontier 9,408 nodes / 37,632 MI250X. MOnSter 6502 figures match monster6502.com (3,218 enhancement MOSFETs, 1,019 resistors, 4,769 parts, 313 LEDs, ≈50 kHz).
+- H035 (error, fixed): README called the MOnSter carrier "3,218 discrete SMD MOSFET"; the board has 2,588 discrete + 630 in quad arrays. README and the 6502 package-level layer text corrected.
+- H036 (error, fixed): Frontier was described as reaching "1.194 × 10¹⁸ FP64 ops/s in May 2022". TOP500: 1.102 EF (June 2022), 1.194 EF (June 2023, after tuning). Corrected in `machines-super.js`, `layers-expansion.js`, README.
+- H037 (error, fixed): the Tandem exhibit said it was "Designed by Jimmy Treybig, Mike Green, and Jim Gray" and dated 1977. Tandem was founded in 1974 by Treybig, Green, Katzman and Loustaunou; the first Tandem/16 shipped to Citibank in May 1976 (Datapro 1979 report; Wikipedia); Gray joined in 1980 and TMF logging came in the early 1980s. Era, blurb, spec-row year, Atlas text, glossary, SUMMARY and README corrected; the internal id `tandem77` is kept for saved links.
+- H038 (issue, fixed): "mirrored RAID-1" in Tandem text used a term coined in 1987 for a 1976 design; now "mirrored disks".
+
 ## Findings register
 
 | ID   | Class    | Status   | Evidence / disposition                                              |
@@ -122,3 +132,7 @@ class: bug, error, issue, problem, dilemma, or conflict. Tags do not add classes
 | H032 | conflict | fixed    | "composer theme" tooltip                                            |
 | H033 | bug      | fixed    | Duplicate Atlas overlay                                             |
 | H034 | issue    | fixed    | Plot "no data" contrast                                             |
+| H035 | error    | fixed    | MOnSter transistor breakdown                                        |
+| H036 | error    | fixed    | Frontier HPL dates                                                  |
+| H037 | error    | fixed    | Tandem founders and first-ship date                                 |
+| H038 | issue    | fixed    | Anachronistic "RAID-1"                                              |

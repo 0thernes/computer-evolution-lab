@@ -1597,14 +1597,14 @@
           id: "tandem77",
           wing: "servers",
           name: "Tandem NonStop-16 Fault-Tolerant Cluster (4-CPU Reference)",
-          year: 1977,
+          year: 1976, // first Tandem/16 delivered to Citibank, May 1976
           clock: 10e6,
           mem: 2 * 2 ** 20,
           tr: null,
           devices: "4× share-nothing Schottky TTL CPU blades + dual Dynabus X/Y",
           power: 3400,
           price: 165000,
-          note: "Share-nothing Process Pairs + dual Dynabus + mirrored RAID-1 + Jim Gray's TMF Write-Ahead Log (WAL) for Five-Nines OLTP.",
+          note: "Share-nothing Process Pairs + dual Dynabus + mirrored disks + TMF write-ahead log (early 1980s, after Jim Gray joined in 1980) for five-nines OLTP.",
           src: "Bartlett, “A NonStop Kernel”, SOSP (1981); Gray, “Why Do Computers Stop and What Can Be Done About It?” (Tandem TR 85.7)",
         },
         {

@@ -2852,7 +2852,7 @@ function makeMachineVax78() {
 }
 
 // ============================================================================
-// TANDEM NONSTOP-16 SHARE-NOTHING FAULT-TOLERANT CLUSTER (1977, tandem77)
+// TANDEM NONSTOP-16 SHARE-NOTHING FAULT-TOLERANT CLUSTER (first shipped May 1976; id tandem77)
 // ============================================================================
 function makeMachineTandem77() {
   const sim = new TandemNonStopCluster();
@@ -2877,7 +2877,7 @@ function makeMachineTandem77() {
     c.fillStyle = "#f8fafc";
     c.font = '700 19px "JetBrains Mono", monospace';
     c.fillText(
-      `1977 TANDEM NONSTOP-16 · GUARDIAN OS + TMF WAL · LEDGER=$${sim.totalLedgerDollars().toLocaleString()} (${sim.invariantOk ? "ACID EXACT ✓" : "ERROR"})`,
+      `1976 TANDEM T/16 (NONSTOP I) · GUARDIAN OS + TMF-STYLE WAL · LEDGER=$${sim.totalLedgerDollars().toLocaleString()} (${sim.invariantOk ? "ACID EXACT ✓" : "ERROR"})`,
       26,
       47,
     );
@@ -3021,13 +3021,13 @@ function makeMachineTandem77() {
 
   const machine = {
     id: "tandem77",
-    era: "1977",
+    era: "1976",
     short: "Tandem NonStop",
     name: "Tandem NonStop-16 Share-Nothing Fault-Tolerant Cluster",
     group: "servers",
     view0: -0.24,
     blurb:
-      "Designed by Jimmy Treybig, Mike Green, and Jim Gray (Turing Award): Tandem NonStop pioneered share-nothing fault tolerance for global ATMs, stock exchanges, and 911 dispatch. No single hardware failure can crash a transaction — 4 independent CPUs communicate over dual Dynabus X/Y rails using Primary/Backup Process Pairs, dual-ported RAID-1 mirrors, and Write-Ahead Logging (WAL) ACID recovery.",
+      "Tandem Computers was founded in 1974 by Jimmy Treybig, Mike Green, Jim Katzman and Jack Loustaunou; the first Tandem/16 (later NonStop I) shipped to Citibank in May 1976. NonStop pioneered share-nothing fault tolerance for ATMs, stock exchanges and 911 dispatch: 4 independent CPUs talk over dual Dynabus X/Y rails using primary/backup process pairs and dual-ported mirrored disks. The write-ahead-log transaction layer shown here is TMF, which came in the early 1980s after Jim Gray (later a Turing Award winner) joined Tandem in 1980.",
     diagram: {
       nodes: [
         { id: "cpu01", label: "CPU 0 & 1 Blades", x: 0.2, y: 0.24, color: "#34d399" },

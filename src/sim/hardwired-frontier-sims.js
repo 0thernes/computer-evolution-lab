@@ -1208,7 +1208,7 @@
   }
 
   // ============================================================================
-  // 4. TANDEM NONSTOP-16 SHARE-NOTHING FAULT-TOLERANT CLUSTER (1977, tandem77)
+  // 4. TANDEM NONSTOP-16 SHARE-NOTHING FAULT-TOLERANT CLUSTER (first shipped May 1976; id tandem77)
   //    Process Pairs + Dual Dynabus X/Y + Mirrored RAID-1 + Jim Gray WAL ACID
   // ============================================================================
   class TandemNonStopCluster {

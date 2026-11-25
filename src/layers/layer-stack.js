@@ -47,7 +47,7 @@ var At = (i, e = 2) => (i >>> 0).toString(16).toUpperCase().padStart(e, "0"),
     m6502: {
       hw: [
         {
-          t: "Package level: a 40-pin ceramic DIP with a gold lid. Inside, a single NMOS die holds the whole CPU. MOS Technology sold it for $25 in 1975, which made home computers affordable. On the right is a MOnSter 6502-style board: the same circuit built from 3,218 discrete transistors and 1,019 resistors, with LEDs.",
+          t: "Package level: a 40-pin ceramic DIP with a gold lid. Inside, a single NMOS die holds the whole CPU. MOS Technology sold it for $25 in 1975, which made home computers affordable. On the right is a MOnSter 6502-style board: the same circuit built from 3,218 transistors (2,588 discrete, 630 in quad arrays) and 1,019 resistors, with LEDs.",
           p: /DIP-40|MOnSter 6502-style|Magnified die|Clock & reset/i,
           viz: "spec",
         },

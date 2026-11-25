@@ -2639,7 +2639,7 @@
       tr: 37632 * 58.2e9,
       power: 21.1e6,
       price: 600e6,
-      note: "First verified Exascale computer (1.194 ExaFLOPS HPL); 9,408 nodes, 37,632 MI250X GPUs, 9.2 PB HBM2e+DDR4 (shown capped in TB scale), 32 °C water.",
+      note: "First verified Exascale computer (HPL 1.102 EF on the June 2022 TOP500, 1.194 EF on June 2023); 9,408 nodes, 37,632 MI250X GPUs, 9.2 PB HBM2e+DDR4 (shown capped in TB scale), 32 °C water.",
       src: "Atchley et al., “Frontier: Exploring Exascale”, SC23 (2023); TOP500 June 2022",
     },
     {

@@ -1277,7 +1277,7 @@ function makeMachineExascale() {
     group: "super",
     view0: 0.36,
     blurb:
-      "Humanity's first verified ExaFLOPS computer (ORNL Frontier, May 2022 — 1.194 × 10¹⁸ FP64 ops/s across 74 Olympus racks and 37,632 multi-die GPUs): combines warm-water (32 °C) copper coldplates, 3-hop HPE Slingshot Dragonfly UGAL adaptive optical routing, and mixed-precision iterative refinement.",
+      "Humanity's first verified ExaFLOPS computer (ORNL Frontier: 1.102 × 10¹⁸ FP64 ops/s HPL on the June 2022 TOP500, 1.194 × 10¹⁸ after tuning on the June 2023 list; 74 Olympus racks and 37,632 multi-die GPUs): combines warm-water (32 °C) copper coldplates, 3-hop HPE Slingshot Dragonfly UGAL adaptive optical routing, and mixed-precision iterative refinement.",
     diagram: {
       nodes: [
         { id: "cpu", label: "64c Host CPU", x: 0.18, y: 0.28, color: "#60a5fa" },
