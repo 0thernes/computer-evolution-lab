@@ -1918,7 +1918,9 @@ var Nm = class LabAudioController {
       samples: 0,
       blocked: "",
       by: {},
+      soft: 0, // errors caught in listeners, SFX voices and ambience (see _soft)
     };
+    this._softSeen = new Set();
     this.last = {};
     this.buf = {};
     this.amb = null;
@@ -1962,11 +1964,22 @@ var Nm = class LabAudioController {
     this.listeners.add(fn);
   }
 
+  // Audio must never take the lab down, so callbacks run inside try/catch. The failure is
+  // still counted (the headless suite asserts stats.soft === 0) and warned once per site.
+  _soft(where, err) {
+    this.stats.soft++;
+    if (this._softSeen.has(where)) return;
+    this._softSeen.add(where);
+    console.warn(`[audio] ${where}:`, err);
+  }
+
   emit() {
     for (const fn of this.listeners) {
       try {
         fn(this);
-      } catch {}
+      } catch (err) {
+        this._soft("listener", err);
+      }
     }
   }
 
@@ -2249,7 +2262,9 @@ var Nm = class LabAudioController {
     this.evRate += 1;
     try {
       fn(this, now + 0.005, opts);
-    } catch {}
+    } catch (err) {
+      this._soft(`sfx ${name}`, err);
+    }
     return true;
   }
 
@@ -2261,7 +2276,9 @@ var Nm = class LabAudioController {
     if (this.amb && this.amb.update) {
       try {
         this.amb.update(this.act, dt);
-      } catch {}
+      } catch (err) {
+        this._soft("ambience", err);
+      }
     }
     this.music.tick(this.act);
   }

@@ -35,6 +35,34 @@ All notable changes to **Computer Evolution Lab** are documented in this file.
 
 - CI runs on the latest Node.js only (26.x; current LTS "Lithium" is 26.13.1). Node 20 was removed after its headless WebGL job hung for 25+ minutes on the v6.0.0 push. `engines.node` is now `>=26.0.0`.
 
+### Hardening audit
+
+A whole-repository audit in 15 numbered passes, one lens per pass. The index is in [`docs/AUDIT-INDEX.md`](docs/AUDIT-INDEX.md), generated and checked in CI. Every finding is recorded in [`docs/AUDIT-LOG.md`](docs/AUDIT-LOG.md): 54 in total (8 bugs, 3 errors, 29 issues, 4 problems, 2 dilemmas, 8 conflicts). 49 are fixed, 3 are deferred with reasons, and 2 dilemmas are accepted.
+
+- **Security:**
+  - URL `?q`/`#hash`, machine IDs and stored audio prefs use own-property lookups and validated, clamped values.
+  - The dev server checks the Host header (DNS-rebinding defence) and refuses dot-paths and symlink escapes. It answers 405 before path work and 400 on bad encoding, and never echoes internals in a 500.
+  - The desktop host refuses dot-segments.
+  - CI actions are pinned by SHA with `persist-credentials: false`.
+  - The Dormann binary is verified before it is cached.
+- **Correctness:**
+  - An ESLint correctness gate is added in CI.
+  - The global `ai` alias that collided with a browser built-in is removed, along with 229 unreferenced Three.js aliases.
+  - Fixed a pc20 window-listener leak, an uncleared 90 s timer per CDP evaluation, and audio callback errors that were swallowed silently (now counted and asserted).
+- **Emulator conformance:**
+  - The Altair's 8080 core passes TST8080, 8080PRE and SuperSoft CPUTEST, with instruction totals equal to a published reference (`tools/i8080-cpm.mjs`, in CI).
+  - New spec-derived tests cover the PDP-8 (DEC semantics) and the RV32M division and high-multiply table.
+- **Accessibility:**
+  - The Atlas, sound-credits and help overlays are modal dialogs with names, a focus trap and focus return.
+  - Toolbar toggles expose `aria-pressed`, and the timeline exposes `aria-current`.
+  - Icon buttons are named and low-contrast text is fixed.
+  - A headless a11y contract test is added.
+- **Facts:** MOnSter 6502, Frontier HPL dates, and the Tandem founders and first-ship year (1976) were corrected against primary or reference sources. Score text no longer names composers or films (ADR 0002).
+- **Docs and repo:**
+  - Script counts, the render-pipeline section and the Atlas counts are derived from code, and docs-consistency tests are added.
+  - Added a CITATION abstract, a PR template, richer bug reports and a private security contact link.
+  - Added `CEL_TIMEOUT_SCALE` for headless runs on slow hosts.
+
 ## [6.0.0] - 2026-11-13
 
 Ports the v6 prototype's graphics, sampled score and sound into the 48-machine lab, and fixes all 49 findings of the v5 review ([`docs/REVIEW-v5.md`](docs/REVIEW-v5.md)).

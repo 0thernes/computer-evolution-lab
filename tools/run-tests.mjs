@@ -428,6 +428,7 @@ async function runHeadlessBrowserSuite() {
         sfxEvents: LAB.audio.stats.events - ev0,
         notesScheduled: LAB.audio.stats.notes - notes0,
         scoreMode: LAB.audio.scoreMode || "procedural",
+        soft: LAB.audio.stats.soft,
       };
     })()`);
 
@@ -437,6 +438,13 @@ async function runHeadlessBrowserSuite() {
       `Missing chord/BPM in orchestral themes: ${JSON.stringify(audioCheck.themesTested)}`,
     );
     assert(audioCheck.notesScheduled > 0, "Score scheduled no notes/stem updates");
+    assert(
+      audioCheck.soft === 0,
+      `${audioCheck.soft} audio callback error(s) were caught this session: ${session.logs
+        .filter((l) => l.text.startsWith("[audio]"))
+        .map((l) => l.text)
+        .join("; ")}`,
+    );
     if (audioCheck.state === "running") {
       assert(
         audioCheck.sfxEvents === 3 && audioCheck.sfxVoiced === 3,

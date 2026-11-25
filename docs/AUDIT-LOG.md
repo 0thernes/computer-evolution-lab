@@ -111,7 +111,7 @@ Scope: the 49-row README roster (years, names) and the claims most often repeate
 ### 12 — Emulator correctness against primary or published references
 
 - 6502: Dormann functional test still passes (decimal mode included).
-- H045 (issue, fixed): the Altair's Intel 8080 core had only hand-written smoke tests. `tools/i8080-cpm.mjs` now runs TST8080, 8080PRE and SuperSoft CPUTEST under a two-function BDOS shim. The binaries are fetched at a pinned commit and checked by SHA-256, not vendored. All three pass, and their instruction totals (651; 1,061; 33,971,311) match the published reference exactly. Cycle totals are exactly 3 states lower in each case, which is the HLT (7) versus OUT (10) stop vector, so every instruction's timing matches. The test runs in CI; the hours-long 8080EXM is opt-in (`--exm`).
+- H045 (issue, fixed): the Altair's Intel 8080 core had only hand-written smoke tests. `tools/i8080-cpm.mjs` now runs TST8080, 8080PRE and SuperSoft CPUTEST under a two-function BDOS shim. The binaries are fetched at a pinned commit and checked by SHA-256, not vendored. All three pass, and their instruction totals (651; 1,061; 33,971,311) match the published reference exactly. Cycle totals are exactly 3 states lower in each case, which is the HLT (7) versus OUT (10) stop vector, so every instruction's timing matches. The test runs in CI; the hours-long 8080EXM is opt-in (`--exm`). It was run once on the audit box: 2,919,050,698 instructions, the reference total, and PASS, in 8.4 min.
 - H046 (issue, fixed): the PDP-8 core had a single assembler smoke test. `tests/pdp8.test.mjs` now checks it against DEC's documented semantics: TAD link complement, current-page and page-zero addressing, auto-index 0010–0017, JMS/JMP I linkage, ISZ skip, Group 1 event order (CLL before IAC carry), RAL/RTR through the link, Group 2 OR/AND skip sense, and the assembler's octal encodings. No defect was found.
 - H047 (issue, fixed): the RV32IM pipeline is checked against an ISS by the same author, so a semantic slip shared by both would pass. A new test asserts the ISA manual's division-by-zero and overflow table and the MULH/MULHSU/MULHU sign cases on both models. Both comply.
 - Not covered here: the B1700 already has `tests/b1700.test.mjs`, which cites the MIL manual's worked examples and tables (Table 2-1, Table 4-1). The CDC 6600 scoreboard and the other teaching models have no external conformance suite to run.
@@ -122,6 +122,30 @@ Scope: the 49-row README roster (years, names) and the claims most often repeate
 - H049 (issue, fixed): there was no pull-request template. Added one listing the local checks, a source-citation prompt for historical figures, the ADR 0002 rule and the asset-licence rule.
 - H050 (issue, fixed): the bug template asked for neither the lab version, expected vs actual behaviour, nor console output. Added all three; the console field is optional.
 - H051 (problem, fixed): nothing in the issue chooser pointed to the private security address, so a vulnerability could be filed as a public issue. Added `ISSUE_TEMPLATE/config.yml` with a contact link to `SECURITY.md`.
+
+### 14 — Error handling
+
+- The 17 empty `catch {}` blocks were read one by one. Most guard calls that legitimately throw: stopping an already-stopped `AudioBufferSourceNode`, `setPointerCapture` on a released pointer, the WebGL debug-renderer query, and the localStorage quota.
+- H052 (problem, fixed): three catches in the audio engine sat on hot paths: change listeners, every SFX voice function, and the per-frame ambience update. They hid real defects completely, because a broken voice simply went silent. Each now goes through `_soft(where, err)`, which counts the error in `stats.soft` and warns once per site. The headless suite asserts `stats.soft === 0` over the whole session (hub plus 49 machines), and on failure prints the warnings.
+- Network paths were already handled: stem loads retry and fall back to procedural on decode or 404, `tier.json` and SFX fetches fail soft by design, and the visual6502 fetch rejects on HTTP errors or hash mismatch.
+
+### 15 — Dead code
+
+- Cross-file analysis: every top-level binding ESLint reports as unused in its own file, counted across all 36 scripts and both HTML entry pages, with property accesses excluded.
+- H053 (issue, fixed): 229 of the 421 `THREE.*` aliases in `src/core/three-aliases.js` were referenced nowhere. They were removed, leaving 192, and `docs/ALIASES.md` was regenerated. `audit-exhaustive` still reports zero undefined symbols.
+- H054 (issue, fixed): the unused `COL_NAMES` in `machine-b1700.js` was removed. `Um` in `layer-stack.js` was also flagged and removed, but the headless run failed with `ReferenceError: Um is not defined`. `compare-modal.js` uses it only through spread (`...Um.map`), and the scan's "not after a dot" rule missed that case. `Um` was restored, and the removed aliases were re-checked with spread-aware matching across `src/`, both HTML pages, `tools/` and `tests/`. No other live reference was found.
+- `hdi` in `machines-milestones.js` was assigned but never read. `kit.box()` parents the mesh itself, so the call stays and the binding was dropped.
+
+### 16 — Release gates (run on the audit box, 24 Nov 2026, Node 26.13.1)
+
+- `node --test tests/*.test.mjs`: all pass.
+- `CEL_TIMEOUT_SCALE=2 node tools/run-tests.mjs --ci-headless-optional`: 63 passed, 0 failed. This includes the a11y contract and `stats.soft === 0`.
+- All 50 scenes (hub plus 49 machines): 0 failures, 0 console errors, 0 page exceptions.
+- Dormann 6502: PASS (trap at $3469, 30,646,177 instructions).
+- `tools/i8080-cpm.mjs`: TST8080, 8080PRE and CPUTEST PASS with reference counts; 8080EXM PASS.
+- `tools/check-b1700-links.mjs`: 32/32 links resolve.
+- Prettier, ESLint (correctness gate), `audit-exhaustive` and `gen-audit-index --check`: clean.
+- Not run: a compile of `desktop/Program.cs` (H027). The audit box ran out of disk while installing the .NET SDK, so the dot-segment refusal is reviewed but not compiled.
 
 ## Findings register
 
@@ -178,3 +202,6 @@ Scope: the 49-row README roster (years, names) and the claims most often repeate
 | H049 | issue    | fixed    | Pull-request template                                               |
 | H050 | issue    | fixed    | Bug template: version, expected/actual, console                     |
 | H051 | problem  | fixed    | Security contact link in issue chooser                              |
+| H052 | problem  | fixed    | Hidden audio callback errors now counted and asserted               |
+| H053 | issue    | fixed    | 229 unreferenced Three.js aliases removed                           |
+| H054 | issue    | fixed    | Dead `COL_NAMES` (`Um` was live; removal reverted)                  |

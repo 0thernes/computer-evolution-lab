@@ -1420,7 +1420,7 @@ function makeMachineArm07() {
       );
 
       // Multi-Layer L-Shaped HDI Logic Board + Delidded ARM big.LITTLE SoC Die!
-      const hdi = kit.box(
+      kit.box(
         0.18,
         0.68,
         0.018,

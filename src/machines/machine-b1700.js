@@ -34,7 +34,6 @@ function makeMachineB1700() {
   let lastEv = null;
   const recent = [];
 
-  const COL_NAMES = ["0", "1", "2", "3"];
   const selName = () => B1700_REG[selCol][selRow] || "—";
   const hex6 = (v) => (v >>> 0).toString(16).toUpperCase().padStart(6, "0");
 
