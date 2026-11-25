@@ -229,7 +229,7 @@ var SCORE_THEME_MIGRATION = {
 };
 
 var Yy = (id) => {
-  const entry = us[id] || us.hub;
+  const entry = Object.hasOwn(us, id) ? us[id] : us.hub;
   return entry.mood
     ? "Original score · in the mood of epic/hybrid orchestral"
     : "Original orchestral gallery score";
@@ -1312,9 +1312,9 @@ var OrchestralScoreEngine = class {
 
   play(machineId) {
     const override = this.h.scoreOverride;
-    const meta = us[machineId] || us.hub;
+    const meta = Object.hasOwn(us, machineId) ? us[machineId] : us.hub;
     const nextStyle =
-      override && override !== "auto" && CINEMATIC_CUES[override]
+      override && override !== "auto" && Object.hasOwn(CINEMATIC_CUES, override)
         ? override
         : meta.style || "gallery";
     if (nextStyle !== this.cueKey) {
@@ -1327,7 +1327,9 @@ var OrchestralScoreEngine = class {
 
   tick(act) {
     if (this.h.muted || this.h.vol.music <= 0.005) return;
-    const cue = CINEMATIC_CUES[this.cueKey] || CINEMATIC_CUES.gallery;
+    const cue = Object.hasOwn(CINEMATIC_CUES, this.cueKey)
+      ? CINEMATIC_CUES[this.cueKey]
+      : CINEMATIC_CUES.gallery;
     this.currentBpm = cue.bpm;
     const beatDur = 60 / cue.bpm;
     const stepDur = beatDur / cue.subdiv;
@@ -1923,12 +1925,21 @@ var Nm = class LabAudioController {
     this.listeners = new Set();
     try {
       const saved = JSON.parse(localStorage.getItem(Ky) || "{}");
-      if (saved.vol) Object.assign(this.vol, saved.vol);
+      // Stored values are untrusted (older versions, hand edits): accept only known keys,
+      // finite volumes clamped to 0..1 and palettes that exist in SCORE_THEMES.
+      if (saved.vol && typeof saved.vol === "object") {
+        for (const key of Object.keys(this.vol)) {
+          const v = Object.hasOwn(saved.vol, key) ? saved.vol[key] : undefined;
+          if (typeof v === "number" && Number.isFinite(v)) this.vol[key] = Fm(v, 0, 1);
+        }
+      }
       if (typeof saved.muted === "boolean") this.muted = saved.muted;
       if (typeof saved.boost === "boolean") this.boost = saved.boost;
-      if (saved.scoreOverride) {
-        this.scoreOverride =
-          SCORE_THEME_MIGRATION[saved.scoreOverride] || saved.scoreOverride;
+      if (typeof saved.scoreOverride === "string") {
+        const theme = Object.hasOwn(SCORE_THEME_MIGRATION, saved.scoreOverride)
+          ? SCORE_THEME_MIGRATION[saved.scoreOverride]
+          : saved.scoreOverride;
+        if (SCORE_THEMES.some((row) => row[0] === theme)) this.scoreOverride = theme;
       }
     } catch {}
   }
@@ -1964,7 +1975,7 @@ var Nm = class LabAudioController {
   }
 
   get track() {
-    return us[this.machine] || us.hub;
+    return Object.hasOwn(us, this.machine) ? us[this.machine] : us.hub;
   }
 
   get scoreMode() {
@@ -2174,12 +2185,16 @@ var Nm = class LabAudioController {
   }
 
   set(key, val) {
-    if (key in this.vol) {
-      this.vol[key] = Fm(+val, 0, 1);
+    if (Object.hasOwn(this.vol, key)) {
+      const v = Number(val);
+      if (!Number.isFinite(v)) return; // NaN would make AudioParam.setTargetAtTime throw
+      this.vol[key] = Fm(v, 0, 1);
     } else if (key === "muted" || key === "boost") {
       this[key] = !!val;
     } else if (key === "scoreOverride") {
-      this.scoreOverride = String(val);
+      const theme = String(val);
+      if (!SCORE_THEMES.some((row) => row[0] === theme)) return;
+      this.scoreOverride = theme;
       if (this.music) this.music.play(this.machine);
     }
     this.applyVol();

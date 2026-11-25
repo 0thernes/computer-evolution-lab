@@ -54,25 +54,41 @@ class: bug, error, issue, problem, dilemma, or conflict. Tags do not add classes
 - H017 (conflict, fixed): `src/audio/cinematic-score.js` still carried 49 unused `film:` fields naming films, film-named cue keys (`interstellar`, `oppenheimer`, `inception`, `tron`, `blade`, `matrix`, `exmachina`, `annihilation`, `imitation`, `mind`, `glass`) and comments naming composers ("Daft Punk / Joseph Trapanese", "Philip Glass"). Removed the dead fields; renamed the cues to their mood names (`epic`, `clockwork`, `slowbuild`, `gridarp`, `synthnoir`, `hybridpulse`, `crystalline`, `organic`, `intimate`, `noble`, `shimmer`), which also removes the five alias assignments. Saved v5 preferences still migrate through `SCORE_THEME_MIGRATION`.
 - H018 (issue, fixed): the headless audio check iterated a hand-written list of 7 palettes and skipped `slowbuild`. It now iterates `SCORE_THEMES` (all 8).
 
+### 06 — Security (input handling, local servers, integrity pins)
+
+- Reviewed every `innerHTML`/`html:` sink (16): all take author-written strings, none take URL, storage or network data. Re-verified the three visual6502 SHA-256 pins against the pinned commit (all match) and the Dormann pin (test passes).
+- H019 (bug, fixed): `?q=constructor` passed `zs[qParam]` (inherited `Object.prototype` key), so `StudioFX.set()` accepted `Object` as a tier and set a `NaN` pixel ratio. `#constructor` likewise selected `Object` as a machine. All three lookups now use `Object.hasOwn`.
+- H020 (bug, fixed): stored audio prefs were merged blindly (`Object.assign(this.vol, saved.vol)`); a non-numeric volume reaches `AudioParam.setTargetAtTime`, which throws on non-finite values, and an unknown palette such as `constructor` resolved to `Object` as a cue. Load and `set()` now validate keys, finiteness, range and palette names; procedural cue/machine lookups use own properties.
+- H021 (issue, fixed): `tools/serve.mjs` had no Host check (DNS rebinding could read any repo file, `.git/` included, through a victim's browser), served dot-paths, followed symlinks out of the root, crashed on read-stream errors and answered malformed `%` escapes with 500 plus the exception text. Added the Host allow-list (421), dot-segment refusal, realpath confinement, 400 for bad escapes, stream error handling and `Content-Length`.
+- H022 (issue, fixed): the desktop wrapper also served dot-segments when rooted at a repo checkout. Added the same refusal (`Program.cs`; see pass 07 for the compile check).
+- H023 (bug, fixed): `tools/dormann-6502.mjs` cached the download before verifying it, so one corrupt download failed every later run until `.cache/` was cleared by hand. It now verifies first and deletes a bad cache entry.
+- H024 (dilemma, accepted): `visual6502Verify` skips the hash when `crypto.subtle` is unavailable (insecure contexts). The commit pin still fixes the content, and refusing would disable the feature on plain-http LAN hosting. Recorded rather than changed.
+
 ## Findings register
 
-| ID   | Class    | Status   | Evidence / disposition                            |
-| :--- | :------- | :------- | :------------------------------------------------ |
-| H001 | issue    | fixed    | Generated tracked-file index and drift check      |
-| H002 | conflict | fixed    | Removed the global `ai` alias                     |
-| H003 | issue    | fixed    | ESLint correctness gate added                     |
-| H004 | issue    | fixed    | Actions bumped to v7.0.1 / v7.1.0 by verified SHA |
-| H005 | issue    | fixed    | `persist-credentials: false`                      |
-| H006 | issue    | fixed    | Timeout and concurrency                           |
-| H007 | issue    | fixed    | `workflow_dispatch`                               |
-| H008 | dilemma  | accepted | Version- but not integrity-pinned npx tools       |
-| H009 | conflict | fixed    | Script count 26 → 36 in three docs                |
-| H010 | conflict | fixed    | ARCHITECTURE §4 rewritten from code               |
-| H011 | bug      | fixed    | Escaped table pipe                                |
-| H012 | conflict | fixed    | 4K audit PNG count                                |
-| H013 | conflict | fixed    | Unbacked 0.00 % clipping claim removed            |
-| H014 | issue    | fixed    | Docs index completed                              |
-| H015 | issue    | fixed    | `tests/docs-consistency.test.mjs`                 |
-| H016 | conflict | fixed    | Composer names removed from SUMMARY               |
-| H017 | conflict | fixed    | Film/composer names removed from score engine     |
-| H018 | issue    | fixed    | Audio check covers all 8 palettes                 |
+| ID   | Class    | Status   | Evidence / disposition                                              |
+| :--- | :------- | :------- | :------------------------------------------------------------------ |
+| H001 | issue    | fixed    | Generated tracked-file index and drift check                        |
+| H002 | conflict | fixed    | Removed the global `ai` alias                                       |
+| H003 | issue    | fixed    | ESLint correctness gate added                                       |
+| H004 | issue    | fixed    | Actions bumped to v7.0.1 / v7.1.0 by verified SHA                   |
+| H005 | issue    | fixed    | `persist-credentials: false`                                        |
+| H006 | issue    | fixed    | Timeout and concurrency                                             |
+| H007 | issue    | fixed    | `workflow_dispatch`                                                 |
+| H008 | dilemma  | accepted | Version- but not integrity-pinned npx tools                         |
+| H009 | conflict | fixed    | Script count 26 → 36 in three docs                                  |
+| H010 | conflict | fixed    | ARCHITECTURE §4 rewritten from code                                 |
+| H011 | bug      | fixed    | Escaped table pipe                                                  |
+| H012 | conflict | fixed    | 4K audit PNG count                                                  |
+| H013 | conflict | fixed    | Unbacked 0.00 % clipping claim removed                              |
+| H014 | issue    | fixed    | Docs index completed                                                |
+| H015 | issue    | fixed    | `tests/docs-consistency.test.mjs`                                   |
+| H016 | conflict | fixed    | Composer names removed from SUMMARY                                 |
+| H017 | conflict | fixed    | Film/composer names removed from score engine                       |
+| H018 | issue    | fixed    | Audio check covers all 8 palettes                                   |
+| H019 | bug      | fixed    | Own-property lookups for `?q=`, `#hash`, `selectMachine`            |
+| H020 | bug      | fixed    | Stored audio prefs validated; tests in `tests/audio-prefs.test.mjs` |
+| H021 | issue    | fixed    | Dev server Host check, dot-paths, symlinks, errors                  |
+| H022 | issue    | fixed    | Desktop server refuses dot-segments                                 |
+| H023 | bug      | fixed    | Dormann cache verified before write                                 |
+| H024 | dilemma  | accepted | visual6502 hash check fails open without SubtleCrypto               |

@@ -174,8 +174,8 @@ var StemScoreEngine = class {
   }
 
   static cueFor(machineId) {
-    if (STEM_CUES[machineId]) return machineId;
-    return STEM_CUE_FOR[machineId] || "hub";
+    if (Object.hasOwn(STEM_CUES, machineId)) return machineId;
+    return Object.hasOwn(STEM_CUE_FOR, machineId) ? STEM_CUE_FOR[machineId] : "hub";
   }
 
   get cueKey() {

@@ -1028,7 +1028,7 @@
       return;
     }
 
-    const m = byId[id];
+    const m = Object.hasOwn(byId, id) ? byId[id] : null;
     if (!m) return;
 
     activeMachine = m;
@@ -2475,7 +2475,7 @@
   {
     const qParam = queryParams.get("q");
     fx.auto = queryParams.get("auto") !== "0" && !qParam;
-    fx.set(zs[qParam] ? qParam : deviceClass.tier, "init");
+    fx.set(qParam && Object.hasOwn(zs, qParam) ? qParam : deviceClass.tier, "init");
   }
 
   // Expose full programmatic inspection & test harness API on window.LAB
@@ -2597,7 +2597,9 @@
 
   const initialHash = location.hash.slice(1);
   selectMachine(
-    initialHash && (byId[initialHash] || initialHash === "hub") ? initialHash : "hub",
+    initialHash && (Object.hasOwn(byId, initialHash) || initialHash === "hub")
+      ? initialHash
+      : "hub",
   );
   requestAnimationFrame(frameLoop);
 })();

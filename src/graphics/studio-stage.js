@@ -199,7 +199,7 @@ var Qu = class StudioFX {
   }
 
   set(level, reason) {
-    if (!zs[level]) return;
+    if (!Object.hasOwn(zs, level)) return; // also rejects ?q=constructor / __proto__
     const prev = zs[this.level];
     const next = zs[level];
     this.level = level;

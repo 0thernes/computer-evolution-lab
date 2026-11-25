@@ -24,11 +24,17 @@ async function getBinary() {
     const res = await fetch(URL);
     if (!res.ok) throw new Error(`fetch ${URL}: HTTP ${res.status}`);
     buf = Buffer.from(await res.arrayBuffer());
+  }
+  const got = crypto.createHash("sha256").update(buf).digest("hex");
+  if (got !== SHA256) {
+    // Never keep a bad cache entry: the next run would fail the same way forever.
+    if (!arg && fs.existsSync(cache)) fs.rmSync(cache);
+    throw new Error(`SHA-256 mismatch: ${got}`);
+  }
+  if (!arg && !fs.existsSync(cache)) {
     fs.mkdirSync(path.dirname(cache), { recursive: true });
     fs.writeFileSync(cache, buf);
   }
-  const got = crypto.createHash("sha256").update(buf).digest("hex");
-  if (got !== SHA256) throw new Error(`SHA-256 mismatch: ${got}`);
   return new Uint8Array(buf);
 }
 

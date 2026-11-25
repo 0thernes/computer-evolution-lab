@@ -827,6 +827,20 @@ internal sealed class LoopbackLabServer : IDisposable
                     urlPath = "/" + urlPath;
                 }
 
+                // Never serve dot-segments (.git, .github, .env) when rooted at a repo checkout.
+                if (Array.Exists(urlPath.Split('/', '\\'), seg => seg.StartsWith('.')))
+                {
+                    await WriteResponseAsync(
+                        stream,
+                        "403 Forbidden",
+                        "text/plain; charset=utf-8",
+                        Encoding.UTF8.GetBytes("Forbidden"),
+                        method == "HEAD",
+                        ct
+                    );
+                    return;
+                }
+
                 byte[]? body = null;
                 if (_rootDir is not null)
                 {

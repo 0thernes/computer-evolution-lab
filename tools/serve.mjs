@@ -37,47 +37,94 @@ export function isInsideRoot(absPath, root = ROOT_DIR) {
   return rel === "" || (!rel.startsWith("..") && !path.isAbsolute(rel));
 }
 
+/**
+ * Only same-machine names are accepted in the Host header. A web page cannot read this server
+ * through DNS rebinding (attacker.example -> 127.0.0.1), because the browser still sends
+ * `Host: attacker.example`. Mirrors the desktop wrapper's check (see .github/SECURITY.md).
+ */
+export function isAllowedHost(hostHeader, port) {
+  if (typeof hostHeader !== "string") return false;
+  const h = hostHeader.toLowerCase();
+  return h === `127.0.0.1:${port}` || h === `localhost:${port}` || h === `[::1]:${port}`;
+}
+
+/** Dot-segments (`.git`, `.github`, `.env`, ...) are never served. */
+export function hasHiddenSegment(relPath) {
+  return relPath.split(/[\\/]+/).some((seg) => seg.startsWith("."));
+}
+
+function plain(res, code, text, extra = {}) {
+  res.writeHead(code, { "Content-Type": "text/plain; charset=utf-8", ...extra });
+  res.end(text);
+}
+
 export function startServer(port = 4173, host = "127.0.0.1") {
   return new Promise((resolve, reject) => {
+    let boundPort = port;
     const server = http.createServer((req, res) => {
       try {
+        if (req.method !== "GET" && req.method !== "HEAD") {
+          plain(res, 405, "405 Method Not Allowed", { Allow: "GET, HEAD" });
+          return;
+        }
+        if (!isAllowedHost(req.headers.host, boundPort)) {
+          plain(res, 421, "421 Misdirected Request");
+          return;
+        }
         const parsed = new URL(req.url || "/", `http://${host}`);
-        let relPath = decodeURIComponent(parsed.pathname);
+        let relPath;
+        try {
+          relPath = decodeURIComponent(parsed.pathname);
+        } catch {
+          plain(res, 400, "400 Bad Request");
+          return;
+        }
         if (relPath === "/") relPath = "/index.html";
+        if (relPath.includes("\0") || hasHiddenSegment(relPath)) {
+          plain(res, 403, "403 Forbidden");
+          return;
+        }
 
         const safePath = path.resolve(ROOT_DIR, "." + relPath);
         if (!isInsideRoot(safePath)) {
-          res.writeHead(403, { "Content-Type": "text/plain; charset=utf-8" });
-          res.end("403 Forbidden");
+          plain(res, 403, "403 Forbidden");
+          return;
+        }
+        let stat;
+        try {
+          // Resolve symlinks too, so a link inside the repo cannot point outside it.
+          if (!isInsideRoot(fs.realpathSync(safePath), fs.realpathSync(ROOT_DIR))) {
+            plain(res, 403, "403 Forbidden");
+            return;
+          }
+          stat = fs.statSync(safePath);
+        } catch {
+          stat = null;
+        }
+        if (!stat || !stat.isFile()) {
+          plain(res, 404, "404 Not Found");
           return;
         }
 
-        if (!fs.existsSync(safePath) || fs.statSync(safePath).isDirectory()) {
-          res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
-          res.end("404 Not Found");
-          return;
-        }
-
-        if (req.method !== "GET" && req.method !== "HEAD") {
-          res.writeHead(405, { Allow: "GET, HEAD" });
-          res.end();
-          return;
-        }
         const ext = path.extname(safePath).toLowerCase();
         const mime = MIME_TYPES[ext] || "application/octet-stream";
         res.writeHead(200, {
           "Content-Type": mime,
+          "Content-Length": stat.size,
           "Cache-Control": "no-cache",
           "X-Content-Type-Options": "nosniff",
+          "Referrer-Policy": "no-referrer",
         });
         if (req.method === "HEAD") {
           res.end();
           return;
         }
-        fs.createReadStream(safePath).pipe(res);
-      } catch (err) {
-        res.writeHead(500, { "Content-Type": "text/plain; charset=utf-8" });
-        res.end("500 Internal Server Error: " + err.message);
+        const stream = fs.createReadStream(safePath);
+        stream.on("error", () => res.destroy());
+        stream.pipe(res);
+      } catch {
+        if (!res.headersSent) plain(res, 500, "500 Internal Server Error");
+        else res.destroy();
       }
     });
 
@@ -85,6 +132,7 @@ export function startServer(port = 4173, host = "127.0.0.1") {
     server.listen(port, host, () => {
       const addr = server.address();
       const actualPort = typeof addr === "object" && addr ? addr.port : port;
+      boundPort = actualPort;
       resolve({
         server,
         url: `http://${host}:${actualPort}`,
