@@ -234,4 +234,4 @@ npm run audit:4k
 
 ## License
 
-Copyright © 2026 **0thernes (0thernes LLC)** (`0_0@0thernes.art`). Source-available for non-commercial research, study, and play under the **Cosmogonic License — Non-Commercial Research & Play** in [`LICENSE`](LICENSE); all commercial rights reserved. Third-party code and CC0 media are credited in [`CREDITS.md`](CREDITS.md), [`SOUNDS.md`](SOUNDS.md) and [`THIRD-PARTY-NOTICES.md`](THIRD-PARTY-NOTICES.md).
+Copyright © 2026 **Alexander Stephen Donahue (Independent Researcher, 0thernes, Spokane, WA, USA)** (`0_0@0thernes.art`). Source-available for non-commercial research, study, and play under the **Cosmogonic License — Non-Commercial Research & Play** in [`LICENSE`](LICENSE); all commercial rights reserved. Third-party code and CC0 media are credited in [`CREDITS.md`](CREDITS.md), [`SOUNDS.md`](SOUNDS.md) and [`THIRD-PARTY-NOTICES.md`](THIRD-PARTY-NOTICES.md).

@@ -47,7 +47,13 @@ const PURPOSE = {
   ".github/CODEOWNERS": "Default code owner",
   ".github/workflows/ci.yml":
     "CI: Prettier, static audit, unit tests, Dormann 6502, headless WebGL2 suite",
+  ".cursor/rules/build-standard.mdc":
+    "Cursor alwaysApply rule pointing to canonical AGENTS.md",
   "CITATION.cff": "Citation File Format metadata for academic citation",
+  "CLAUDE.md": "Claude Code pointer to canonical AGENTS.md",
+  "GEMINI.md": "Gemini CLI and Antigravity pointer to canonical AGENTS.md",
+  "llms.txt": "Build Standard v1.2.0 machine-readable documentation index",
+  "repo.yaml": "Build Standard v1.2.0 repository compliance manifest",
   LICENSE: "Project license (non-commercial research & play)",
   VERSION: "Single source of truth for the release version",
   "package.json": "npm scripts and Node engine requirement (no runtime dependencies)",

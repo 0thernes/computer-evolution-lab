@@ -30,4 +30,4 @@ Thank you for exploring **Computer Evolution Lab**! Every exhibit in this reposi
    No pull requests, feature branches, rebases or merges, and no Dependabot, CodeRabbit or Copilot bots. Make small, frequent commits directly on `main`. Record user-visible changes in `CHANGELOG.md` and track work in GitHub Issues.
 
 5. **Licensing**:
-   Contributions are governed by the non-commercial research & play terms in `LICENSE` (`0thernes LLC`).
+   Contributions are governed by the non-commercial research & play terms in `LICENSE` (Alexander Stephen Donahue (Independent Researcher, 0thernes, Spokane, WA, USA)).

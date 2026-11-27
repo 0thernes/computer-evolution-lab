@@ -12,4 +12,4 @@ In the interest of fostering an open, technical, and constructive engineering en
 
 ## Enforcement
 
-Unacceptable behavior, personal attacks, or bad-faith disruption may be moderated or removed by the project maintainer (**0thernes LLC**, `0_0@0thernes.art`).
+Unacceptable behavior, personal attacks, or bad-faith disruption may be moderated or removed by the project maintainer (**Alexander Stephen Donahue (Independent Researcher, 0thernes, Spokane, WA, USA)**, `0_0@0thernes.art`).

@@ -1,0 +1,20 @@
+# Computer Evolution Lab
+
+> Interactive 4K HDR 3D engineering museum of 49 historical and frontier computers across 4 Grand Circles with working CPU emulators and an 11-rung abstraction stack (v6.0.0). Documented to Build Standard for LLMs v1.2.0.
+
+Start with AGENTS.md for commands, rules, and known traps.
+
+## Agent instructions
+
+- [AGENTS.md](AGENTS.md): canonical instructions, commands, hard rules, and traps
+
+## Core docs & ledgers
+
+- [README.md](README.md): purpose, quickstart, controls, architecture, and license
+- [CLAIMS.md](CLAIMS.md): scoped claims ledger mapped to executable verification commands
+- [LIMITATIONS.md](LIMITATIONS.md): emulator-vs-conceptual boundary, runtime constraints, and legal notes
+- [REPLICATION.md](REPLICATION.md): clean-clone testing, CPU conformance, and audit instructions
+- [docs/INDEX.md](docs/INDEX.md): documentation index
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): system architecture and 4-Circle roster
+- [docs/AUDIT-INDEX.md](docs/AUDIT-INDEX.md): generated tracked-file inventory
+- [CITATION.cff](CITATION.cff): machine-readable citation metadata

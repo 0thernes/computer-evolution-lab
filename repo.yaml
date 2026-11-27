@@ -1,0 +1,116 @@
+# Project manifest for the Build Standard for LLMs v1.2.0.
+standard: "1.2.0"
+name: "computer-evolution-lab"
+description: "Interactive 4K HDR 3D engineering museum of 49 historical and frontier computers across 4 Grand Circles with working CPU emulators and an 11-rung abstraction stack"
+owner: "Alexander Stephen Donahue"
+year: "2026"
+project_type: web-app
+stack: [javascript, node, other]
+flags:
+  public: true
+  package: true
+  visual: true
+  ui: true
+  native: false
+  ai: false
+  personal_data: false
+  service: false
+  deployed: true
+  api: false
+  perf: false
+  concurrent: false
+  numeric: true
+  experimental: true
+  ml: false
+  formal: false
+items:
+  A01: {status: done}  # README.md with one-line purpose
+  A02: {status: done}  # Badge ribbon in README.md
+  A03: {status: done}  # Zero-build clean-clone quickstart
+  A04: {status: done}  # Usage & keyboard controls in README.md
+  A05: {status: done}  # docs/screenshots/ + live GitHub Pages demo
+  A06: {status: partial, note: "LICENSE present (Cosmogonic Non-Commercial); original copyright holder line awaits owner decision."}
+  A07: {status: done}  # CHANGELOG.md
+  A08: {status: done}  # VERSION (6.0.0) enforced across package.json, csproj, CITATION.cff, CHANGELOG.md by tests/version.test.mjs
+  A09: {status: done, evidence: "tests/*.test.mjs, audit-exhaustive.mjs, dormann-6502.mjs, i8080-cpm.mjs, run-tests.mjs."}
+  A10: {status: done}  # .github/workflows/ci.yml
+  A11: {status: done}  # Git tags v3.0.0..v6.0.0
+  A12: {status: done}  # .gitignore
+  A13: {status: done}  # .gitattributes + .editorconfig
+  A14: {status: done}  # .github/CONTRIBUTING.md
+  A15: {status: done}  # .github/CODE_OF_CONDUCT.md
+  A16: {status: done}  # .github/SECURITY.md
+  A17: {status: partial}
+  A18: {status: done}  # .github/ISSUE_TEMPLATE/bug_report.yml + config.yml
+  A19: {status: done}  # GitHub About panel
+  A20: {status: done}  # docs/ indexed by docs/INDEX.md and docs/AUDIT-INDEX.md
+  A21: {status: done}  # docs/adr/0001..0006
+  A22: {status: done}  # CITATION.cff
+  A23: {status: done}  # Straight-to-main history and updated author identity
+  A24: {status: done}  # No secrets or build caches committed
+  A25: {status: partial}
+  A26: {status: partial}
+  A27: {status: done}  # GitHub Pages deployment
+  A28: {status: done}  # package.json + desktop/ComputerEvolutionLab.csproj
+  A29: {status: partial}
+  A30: {status: partial}
+  A31: {status: done}  # npm scripts + tools/
+  A32: {status: done}  # AGENTS.md, CLAUDE.md, GEMINI.md, .cursor/rules/build-standard.mdc, llms.txt
+  A33: {status: partial}
+  A34: {status: n/a, note: "Static browser museum and local preview server (service: false)."}
+  A35: {status: partial}
+  A36: {status: done}  # GitHub Pages deploys directly from main
+  A37: {status: partial}
+  A38: {status: done, evidence: "Headless accessibility contract and modal/ARIA checks in tools/run-tests.mjs."}
+  A39: {status: done}  # CREDITS.md, SOUNDS.md, THIRD-PARTY-NOTICES.md
+  A40: {status: n/a, note: "No AI model shipped or called at runtime (ai: false)."}
+  A41: {status: n/a, note: "Standalone browser application."}
+  A42: {status: done}
+  A43: {status: n/a, note: "Interactive museum application, not a library."}
+  A44: {status: done}  # docs/GLOSSARY.md
+  A45: {status: n/a, note: "Zero personal data collected or transmitted (personal_data: false)."}
+  B01: {status: done}  # Zero-build clean clone verified in CI
+  B02: {status: done}  # Zero runtime deps; CI pins prettier@3.10.1, eslint@9.39.5, Node 26, SHA-pinned actions
+  B03: {status: done}  # Deterministic simulator & CPU conformance suites
+  B04: {status: done}  # CLAIMS.md
+  B05: {status: done}  # Claims C01-C04 mapped to executable CI commands
+  B06: {status: done}  # Security traversal refusal tests in tests/security.test.mjs & negative tests
+  B07: {status: done}  # 16 hardening-pass regression tests across tests/*.test.mjs
+  B08: {status: done}  # tests/golden.test.mjs
+  B09: {status: n/a, note: "No external API exposed."}
+  B10: {status: partial}
+  B11: {status: done}  # RV32IM 5-stage pipeline vs ISS differential test in tests/rv32-pipeline.test.mjs
+  B12: {status: done}  # Dormann 6502 & Intel 8080 CP/M reference test oracles
+  B13: {status: todo}
+  B14: {status: partial}
+  B15: {status: todo}
+  B16: {status: n/a, note: "JavaScript/HTML app (native: false)."}
+  B17: {status: done}  # ESLint + Prettier + tools/audit-exhaustive.mjs
+  B18: {status: n/a, note: "Classic JS without TypeScript build step."}
+  B19: {status: n/a, note: "Single-threaded browser simulation loop."}
+  B20: {status: done}  # Quantum/simulator numerical checks in tests/golden.test.mjs and tests/simulators.test.mjs
+  B21: {status: n/a, note: "Not a backend service."}
+  B22: {status: n/a, note: "Interactive museum app (formal: false)."}
+  B23: {status: n/a, note: "Not a distributed protocol."}
+  B24: {status: n/a, note: "Browser JS."}
+  B25: {status: n/a, note: "No C/C++/Rust native core."}
+  B26: {status: n/a, note: "No speed benchmark claims in CLAIMS.md (perf: false)."}
+  B27: {status: n/a}
+  B28: {status: partial}
+  B29: {status: n/a}
+  B30: {status: n/a}
+  B31: {status: n/a}
+  B32: {status: n/a}
+  B33: {status: n/a, note: "No ML training (ml: false)."}
+  B34: {status: n/a, note: "No runtime AI generation (ai: false)."}
+  B35: {status: partial, note: "Local server path-confinement tests in tests/security.test.mjs."}
+  B36: {status: partial, note: ".github/SECURITY.md documents network/CSP/server boundaries."}
+  B37: {status: partial}
+  B38: {status: partial}
+  B39: {status: n/a}
+  B40: {status: done}  # CHANGELOG.md + docs/AUDIT-LOG.md
+  B41: {status: done}  # LIMITATIONS.md
+  B42: {status: done}  # CLAIMS.md refutation column
+  B43: {status: done}  # REPLICATION.md
+  B44: {status: partial}
+  B45: {status: done}  # docs/REVIEW-v5.md + 16-pass docs/AUDIT-LOG.md + 2026-11-27 hygiene pass

@@ -22,4 +22,4 @@
 
 ## Reporting a Vulnerability
 
-Please **do not** open public issues for suspected security vulnerabilities. Report them privately to **0thernes LLC** at `0_0@0thernes.art` with a minimal reproduction, the affected file and line, and the impact.
+Please **do not** open public issues for suspected security vulnerabilities. Report them privately to **Alexander Stephen Donahue (Independent Researcher, 0thernes, Spokane, WA, USA)** at `0_0@0thernes.art` with a minimal reproduction, the affected file and line, and the impact.

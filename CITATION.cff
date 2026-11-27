@@ -13,7 +13,10 @@ abstract: >-
   classic CP/M CPU diagnostics, a cycle-stepped RV32IM pipeline, a PDP-8, and a Burroughs
   B1700 micro-machine built from its Systems Reference Manual.
 authors:
-  - name: "0thernes LLC"
+  - family-names: "Donahue"
+    given-names: "Alexander Stephen"
+    orcid: "https://orcid.org/0009-0006-8168-9648"
+    affiliation: "Independent Researcher, 0thernes, Spokane, WA, USA"
     email: "0_0@0thernes.art"
     website: "https://0thernes.art"
 repository-code: "https://github.com/0thernes/computer-evolution-lab"

@@ -1,6 +1,6 @@
 # Executive Summary — Computer Evolution Lab (v6.0.0)
 
-**Computer Evolution Lab** is an interactive 4K HDR 3D engineering museum and hard-wired multi-era computer architecture laboratory spanning **1936 to fault-tolerant horizon quantum computing across 4 Grand Circles**, authored for **0thernes LLC**.
+**Computer Evolution Lab** is an interactive 4K HDR 3D engineering museum and hard-wired multi-era computer architecture laboratory spanning **1936 to fault-tolerant horizon quantum computing across 4 Grand Circles**, authored by **Alexander Stephen Donahue (Independent Researcher, 0thernes, Spokane, WA, USA)**.
 
 ## What It Delivers
 
